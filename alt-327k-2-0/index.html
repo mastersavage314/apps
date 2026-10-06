@@ -321,14 +321,14 @@
 
   .deck { position: relative; z-index: 1; max-width: 46rem; margin: 0 auto; padding: 1rem 1rem 0; }
   .seg.two { display: grid; grid-template-columns: 1fr 1fr; }
-  .seg.four { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: .7rem; }
+  .seg.four { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: .9rem; }
   .slide { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .6rem; align-items: center; margin: .9rem 0 0; }
   .nudge { width: 2.75rem; height: 2.75rem; border-radius: 50%; border: 1px solid var(--edge); background: var(--card); font-size: 1.5rem; font-weight: 600; line-height: 1; cursor: pointer; box-shadow: var(--shadow); padding: 0; }
-  #slider { -webkit-appearance: none; appearance: none; width: 100%; height: 2.75rem; margin: 0; background: transparent; cursor: pointer; touch-action: pan-y; }
-  #slider::-webkit-slider-runnable-track { height: 14px; border-radius: 9px; background: var(--trackgrad); box-shadow: inset 0 0 0 1px var(--edge); }
-  #slider::-moz-range-track { height: 14px; border-radius: 9px; background: var(--trackgrad); box-shadow: inset 0 0 0 1px var(--edge); }
-  #slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 32px; height: 32px; margin-top: -9px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFFFF, #FFD447 55%, #FF9D2E); border: 3px solid #FFFFFF; box-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 0 18px rgba(255, 196, 40, .85); }
-  #slider::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFFFF, #FFD447 55%, #FF9D2E); border: 3px solid #FFFFFF; box-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 0 18px rgba(255, 196, 40, .85); }
+  #slider, #pslider { -webkit-appearance: none; appearance: none; width: 100%; height: 2.75rem; margin: 0; background: transparent; cursor: pointer; touch-action: pan-y; }
+  #slider::-webkit-slider-runnable-track, #pslider::-webkit-slider-runnable-track { height: 14px; border-radius: 9px; background: var(--trackgrad); box-shadow: inset 0 0 0 1px var(--edge); }
+  #slider::-moz-range-track, #pslider::-moz-range-track { height: 14px; border-radius: 9px; background: var(--trackgrad); box-shadow: inset 0 0 0 1px var(--edge); }
+  #slider::-webkit-slider-thumb, #pslider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 32px; height: 32px; margin-top: -9px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFFFF, #FFD447 55%, #FF9D2E); border: 3px solid #FFFFFF; box-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 0 18px rgba(255, 196, 40, .85); }
+  #slider::-moz-range-thumb, #pslider::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFFFF, #FFD447 55%, #FF9D2E); border: 3px solid #FFFFFF; box-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 0 18px rgba(255, 196, 40, .85); }
   .ends { display: flex; justify-content: space-between; color: var(--muted); font-size: .84rem; margin: -.1rem 3.4rem 0; }
   .presets { display: flex; gap: .45rem; overflow-x: auto; margin: .9rem -1rem 0; padding: .2rem 1rem .7rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
   .presets::-webkit-scrollbar { display: none; }
@@ -339,10 +339,39 @@
   .feel h2 { margin: 0 0 .35rem; }
   .feel p { margin: 0 0 .55rem; max-width: 36rem; font-size: 1.05rem; }
   .feel .now { color: var(--muted); font-size: .98rem; }
-  .near { list-style: none; margin: .2rem 0 0; padding: 0; display: grid; gap: .3rem; font-size: .95rem; }
-  .near li { display: grid; grid-template-columns: 5.6rem 1fr; gap: .5rem; }
-  .near span { color: var(--muted); font-weight: 600; }
-  .near .lv { color: var(--gold); }
+
+  /* Real places: the place you are standing at, and an arrow to the next one down and the next one up */
+  .place { display: grid; gap: .75rem; }
+  .presets.kinds { margin-top: 0; padding-bottom: .1rem; }
+  .ptop { display: flex; justify-content: space-between; align-items: center; gap: .6rem; min-height: 1.6rem; }
+  .ptags { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .4rem; font-size: .88rem; min-width: 0; }
+  .ptags .badge { margin: 0; vertical-align: 0; }
+  .pcount { flex: none; color: var(--muted); font-size: .88rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  #pName { margin: .4rem 0 0; text-wrap: balance; overflow-wrap: anywhere; }
+  .pwhere { margin: .3rem 0 0; color: var(--muted); }
+  .pnote { margin: .4rem 0 0; max-width: 36rem; }
+  .psteps { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .pstep { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .3rem .55rem; align-items: center; align-content: start; text-align: left; padding: .65rem .75rem .7rem; border-radius: 18px; border: 1px solid var(--edge); background: var(--card); box-shadow: var(--shadow); cursor: pointer; }
+  .pstep.up { grid-template-columns: minmax(0, 1fr) auto; text-align: right; }
+  .pstep b, .pstep small { grid-column: 1 / -1; }
+  .pstep i { width: 2.25rem; height: 2.25rem; border-radius: 50%; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, var(--cl-a), var(--cl-b)); box-shadow: 0 2px 10px rgba(100, 60, 240, .35); }
+  .pstep svg { width: 1.25rem; height: 1.25rem; display: block; }
+  .pstep em { font-style: normal; font-size: .95rem; font-weight: 600; color: var(--muted); }
+  .pstep b { font-weight: 700; font-size: 1.05rem; line-height: 1.15; margin-top: .15rem; overflow-wrap: break-word; }
+  .pstep small { font-size: .82rem; line-height: 1.25; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .pstep:active:not(:disabled) { transform: scale(.98); }
+  .pstep:disabled { cursor: default; opacity: .6; box-shadow: none; }
+  .pstep:disabled i { background: var(--track); color: var(--muted); box-shadow: none; }
+  #pFind { width: 100%; min-width: 0; min-height: 2.75rem; border-radius: 999px; border: 1px solid var(--edge); background: var(--card); padding: .4rem 1rem; font-size: 1rem; }
+  #pFind::placeholder { color: var(--muted); }
+  .pmsg { margin: .4rem .3rem 0; font-size: .9rem; font-weight: 600; color: var(--above); }
+  .pmsg:empty { display: none; }
+  .seg.two.move { margin-top: 1rem; }
+  .slide.one { grid-template-columns: minmax(0, 1fr); }
+  .ends.wide { margin: -.1rem .2rem 0; gap: 1rem; }
+  .ends.wide span { min-width: 0; }
+  .ends.wide span + span { text-align: right; }
+  #freeBox { margin-top: .9rem; }
 
   .gauges { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin: 1.1rem 0 0; }
   .g { background: var(--card); border: 1px solid var(--edge); border-radius: 18px; padding: .75rem .8rem .85rem; box-shadow: var(--shadow); min-width: 0; position: relative; overflow: hidden; }
@@ -396,9 +425,10 @@
   body.is-gaia .badge { color: var(--g-on); background: linear-gradient(135deg, var(--g-aur), var(--g-ice)); }
   body.is-gaia .presets button[aria-pressed="true"],
   body.is-gaia #jump { background: linear-gradient(135deg, var(--g-aur), var(--g-ice)); color: var(--g-on); border-color: transparent; box-shadow: 0 0 16px rgba(70, 255, 180, .6); }
+  body.is-gaia .pstep:not(:disabled) i { background: linear-gradient(135deg, var(--g-aur), var(--g-ice) 60%, var(--g-vio)); color: var(--g-on); box-shadow: 0 2px 10px rgba(70, 255, 180, .35); }
   body.is-gaia button.chip.go { background: linear-gradient(135deg, var(--g-aur), var(--g-ice)); color: var(--g-on); }
-  body.is-gaia #slider::-webkit-slider-thumb { background: radial-gradient(circle at 35% 30%, #FFFFFF, #7FE9FF 55%, #46FFB4); box-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 0 18px rgba(70, 255, 180, .85); }
-  body.is-gaia #slider::-moz-range-thumb { background: radial-gradient(circle at 35% 30%, #FFFFFF, #7FE9FF 55%, #46FFB4); box-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 0 18px rgba(70, 255, 180, .85); }
+  body.is-gaia #slider::-webkit-slider-thumb, body.is-gaia #pslider::-webkit-slider-thumb { background: radial-gradient(circle at 35% 30%, #FFFFFF, #7FE9FF 55%, #46FFB4); box-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 0 18px rgba(70, 255, 180, .85); }
+  body.is-gaia #slider::-moz-range-thumb, body.is-gaia #pslider::-moz-range-thumb { background: radial-gradient(circle at 35% 30%, #FFFFFF, #7FE9FF 55%, #46FFB4); box-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 0 18px rgba(70, 255, 180, .85); }
   body.is-gaia .feel h2 { background: linear-gradient(135deg, #FF5CCB, #FFD1F2 55%, #9B6BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
   body.is-gaia .g::before { background: linear-gradient(90deg, var(--g-aur), var(--g-ice) 55%, var(--g-vio)); }
   body.is-gaia .g.sea::before { background: linear-gradient(90deg, #7FE9FF, #0A4460); }
@@ -470,16 +500,47 @@
   </div>
 
   <div class="deck">
-    <div class="seg two" role="group" aria-label="Above or below sea level">
-      <button type="button" data-mode="above" aria-pressed="true">Above sea level</button>
-      <button type="button" data-mode="below" aria-pressed="false">Below sea level</button>
+    <section class="place" aria-label="Real places, lowest to highest">
+      <div class="presets kinds" id="kinds" role="group" aria-label="Which places the arrows step through"></div>
+      <div class="phead">
+        <div class="ptop"><span class="ptags" id="pTags"></span><span class="pcount" id="pCount"></span></div>
+        <h2 id="pName">Sea level</h2>
+        <p class="pwhere" id="pWhere"></p>
+        <p class="pnote" id="pNote"></p>
+      </div>
+      <div class="psteps">
+        <button type="button" class="pstep" id="pDown"><i aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16"/><path d="M5 13l7 7 7-7"/></svg></i><em>Lower</em><b></b><small></small></button>
+        <button type="button" class="pstep up" id="pUp"><em>Higher</em><i aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V4"/><path d="M5 11l7-7 7 7"/></svg></i><b></b><small></small></button>
+      </div>
+      <div class="pfind">
+        <label class="sr" for="pFind">Find a place by name</label>
+        <input id="pFind" type="search" list="pList" placeholder="Find a place by name" enterkeyhint="go" autocomplete="off" autocorrect="off" spellcheck="false">
+        <datalist id="pList"></datalist>
+        <p class="pmsg" id="pMsg" role="status"></p>
+      </div>
+    </section>
+
+    <div class="seg two move" role="group" aria-label="What the slider moves through">
+      <button type="button" data-move="places" aria-pressed="true">Real places</button>
+      <button type="button" data-move="free" aria-pressed="false">Any altitude</button>
     </div>
-    <div class="slide">
-      <button type="button" class="nudge" id="down" aria-label="Go lower">&minus;</button>
-      <input id="slider" type="range" min="0" max="2000" step="1" value="0" aria-label="Altitude slider">
-      <button type="button" class="nudge" id="up" aria-label="Go higher">+</button>
+    <div id="placeBox">
+      <div class="slide one"><input id="pslider" type="range" min="0" max="1" step="1" value="0" aria-label="Place slider, from the lowest place to the highest"></div>
+      <div class="ends wide"><span id="pEndA"></span><span id="pEndB"></span></div>
     </div>
-    <div class="ends"><span id="endA">Sea level</span><span id="endB">62 miles up</span></div>
+    <div id="freeBox" hidden>
+      <div class="seg two" role="group" aria-label="Above or below sea level">
+        <button type="button" data-mode="above" aria-pressed="true">Above sea level</button>
+        <button type="button" data-mode="below" aria-pressed="false">Below sea level</button>
+      </div>
+      <div class="slide">
+        <button type="button" class="nudge" id="down" aria-label="Go lower">&minus;</button>
+        <input id="slider" type="range" min="0" max="2000" step="1" value="0" aria-label="Altitude slider">
+        <button type="button" class="nudge" id="up" aria-label="Go higher">+</button>
+      </div>
+      <div class="ends"><span id="endA">Sea level</span><span id="endB">62 miles up</span></div>
+      <div class="presets" id="presets" role="group" aria-label="Jump to a famous height"></div>
+    </div>
     <div class="seg four" role="group" aria-label="Units">
       <button type="button" data-unit="ft" aria-pressed="true">Feet</button>
       <button type="button" data-unit="m" aria-pressed="false">Meters</button>
@@ -490,13 +551,11 @@
       <button type="button" data-who="gaian" aria-pressed="true">Gaian lungs</button>
       <button type="button" data-who="visitor" aria-pressed="false">Earth visitor</button>
     </div>
-    <div class="presets" id="presets" role="group" aria-label="Jump to a famous height"></div>
 
     <section class="feel" aria-live="off">
       <h2 id="feelTitle">Thick air</h2>
       <p id="feelText"></p>
       <p class="now" id="feelNow"></p>
-      <ul class="near" id="near"></ul>
     </section>
 
     <section class="gauges" aria-label="What the air is doing at this altitude">
@@ -579,12 +638,13 @@
     <p>Gaia's air follows its locked numbers: 123.262 kPa at the sea, 55.000 kPa at 8,400 m, 21% oxygen, 130°F at the coast, and 5.2°C cooler with every kilometer you climb. Above Mount Ohwenroken no temperature is locked yet, so the sandbox keeps cooling the air until it hits &minus;70°F, the temperature of Earth's stratosphere, and holds it there.</p>
     <p>SpO2 is a simulation, not a medical reading. Gaian lungs are fitted to the Gaians' own lines: a Gaian breathes like someone from Earth does 7,560 m lower, all the way up to the living ceiling at 13,060 m, and the Gaian death zone starts at 16,000 m. The Earth visitor is an acclimatized adult from Earth breathing Gaia's outside air with no gear. Performance time reads the FAA's table at the matching Earth altitude.</p>
     <p>The visitor's gear follows the locked survival kit. Between average ground and Summitbrook, the switch from a tube to a full mask sits where the air is as thin as Earth's at 18,000 ft, the height where the FAA stops allowing nasal tubes.</p>
-    <p>Every elevation here is its Earth elevation plus 7,560 m. Dry land below sea level is 10 times deeper, and the oceans are 1.25 times deeper. Coalinga, Ospero, and Cyrillo are shown at the surface of the lake they sit on.</p>
+    <p>Every elevation here is its Earth elevation plus 7,560 m. Dry land and lake surfaces below sea level are 10 times deeper, and the oceans are 1.25 times deeper. That goes for every real place the arrows step through. Coalinga, Ospero, and Cyrillo are shown at the surface of the lake they sit on.</p>
   </footer>
 
   <footer class="only-earth">
     <p>Air numbers come from the 1976 US Standard Atmosphere, which is a yearly average. Real weather pushes them around. Below sea level, they assume a dry shaft open to the sky, and the ocean tile shows the real water pressure.</p>
     <p>SpO2 is a simulation for an acclimatized adult at rest breathing outside air. It is not a medical reading. Performance time follows the FAA's Advisory Circular 61-107B and is smoothed between the altitudes it lists.</p>
+    <p>The real places use their commonly published elevations: the official figure for a city or town, the summit for a mountain, the water's surface for a lake, and the sea floor for a trench or a wreck. Lake levels and ice caps shift a little from year to year. Cities and mountains outside Colorandoa and Ap&#333;p&#333; are as they are on Earth.</p>
     <p>Elevations outside Colorandoa follow Wikipedia's list of highest settlements, which covers year-round settlements at 3,500 m and up and says itself that it's incomplete. Colorandoa numbers are the locked ones. Coalinga, Ospero, and Cyrillo are shown at the surface of the lake they sit on, since their own elevations aren't locked yet.</p>
   </footer>
 </main>
@@ -854,6 +914,242 @@
     ['Sicuani', 'Cusco', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3548, '42,551 (2007)', '']
   ];
 
+  /* ---------- Real places: [name, where, kind, elevation, unit, note, extras]
+     kind: c city or town, p mountain, w lake or sea surface, d under the sea, s landmark.
+     extras: cl = Colorandoa, g = locked Gaia elevation in feet, gn = the note to use on Gaia.
+     On Gaia a place sits 7,560 m higher, dry land below the sea is 10 times deeper, and the ocean floor is 1.25 times deeper. ---------- */
+  var PLACES = [
+    // Cities and towns
+    ['Jericho', 'West Bank', 'c', -258, 'm', 'The lowest city on Earth.'],
+    ['Furnace Creek', 'Death Valley, California', 'c', -190, 'ft', 'The hottest air temperature ever measured was here.', { gn: '' }],
+    ['Baku', 'Azerbaijan', 'c', -28, 'm', 'The lowest national capital on Earth, on the shore of the Caspian Sea.'],
+    ['Amsterdam', 'Netherlands', 'c', -2, 'm', 'Kept dry by dikes and pumps.', { gn: '' }],
+    ['Miami', 'Florida', 'c', 6, 'ft', ''],
+    ['London', 'England', 'c', 11, 'm', ''],
+    ['New York City', 'New York', 'c', 33, 'ft', ''],
+    ['Mumbai', 'India', 'c', 14, 'm', ''],
+    ['Rome', 'Italy', 'c', 21, 'm', ''],
+    ['Cairo', 'Egypt', 'c', 23, 'm', ''],
+    ['Buenos Aires', 'Argentina', 'c', 25, 'm', ''],
+    ['Berlin', 'Germany', 'c', 34, 'm', ''],
+    ['Paris', 'France', 'c', 35, 'm', ''],
+    ['Seoul', 'South Korea', 'c', 38, 'm', ''],
+    ['Tokyo', 'Japan', 'c', 40, 'm', ''],
+    ['Beijing', 'China', 'c', 44, 'm', ''],
+    ['Toronto', 'Ontario', 'c', 76, 'm', ''],
+    ['Los Angeles', 'California', 'c', 233, 'ft', ''],
+    ['Clifton Park', 'New York', 'c', 318, 'ft', 'The real town behind Cliffton Mesa, Colorandoa.'],
+    ['Syracuse', 'New York', 'c', 380, 'ft', 'Its suburbs are the pattern for Summitbrook’s.'],
+    ['Burnt Hills', 'New York', 'c', 407, 'ft', 'The real town behind Blackened Hills, Colorandoa.'],
+    ['Dallas', 'Texas', 'c', 482, 'ft', ''],
+    ['Moscow', 'Russia', 'c', 156, 'm', ''],
+    ['Chicago', 'Illinois', 'c', 597, 'ft', ''],
+    ['Delhi', 'India', 'c', 216, 'm', ''],
+    ['Atlanta', 'Georgia', 'c', 1050, 'ft', ''],
+    ['Phoenix', 'Arizona', 'c', 1086, 'ft', ''],
+    ['Santiago', 'Chile', 'c', 570, 'm', ''],
+    ['Canberra', 'Australia', 'c', 578, 'm', ''],
+    ['Lake Placid', 'New York', 'c', 1801, 'ft', 'Hosted the Winter Olympics twice.'],
+    ['Las Vegas', 'Nevada', 'c', 2001, 'ft', ''],
+    ['Madrid', 'Spain', 'c', 667, 'm', ''],
+    ['Jerusalem', '', 'c', 754, 'm', ''],
+    ['São Paulo', 'Brazil', 'c', 760, 'm', ''],
+    ['Andorra la Vella', 'Andorra', 'c', 1023, 'm', 'The highest capital city in Europe.'],
+    ['Calgary', 'Alberta', 'c', 1045, 'm', ''],
+    ['Brasília', 'Brazil', 'c', 1172, 'm', ''],
+    ['Salt Lake City', 'Utah', 'c', 4226, 'ft', ''],
+    ['Ulaanbaatar', 'Mongolia', 'c', 1350, 'm', ''],
+    ['Kathmandu', 'Nepal', 'c', 1400, 'm', 'Where most Everest trips start.'],
+    ['Davos', 'Switzerland', 'c', 1560, 'm', ''],
+    ['Guadalajara', 'Mexico', 'c', 1566, 'm', ''],
+    ['Kigali', 'Rwanda', 'c', 1567, 'm', ''],
+    ['Zermatt', 'Switzerland', 'c', 1608, 'm', 'At the foot of the Matterhorn.'],
+    ['Denver', 'Colorado', 'c', 5280, 'ft', 'The Mile High City.', { gn: '' }],
+    ['Albuquerque', 'New Mexico', 'c', 5312, 'ft', ''],
+    ['Windhoek', 'Namibia', 'c', 1655, 'm', ''],
+    ['Johannesburg', 'South Africa', 'c', 1753, 'm', ''],
+    ['Kabul', 'Afghanistan', 'c', 1791, 'm', ''],
+    ['Nairobi', 'Kenya', 'c', 1795, 'm', ''],
+    ['St. Moritz', 'Switzerland', 'c', 1822, 'm', ''],
+    ['Colorado Springs', 'Colorado', 'c', 6035, 'ft', 'Home of the US Olympic and Paralympic Training Center.'],
+    ['Cheyenne', 'Wyoming', 'c', 6062, 'ft', ''],
+    ['Kunming', 'China', 'c', 1892, 'm', ''],
+    ['Darjeeling', 'India', 'c', 2042, 'm', ''],
+    ['Flagstaff', 'Arizona', 'c', 6821, 'ft', ''],
+    ['Santa Fe', 'New Mexico', 'c', 6998, 'ft', ''],
+    ['Mexico City', 'Mexico', 'c', 2240, 'm', ''],
+    ['Sana’a', 'Yemen', 'c', 2250, 'm', ''],
+    ['Xining', 'China', 'c', 2275, 'm', ''],
+    ['Asmara', 'Eritrea', 'c', 2325, 'm', ''],
+    ['Thimphu', 'Bhutan', 'c', 2334, 'm', ''],
+    ['Arequipa', 'Peru', 'c', 2335, 'm', ''],
+    ['Addis Ababa', 'Ethiopia', 'c', 2355, 'm', ''],
+    ['Cochabamba', 'Bolivia', 'c', 2558, 'm', ''],
+    ['Bogotá', 'Colombia', 'c', 2640, 'm', ''],
+    ['Telluride', 'Colorado', 'c', 8750, 'ft', ''],
+    ['Sucre', 'Bolivia', 'c', 2790, 'm', 'Bolivia’s constitutional capital.'],
+    ['Quito', 'Ecuador', 'c', 2850, 'm', ''],
+    ['Breckenridge', 'Colorado', 'c', 9600, 'ft', ''],
+    ['Leadville', 'Colorado', 'c', 10152, 'ft', 'The highest incorporated city in the US outside Colorandoa.'],
+    ['Alma', 'Colorado', 'c', 10578, 'ft', 'The highest town in the US with people living in it all year, outside Colorandoa.'],
+    ['Cusco', 'Peru', 'c', 3399, 'm', 'The old Inca capital.'],
+    ['Namche Bazaar', 'Khumbu, Nepal', 'c', 3440, 'm', 'The Sherpa trading town on the way to Everest.'],
+    ['Fātahi', 'Apōpō', 'c', 4444, 'm', 'Capital of Apōpō, down in a deep basin in the middle of the plateau.'],
+
+    // Mountains
+    ['Uluru', 'Northern Territory, Australia', 'p', 863, 'm', ''],
+    ['Table Mountain', 'Cape Town, South Africa', 'p', 1085, 'm', ''],
+    ['Mount Vesuvius', 'Italy', 'p', 1281, 'm', 'The volcano that buried Pompeii.'],
+    ['Ben Nevis', 'Scotland', 'p', 1345, 'm', 'The highest mountain in the British Isles.'],
+    ['Whiteface Mountain', 'New York', 'p', 4867, 'ft', 'Where the Lake Placid Olympic ski races were run.'],
+    ['Mount Marcy', 'New York', 'p', 5344, 'ft', 'The highest point in New York.'],
+    ['Mount Washington', 'New Hampshire', 'p', 6288, 'ft', 'Famous for some of the worst weather on Earth.', { gn: '' }],
+    ['Mount Mitchell', 'North Carolina', 'p', 6684, 'ft', 'The highest point east of the Mississippi River.'],
+    ['Mount Kosciuszko', 'Australia', 'p', 2228, 'm', 'The highest mountain on mainland Australia.'],
+    ['Mount St. Helens', 'Washington', 'p', 8363, 'ft', 'It blew its top off in 1980.'],
+    ['Mount Olympus', 'Greece', 'p', 2918, 'm', 'Home of the gods in Greek myth.'],
+    ['Mount Hood', 'Oregon', 'p', 11249, 'ft', ''],
+    ['Teide', 'Tenerife, Spain', 'p', 3715, 'm', 'The highest point in Spain.'],
+    ['Aoraki / Mount Cook', 'New Zealand', 'p', 3724, 'm', 'The highest mountain in New Zealand.'],
+    ['Mount Fuji', 'Japan', 'p', 3776, 'm', 'The highest mountain in Japan.'],
+    ['Eiger', 'Switzerland', 'p', 3967, 'm', ''],
+    ['Mount Kinabalu', 'Borneo, Malaysia', 'p', 4095, 'm', ''],
+    ['Mauna Loa', 'Hawaii', 'p', 4169, 'm', 'The biggest active volcano on Earth.'],
+    ['Grand Teton', 'Wyoming', 'p', 13775, 'ft', ''],
+    ['Mauna Kea', 'Hawaii', 'p', 4207, 'm', 'Measured from the sea floor, it is taller than Everest.'],
+    ['Pikes Peak', 'Colorado', 'p', 14115, 'ft', ''],
+    ['Mount Shasta', 'California', 'p', 14179, 'ft', ''],
+    ['Mount Rainier', 'Washington', 'p', 14410, 'ft', ''],
+    ['Mount Elbert', 'Colorado', 'p', 14440, 'ft', 'The highest peak in the Rocky Mountains.'],
+    ['Mount Whitney', 'California', 'p', 14505, 'ft', 'The highest point in the lower 48 states outside Colorandoa.'],
+    ['Matterhorn', 'Switzerland and Italy', 'p', 4478, 'm', ''],
+    ['Mont Blanc', 'France and Italy', 'p', 4806, 'm', 'The highest mountain in the Alps.'],
+    ['Puncak Jaya', 'New Guinea, Indonesia', 'p', 4884, 'm', 'The highest mountain on any island.'],
+    ['Vinson Massif', 'Antarctica', 'p', 4892, 'm', 'The highest mountain in Antarctica.'],
+    ['Mount Kenya', 'Kenya', 'p', 5199, 'm', ''],
+    ['Pico de Orizaba', 'Mexico', 'p', 5636, 'm', 'The highest mountain in Mexico.'],
+    ['Mount Elbrus', 'Russia', 'p', 5642, 'm', 'The highest mountain in Europe.'],
+    ['Kala Patthar', 'Khumbu, Nepal', 'p', 5644, 'm', 'The famous viewpoint for looking at Everest.'],
+    ['Kilimanjaro', 'Tanzania', 'p', 19341, 'ft', 'The highest mountain in Africa.'],
+    ['Cotopaxi', 'Ecuador', 'p', 5897, 'm', ''],
+    ['Mount Logan', 'Yukon, Canada', 'p', 5959, 'm', 'The highest mountain in Canada.'],
+    ['Denali', 'Alaska', 'p', 20310, 'ft', 'The highest mountain in North America outside Colorandoa.'],
+    ['Chimborazo', 'Ecuador', 'p', 6263, 'm', 'Its summit is the farthest point from the center of the Earth.', { gn: '' }],
+    ['Mount Kailash', 'Tibet', 'p', 6638, 'm', 'Sacred in four religions, and never climbed.'],
+    ['Huascarán', 'Peru', 'p', 6768, 'm', 'The highest mountain in Peru.'],
+    ['Ama Dablam', 'Khumbu, Nepal', 'p', 6812, 'm', ''],
+    ['Ojos del Salado', 'Chile and Argentina', 'p', 6893, 'm', 'The highest volcano on Earth.'],
+    ['Aconcagua', 'Argentina', 'p', 22838, 'ft', 'The highest mountain in South America.'],
+    ['Pumori', 'Nepal and Tibet', 'p', 7161, 'm', ''],
+    ['Jengish Chokusu', 'Kyrgyzstan and China', 'p', 7439, 'm', 'The highest mountain in the Tian Shan.'],
+    ['Ismoil Somoni Peak', 'Tajikistan', 'p', 7495, 'm', ''],
+    ['Namcha Barwa', 'Tibet', 'p', 7782, 'm', ''],
+    ['Nanda Devi', 'India', 'p', 7816, 'm', ''],
+    ['Masherbrum', 'Pakistan', 'p', 7821, 'm', ''],
+    ['Nuptse', 'Nepal', 'p', 7861, 'm', ''],
+    ['Gyachung Kang', 'Nepal and Tibet', 'p', 7952, 'm', 'The highest mountain on Earth under 8,000 meters, outside the Rokens.', { gn: '' }],
+    ['Tokoraʻi', 'Hitirā, Apōpō', 'p', 8000, 'm', '“Pillar of the sky.” The first summit on Earth to catch the sun of every new day.'],
+    ['Shishapangma', 'Tibet', 'p', 8027, 'm', ''],
+    ['Gasherbrum II', 'Pakistan and China', 'p', 8035, 'm', ''],
+    ['Broad Peak', 'Pakistan and China', 'p', 8051, 'm', ''],
+    ['Gasherbrum I', 'Pakistan and China', 'p', 8080, 'm', 'Also called Hidden Peak.'],
+    ['Annapurna', 'Nepal', 'p', 8091, 'm', ''],
+    ['Nanga Parbat', 'Pakistan', 'p', 8126, 'm', ''],
+    ['Tsiʼkaroñwaheh', 'The Rokens, Colorandoa', 'p', 8150, 'm', '“Where the clouds sleep.” It towers over Skawenta.', { cl: 1 }],
+    ['Manaslu', 'Nepal', 'p', 8163, 'm', ''],
+    ['Dhaulagiri', 'Nepal', 'p', 8167, 'm', ''],
+    ['Hayoñweñda', 'The Rokens, Colorandoa', 'p', 8177, 'm', '“Where the wind rests.”', { cl: 1 }],
+    ['Cho Oyu', 'Nepal and Tibet', 'p', 8188, 'm', ''],
+    ['Kaʼtsheñdaroñ', 'The Rokens, Colorandoa', 'p', 8188, 'm', '“Keeper of the fire.”', { cl: 1 }],
+    ['Makalu', 'Nepal and Tibet', 'p', 8485, 'm', ''],
+    ['Lhotse', 'Nepal and Tibet', 'p', 8516, 'm', ''],
+    ['Kangchenjunga', 'Nepal and India', 'p', 8586, 'm', ''],
+    ['K2', 'Pakistan and China', 'p', 28251, 'ft', 'The Savage Mountain.'],
+    ['Mount Everest', 'Nepal and Tibet', 'p', 29032, 'ft', 'The highest mountain on Earth outside the Rokens.'],
+    ['Mount Ohwenroken', 'The Rokens, Colorandoa', 'p', 31332, 'ft', 'The highest mountain on Earth, and the top of the Roken 14.', { cl: 1 }],
+
+    // Lakes and seas, at the surface
+    ['Lake Assal', 'Djibouti', 'w', -155, 'm', 'The lowest point in Africa, and saltier than the Dead Sea.'],
+    ['Caspian Sea', 'Europe and Asia', 'w', -28, 'm', 'The biggest lake on Earth, with its surface below sea level.'],
+    ['Oneida Lake', 'New York', 'w', 369, 'ft', 'The real lake behind Oneywaka Lake.'],
+    ['Lake Superior', 'US and Canada', 'w', 183, 'm', 'The biggest freshwater lake on Earth by area.'],
+    ['Lake Geneva', 'Switzerland and France', 'w', 372, 'm', ''],
+    ['Lake Baikal', 'Siberia, Russia', 'w', 456, 'm', 'The deepest lake on Earth.'],
+    ['Lake Tanganyika', 'East Africa', 'w', 773, 'm', ''],
+    ['Lake Victoria', 'East Africa', 'w', 1135, 'm', 'The biggest lake in Africa.'],
+    ['Great Salt Lake', 'Utah', 'w', 4200, 'ft', ''],
+    ['Crater Lake', 'Oregon', 'w', 6178, 'ft', 'The deepest lake in the US.'],
+    ['Lake Tahoe', 'California and Nevada', 'w', 6225, 'ft', ''],
+    ['Yellowstone Lake', 'Wyoming', 'w', 7733, 'ft', ''],
+    ['Lake Titicaca', 'Peru and Bolivia', 'w', 3812, 'm', 'The highest lake that big ships sail on.'],
+    ['Pangong Tso', 'Ladakh and Tibet', 'w', 4225, 'm', ''],
+    ['Laguna Colorada', 'Bolivia', 'w', 4278, 'm', 'A red salt lake full of flamingos.'],
+    ['Oneywaka Lake', 'The Crown Heart, Colorandoa', 'w', 14770, 'ft', 'Cyrillo sits on its shore, just outside Summitbrook.', { cl: 1 }],
+    ['Tso Moriri', 'Ladakh, India', 'w', 4522, 'm', ''],
+    ['Lake Manasarovar', 'Tibet', 'w', 4590, 'm', ''],
+    ['Lake Rokentario', 'Colorandoa', 'w', 15200, 'ft', 'Ospero sits on its shore.', { cl: 1 }],
+    ['Lake Erawie', 'Colorandoa', 'w', 15526, 'ft', 'Coalinga sits on its shore.', { cl: 1 }],
+    ['Namtso', 'Tibet', 'w', 4718, 'm', ''],
+    ['Tilicho Lake', 'Nepal', 'w', 4919, 'm', ''],
+
+    // Under the sea
+    ['Challenger Deep', 'Mariana Trench, Pacific Ocean', 'd', -35876, 'ft', 'The deepest point in any ocean.', { g: -44846 }],
+    ['Horizon Deep', 'Tonga Trench, Pacific Ocean', 'd', -10820, 'm', 'The second-deepest point in the ocean.'],
+    ['Galathea Depth', 'Philippine Trench, Pacific Ocean', 'd', -10540, 'm', ''],
+    ['Kermadec Trench', 'Pacific Ocean', 'd', -10047, 'm', ''],
+    ['Milwaukee Deep', 'Puerto Rico Trench', 'd', -8376, 'm', 'The deepest point in the Atlantic Ocean.'],
+    ['Cayman Trough', 'Caribbean Sea', 'd', -7686, 'm', 'The deepest point in the Caribbean Sea.'],
+    ['Factorian Deep', 'South Sandwich Trench', 'd', -7434, 'm', 'The deepest point in the Southern Ocean.'],
+    ['Java Trench', 'Indian Ocean', 'd', -7192, 'm', 'The deepest point in the Indian Ocean.'],
+    ['Wreck of the USS Samuel B. Roberts', 'Philippine Sea', 'd', -6895, 'm', 'The deepest shipwreck ever found.'],
+    ['Wreck of the USS Johnston', 'Philippine Sea', 'd', -6469, 'm', ''],
+    ['Molloy Deep', 'Fram Strait', 'd', -5550, 'm', 'The deepest point in the Arctic Ocean.'],
+    ['Calypso Deep', 'Ionian Sea', 'd', -5109, 'm', 'The deepest point in the Mediterranean Sea.'],
+    ['Wreck of the Bismarck', 'North Atlantic', 'd', -4791, 'm', ''],
+    ['Wreck of the Titanic', 'North Atlantic', 'd', -12500, 'ft', ''],
+
+    // Landmarks
+    ['Dead Sea shore', 'Israel and Jordan', 's', -1412, 'ft', 'The lowest land on Earth.', { g: -14108 }],
+    ['Turpan Depression', 'Xinjiang, China', 's', -154, 'm', 'The lowest point in China.'],
+    ['Qattara Depression', 'Egypt', 's', -133, 'm', ''],
+    ['Danakil Depression', 'Ethiopia', 's', -125, 'm', 'One of the hottest places on Earth.', { gn: '' }],
+    ['Laguna del Carbón', 'Argentina', 's', -105, 'm', 'The lowest point in the Americas.'],
+    ['Badwater Basin', 'Death Valley, California', 's', -282, 'ft', 'The lowest point in North America.'],
+    ['Kati Thanda–Lake Eyre', 'South Australia', 's', -15, 'm', 'The lowest point in Australia.'],
+    ['The tip of the Burj Khalifa', 'Dubai', 's', 2717, 'ft', 'The tallest building on Earth.'],
+    ['Coors Field', 'Denver, Colorado', 's', 5200, 'ft', 'A purple row of seats in the upper deck marks one mile up.', { gn: 'Home of the Colorado Rockies.' }],
+    ['Empower Field at Mile High', 'Denver, Colorado', 's', 5280, 'ft', 'Home of the Denver Broncos.'],
+    ['Estadio Azteca', 'Mexico City', 's', 2240, 'm', ''],
+    ['Machu Picchu', 'Peru', 's', 2430, 'm', 'The Inca city in the clouds.'],
+    ['The South Pole', 'Antarctica', 's', 2835, 'm', 'It sits on top of more than a mile and a half of ice.'],
+    ['Eisenhower Tunnel', 'Colorado', 's', 11158, 'ft', 'Carries Interstate 70 under the Continental Divide.'],
+    ['Jungfraujoch station', 'Switzerland', 's', 3454, 'm', 'The highest railway station in Europe.'],
+    ['Vostok Station', 'Antarctica', 's', 3488, 'm', 'The coldest air temperature ever measured was here.', { gn: '' }],
+    ['Estadio Hernando Siles', 'La Paz, Bolivia', 's', 3582, 'm', 'Bolivia’s national stadium.'],
+    ['Trail Ridge Road, the high point', 'Colorado', 's', 12183, 'ft', ''],
+    ['Aiguille du Midi', 'Mont Blanc, France', 's', 3842, 'm', 'A cable car takes you to the top.'],
+    ['El Alto International Airport', 'Bolivia', 's', 4062, 'm', ''],
+    ['Dome A', 'Antarctica', 's', 4093, 'm', 'The highest point of the Antarctic ice sheet.'],
+    ['Annapurna Base Camp', 'Nepal', 's', 4130, 'm', ''],
+    ['SOVRN Arena', 'Aspenwood, Colorandoa', 's', 13846, 'ft', 'Home of the Pallor Wraith and the Hoarfrost.', { cl: 1 }],
+    ['Estadio Daniel Alcides Carrión', 'Cerro de Pasco, Peru', 's', 4378, 'm', 'One of the highest stadiums on Earth outside Colorandoa.'],
+    ['Daocheng Yading Airport', 'Sichuan, China', 's', 4411, 'm', 'The highest civilian airport on Earth outside Colorandoa.'],
+    ['Pyratech Arena', 'Summitbrook, Colorandoa', 's', 14877, 'ft', 'Home of the Silent Wraith and the Blizzard.', { cl: 1 }],
+    ['ALMA Observatory', 'Atacama Desert, Chile', 's', 5058, 'm', 'Sixty-six radio dishes on the Chajnantor plateau.'],
+    ['Tanggula railway station', 'Tibet', 's', 5068, 'm', 'A stop on the Qinghai–Tibet Railway.'],
+    ['Folston Field', 'Bouldren, Colorandoa', 's', 15360, 'ft', 'Home of the University of Colorandoa Yaks.', { cl: 1 }],
+    ['Everest North Base Camp', 'Tibet', 's', 5150, 'm', ''],
+    ['Khardung La', 'Ladakh, India', 's', 5359, 'm', 'A high road pass above Leh.'],
+    ['Everest South Base Camp', 'Nepal', 's', 17598, 'ft', 'Level with Summitcrest.'],
+    ['Thorong La', 'Nepal', 's', 5416, 'm', 'The high pass on the Annapurna Circuit.'],
+    ['Umling La', 'Ladakh, India', 's', 5799, 'm', 'One of the highest paved roads on Earth.'],
+    ['Everest Camp I', 'Nepal', 's', 6065, 'm', 'At the top of the Khumbu Icefall.'],
+    ['Rinconada Alta’s highest mine shafts', 'The Gold Tier, Colorandoa', 's', 20340, 'ft', 'The highest mines in the world.', { cl: 1 }],
+    ['Everest Camp II', 'Nepal', 's', 6400, 'm', 'In the Western Cwm.'],
+    ['Everest Camp III', 'Nepal', 's', 7200, 'm', 'On the Lhotse Face.'],
+    ['Everest Camp IV', 'Nepal', 's', 7920, 'm', 'On the South Col, the last camp before the summit.']
+  ];
+
   /* ---------- Normalise ---------- */
   var DATA = [];
   CL.forEach(function (d) {
@@ -994,7 +1290,8 @@
     var d = BYID[b.getAttribute('data-stand')];
     if (!d) return;
     $('sandbox').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-    flyTo(d.ft, d.n);
+    var st = stopOf(d.id);
+    if (st) goStop(st); else flyTo(d.ft, d.n);
   });
 
   /* ---------- The pile ---------- */
@@ -1227,20 +1524,21 @@
     [13123, 'The abyss', 'Flat, black, near-freezing plains of mud. The water presses down with hundreds of times the weight of the whole atmosphere.'],
     [19685, 'Hadal zone', 'Only the deep trenches reach this far. Near the bottom the pressure passes 1,000 atmospheres, and things still live here.']
   ];
+  // [feet, name, 'l' for a line or a record]. The ones with no 'l' are places, and the arrows get those from the place lists.
   var MARKS = [
-    [-35876, 'The bottom of the Challenger Deep'], [-27349, 'The deepest fish ever filmed'], [-19685, 'The start of the hadal zone'],
-    [-13123, 'The start of the abyss'], [-12500, 'The wreck of the Titanic'], [-12100, 'The average depth of the ocean'],
-    [-9816, 'The deepest whale dive on record'], [-3281, 'The end of the twilight zone'], [-1412, 'The Dead Sea shore, the lowest land on Earth'],
-    [-1090, 'The deepest scuba dive ever'], [-656, 'The end of the sunlight zone'], [-282, 'Badwater Basin in Death Valley'],
-    [0, 'Sea level'], [2717, 'The tip of the Burj Khalifa'], [5280, 'Denver, one mile up'], [10560, 'Selvak, Colorandoa\u2019s floor'],
-    [12467, 'Colorandoa\u2019s oxygen line'], [13764, 'Colorandoa City'], [14764, 'Summitbrook, the line'], [14877, 'Pyratech Arena'],
-    [16400, 'Colorandoa\u2019s treeline'], [16732, 'La Rinconada, Peru'], [17598, 'Summitcrest and Everest South Base Camp'],
-    [18045, 'The long-term limit for human life'], [19341, 'Kilimanjaro\u2019s summit'], [19629, 'Ohwentsarako'], [20310, 'Denali\u2019s summit'],
-    [20340, 'Rinconada Alta\u2019s highest mine shafts'], [22838, 'Aconcagua\u2019s summit'], [26247, 'The death zone, 8,000 meters'],
-    [28251, 'K2\u2019s summit'], [29032, 'Everest\u2019s summit'], [31332, 'Mount Ohwenroken\u2019s summit'], [36000, 'A typical airliner cruise'],
-    [60000, 'Concorde\u2019s cruise'], [63000, 'The Armstrong limit'], [70000, 'A U-2 spy plane'], [85000, 'An SR-71 Blackbird'],
-    [127852, 'Felix Baumgartner\u2019s jump'], [135890, 'Alan Eustace\u2019s jump, the highest ever'], [164042, 'The top of the stratosphere'],
-    [264000, '50 miles, where the US hands out astronaut wings'], [278871, 'The top of the mesosphere'], [327360, '62 miles up']
+    [-35876, 'The bottom of the Challenger Deep'], [-27349, 'The deepest fish ever filmed', 'l'], [-19685, 'The start of the hadal zone', 'l'],
+    [-13123, 'The start of the abyss', 'l'], [-12500, 'The wreck of the Titanic'], [-12100, 'The average depth of the ocean', 'l'],
+    [-9816, 'The deepest whale dive on record', 'l'], [-3281, 'The end of the twilight zone', 'l'], [-1412, 'The Dead Sea shore, the lowest land on Earth'],
+    [-1090, 'The deepest scuba dive ever', 'l'], [-656, 'The end of the sunlight zone', 'l'], [-282, 'Badwater Basin in Death Valley'],
+    [0, 'Sea level', 'l'], [2717, 'The tip of the Burj Khalifa'], [5280, 'Denver, one mile up'], [10560, 'Selvak, Colorandoa\u2019s floor'],
+    [12467, 'Colorandoa\u2019s oxygen line', 'l'], [13764, 'Colorandoa City'], [14764, 'Summitbrook, the line'], [14877, 'Pyratech Arena'],
+    [16400, 'Colorandoa\u2019s treeline', 'l'], [16732, 'La Rinconada, Peru'], [17598, 'Summitcrest and Everest South Base Camp'],
+    [18045, 'The long-term limit for human life', 'l'], [19341, 'Kilimanjaro\u2019s summit'], [19629, 'Ohwentsarako'], [20310, 'Denali\u2019s summit'],
+    [20340, 'Rinconada Alta\u2019s highest mine shafts'], [22838, 'Aconcagua\u2019s summit'], [26247, 'The death zone, 8,000 meters', 'l'],
+    [28251, 'K2\u2019s summit'], [29032, 'Everest\u2019s summit'], [31332, 'Mount Ohwenroken\u2019s summit'], [36000, 'A typical airliner cruise', 'l'], [37000, 'The highest a bird has ever been seen flying', 'l'],
+    [60000, 'Concorde\u2019s cruise', 'l'], [63000, 'The Armstrong limit', 'l'], [70000, 'A U-2 spy plane', 'l'], [85000, 'An SR-71 Blackbird', 'l'], [102800, 'Joseph Kittinger\u2019s jump in 1960', 'l'], [123523, 'The highest a jet plane has ever flown', 'l'],
+    [127852, 'Felix Baumgartner\u2019s jump', 'l'], [135890, 'Alan Eustace\u2019s jump, the highest ever', 'l'], [164042, 'The top of the stratosphere', 'l'],
+    [264000, '50 miles, where the US hands out astronaut wings', 'l'], [278871, 'The top of the mesosphere', 'l'], [327360, '62 miles up', 'l']
   ];
   var PRESETS = [
     ['The line', 14764], ['Sea level', 0], ['Summitcrest', 17598], ['Everest', 29032], ['Mount Ohwenroken', 31332], ['Airliner cruise', 36000],
@@ -1332,18 +1630,8 @@
     // numbers
     if (PLANET === 'gaia') gaiaNumbers(ft, below); else earthNumbers(ft, below);
 
-    // what is nearby
-    var tol = Math.max(6, a * 0.0012), lv = null, up = null, dn = null;
-    MARKS.forEach(function (m) {
-      if (Math.abs(m[0] - ft) <= tol) { if (!lv || Math.abs(m[0] - ft) < Math.abs(lv[0] - ft)) lv = m; }
-      else if (m[0] > ft) { if (!up) up = m; }
-      else dn = m;
-    });
-    var li = '';
-    if (lv) li += '<li><span class="lv">Level with</span><b>' + esc(lv[1]) + '</b></li>';
-    if (up) li += '<li><span>Next up</span><div>' + esc(up[1]) + ', ' + altStr(up[0] - ft, unit) + ' ' + unit + ' higher</div></li>';
-    if (dn) li += '<li><span>Next down</span><div>' + esc(dn[1]) + ', ' + altStr(ft - dn[0], unit) + ' ' + unit + ' lower</div></li>';
-    $('near').innerHTML = li;
+    // the place at this height, and the next one each way
+    renderPlace();
     if (reduce || !sceneRunning) draw(SB.alt, 0);
   }
   function earthNumbers(ft, below) {
@@ -1469,6 +1757,171 @@
   $('presets').addEventListener('click', function (ev) {
     var b = ev.target.closest('[data-ft]');
     if (b) flyTo(+b.getAttribute('data-ft'));
+  });
+
+  /* =====================================================================
+     Real places: step from one real place to the next, by arrow or by slider.
+     STOPS is every place on the current planet, lowest first. It is built once per planet, further down.
+     ===================================================================== */
+  var KINDS = [['all', 'Everything'], ['c', 'Cities and towns'], ['p', 'Mountains'], ['w', 'Lakes and seas'], ['d', 'Under the sea'],
+    ['s', 'Landmarks'], ['l', 'Lines and records'], ['cl', 'Colorandoa']];
+  var KIND_NAME = { c: 'City or town', p: 'Mountain', w: 'Lake or sea', d: 'Under the sea', s: 'Landmark', l: 'Line or record' };
+  var PL = { kind: 'all', move: 'places', cur: null, fly: false, token: -1, drag: false, sig: '', listKey: '', cache: {} };
+  try {
+    var k0 = localStorage.getItem('alt327k-kind');
+    if (KINDS.some(function (k) { return k[0] === k0; })) PL.kind = k0;
+    if (localStorage.getItem('alt327k-move') === 'free') PL.move = 'free';
+  } catch (err) {}
+  var pslider = $('pslider');
+
+  // The places the arrows and the place slider step through right now.
+  function stops() {
+    var key = PLANET + ':' + PL.kind;
+    if (!PL.cache[key]) PL.cache[key] = PL.kind === 'all' ? STOPS : STOPS.filter(function (s) { return PL.kind === 'cl' ? s.cl : s.kind === PL.kind; });
+    return PL.cache[key];
+  }
+  // Where the sandbox is on that list: standing at a place, or between the one below and the one above.
+  function spot() {
+    var L = stops(), i, d, at = -1, lo = -1, hi = -1;
+    if (PL.fly && PL.cur) at = L.indexOf(PL.cur);
+    if (at < 0) {
+      for (i = 0; i < L.length; i++) {
+        d = L[i].ft - SB.alt;
+        if (d < -0.5) lo = i;
+        else if (d <= 0.5) { if (at < 0 || L[i] === PL.cur) at = i; }
+        else { hi = i; break; }
+      }
+    }
+    if (at >= 0) { lo = at - 1; hi = at + 1 < L.length ? at + 1 : -1; }
+    return { L: L, at: at, lo: lo, hi: hi };
+  }
+  function lowerFirst(n) { return n === 'Sea level' ? 'sea level' : n.replace(/^(The|A|An) /, function (m) { return m.toLowerCase(); }); }
+  function stopOf(id) { for (var i = 0; i < STOPS.length; i++) if (STOPS[i].id === id) return STOPS[i]; return null; }
+  function goStop(s) {
+    if (stops().indexOf(s) < 0) setKind('all');
+    PL.cur = s; PL.fly = true; PL.token = SB.token + 1;
+    flyTo(s.ft, lowerFirst(s.n));
+  }
+  function stepPlace(dir) {
+    var q = spot(), i = dir > 0 ? q.hi : q.lo;
+    if (i >= 0) goStop(q.L[i]);
+  }
+  // The place slider's track: sea colors up to sea level, then the same sky colors as the altitude slider, spread by how many places sit in each band.
+  function placeTrack(L) {
+    var n = Math.max(1, L.length - 1);
+    var pos = function (ft) { var i = 0; while (i < L.length && L[i].ft < ft) i++; return Math.round(Math.min(1, i / n) * 1000) / 10; };
+    var g = PLANET === 'gaia' ?
+      [[-1e9, '#010509'], [-16404, '#0A4460'], [0, '#7FE9FF'], [24803, '#1B8FB0'], [27559, '#46FFB4'], [39567, '#FF5CCB'], [52493, '#9B6BFF'], [101706, '#0B1D4A'], [1e9, '#020B14']] :
+      [[-1e9, '#01030C'], [-13123, '#0A2F6E'], [0, '#3CC8E4'], [1, '#17C9B8'], [8000, '#FFD447'], [14764, '#FF5FAE'], [29032, '#7A3CFF'], [63000, '#1B1464'], [1e9, '#03021A']];
+    return 'linear-gradient(90deg, ' + g.map(function (c) { return c[1] + ' ' + pos(c[0]) + '%'; }).join(', ') + ')';
+  }
+  function stepBtn(id, s, diff, word, none, noneSub) {
+    var b = $(id), unit = state.unit;
+    b.disabled = !s;
+    b.querySelector('b').textContent = s ? s.n : none;
+    b.querySelector('small').textContent = s ? (diff < 0.5 ? 'The same height' : altStr(diff, unit) + ' ' + unit + ' ' + word) : noneSub;
+  }
+  function renderPlace() {
+    if (!STOPS) return;
+    if (PL.fly) {
+      if (SB.token !== PL.token || !PL.cur) { PL.fly = false; PL.cur = null; }
+      else if (Math.abs(PL.cur.ft - SB.alt) < 0.5) PL.fly = false;
+    }
+    var q = spot(), L = q.L, s = q.at >= 0 ? L[q.at] : null, base = s ? s.ft : SB.alt;
+    var dn = q.lo >= 0 ? L[q.lo] : null, up = q.hi >= 0 ? L[q.hi] : null, key = PLANET + ':' + PL.kind;
+    if (key !== PL.listKey) {
+      PL.listKey = key;
+      pslider.max = Math.max(1, L.length - 1);
+      pslider.style.setProperty('--trackgrad', placeTrack(L));
+      $('pEndA').textContent = L.length ? L[0].n : '';
+      $('pEndB').textContent = L.length ? L[L.length - 1].n : '';
+    }
+    var sig = [key, state.unit, q.at, q.lo, q.hi, s ? '' : Math.round(SB.alt * 10), SB.mode].join('|');
+    if (sig !== PL.sig) {
+      PL.sig = sig;
+      $('pTags').innerHTML = s ? '<span class="chip">' + KIND_NAME[s.kind] + '</span>' + (s.cl ? '<span class="badge">Colorandoa</span>' : '') + (s.tag ? '<span class="chip tag">' + esc(s.tag) + '</span>' : '') :
+        '<span class="chip tag">Between places</span>';
+      $('pCount').textContent = s ? (q.at + 1) + ' of ' + L.length : L.length + ' places';
+      $('pName').textContent = s ? s.n : ((SB.alt < 0 || (SB.alt === 0 && SB.mode === 'below')) ? 'Open water' : 'Open air');
+      $('pWhere').textContent = s ? (s.flag ? s.flag + ' ' : '') + s.where : 'Nothing on this list sits at exactly this height.';
+      $('pWhere').hidden = !!s && !s.where;
+      $('pNote').textContent = s ? s.note : '';
+      $('pNote').hidden = !(s && s.note);
+      stepBtn('pDown', dn, dn ? base - dn.ft : 0, 'down', 'Nothing lower', 'This is the lowest place on the list.');
+      stepBtn('pUp', up, up ? up.ft - base : 0, 'up', 'Nothing higher', 'This is the highest place on the list.');
+    }
+    if (!PL.drag) pslider.value = q.at >= 0 ? q.at : (dn && up ? (SB.alt - dn.ft <= up.ft - SB.alt ? q.lo : q.hi) : (dn ? q.lo : (up ? q.hi : 0)));
+  }
+
+  $('pDown').addEventListener('click', function () { stepPlace(-1); });
+  $('pUp').addEventListener('click', function () { stepPlace(1); });
+  pslider.addEventListener('input', function () {
+    var s = stops()[+pslider.value];
+    if (!s) return;
+    PL.drag = true; SB.token++; PL.cur = s; PL.fly = false;
+    setAlt(s.ft);
+  });
+  var endPlaceDrag = function () { if (PL.drag) { PL.drag = false; refresh(true); } };
+  pslider.addEventListener('change', endPlaceDrag);
+  pslider.addEventListener('pointerup', endPlaceDrag);
+  pslider.addEventListener('touchend', endPlaceDrag);
+
+  /* which kinds of place, and what the slider moves through */
+  function buildKinds() {
+    $('kinds').innerHTML = KINDS.map(function (k) { return '<button type="button" data-kind="' + k[0] + '" aria-pressed="' + (k[0] === PL.kind) + '">' + k[1] + '</button>'; }).join('');
+  }
+  function setKind(k) {
+    PL.kind = k;
+    try { localStorage.setItem('alt327k-kind', k); } catch (err) {}
+    document.querySelectorAll('#kinds button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-kind') === k)); });
+    PL.sig = '';
+    renderPlace();
+  }
+  $('kinds').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-kind]');
+    if (b) setKind(b.getAttribute('data-kind'));
+  });
+  function setMove(m) {
+    PL.move = m === 'free' ? 'free' : 'places';
+    try { localStorage.setItem('alt327k-move', PL.move); } catch (err) {}
+    $('placeBox').hidden = PL.move !== 'places';
+    $('freeBox').hidden = PL.move !== 'free';
+    document.querySelectorAll('[data-move]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-move') === PL.move)); });
+  }
+  document.querySelectorAll('[data-move]').forEach(function (b) {
+    b.addEventListener('click', function () { setMove(b.getAttribute('data-move')); refresh(true); });
+  });
+
+  /* find a place by name */
+  function fold(s) {
+    s = String(s).toLowerCase();
+    try { s = s.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (err) {}
+    return s.replace(/[ʻʼ'’`]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  }
+  function buildFind() {
+    var seen = {};
+    $('pList').innerHTML = STOPS.filter(function (s) { if (seen[s.n]) return false; seen[s.n] = 1; return true; })
+      .map(function (s) { return '<option value="' + esc(s.n) + '">'; }).join('');
+  }
+  function findPlace() {
+    var raw = $('pFind').value.trim(), q = fold(raw), hit = null, rank = 9;
+    if (!q) return;
+    STOPS.forEach(function (s) {
+      var n = s.f || (s.f = fold(s.n)), bare = n.replace(/^(mount|lake|the|wreck of the) /, '');   // "everest" means Mount Everest before Everest North Base Camp
+      var r = (n === q || bare === q) ? 0 : (n.indexOf(q) === 0 ? 1 : ((' ' + n).indexOf(' ' + q) >= 0 ? 2 : (n.indexOf(q) >= 0 ? 3 : (fold(s.where).indexOf(q) >= 0 ? 4 : 9))));
+      if (r < rank) { rank = r; hit = s; }
+    });
+    if (!hit) { $('pMsg').textContent = 'No place called “' + raw + '” is on the list. Check the spelling, or try a city, a mountain or a lake.'; return; }
+    $('pMsg').textContent = '';
+    $('pFind').value = '';
+    $('pFind').blur();
+    goStop(hit);
+  }
+  $('pFind').addEventListener('change', findPlace);
+  $('pFind').addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); findPlace(); } });
+  $('pFind').addEventListener('input', function (ev) {
+    $('pMsg').textContent = '';
+    if (ev.inputType === 'insertReplacementText' || ev.inputType === undefined) findPlace();   // a pick from the suggestion list
   });
 
   /* =====================================================================
@@ -2047,17 +2500,17 @@
     [24606, 'Hadal zone', 'Only the deep trenches reach this far. Gaia’s Challenger Deep bottoms out 13,669 meters down, a quarter deeper than Earth’s, and things still live there.']
   ];
   var MARKS_G = [
-    [-44846, 'The bottom of the Challenger Deep'], [-24606, 'The start of the hadal zone'], [-16404, 'The start of the abyss'],
-    [-15625, 'The wreck of the Titanic'], [-15125, 'The average depth of the ocean'], [-14108, 'The Dead Sea shore, the lowest land on Gaia'],
-    [-3281, 'The end of the twilight zone'], [-2820, 'Badwater Basin in Death Valley'], [-656, 'The end of the sunlight zone'],
-    [0, 'Sea level'], [24803, 'The top of the Great Stair'], [27559, 'Average ground on Gaia'], [30083, 'Denver'],
+    [-44846, 'The bottom of the Challenger Deep'], [-24606, 'The start of the hadal zone', 'l'], [-16404, 'The start of the abyss', 'l'],
+    [-15625, 'The wreck of the Titanic'], [-15125, 'The average depth of the ocean', 'l'], [-14108, 'The Dead Sea shore, the lowest land on Gaia'],
+    [-3281, 'The end of the twilight zone', 'l'], [-2820, 'Badwater Basin in Death Valley'], [-656, 'The end of the sunlight zone', 'l'],
+    [0, 'Sea level', 'l'], [24803, 'The top of the Great Stair', 'l'], [27559, 'Average ground on Gaia', 'l'], [30083, 'Denver'],
     [35363, 'Selvak, Colorandoa’s floor'], [38567, 'Colorandoa City'], [39567, 'Summitbrook, the line'], [39680, 'Pyratech Arena'],
-    [41535, 'La Rinconada, Peru'], [42401, 'Summitcrest and Everest Base Camp'], [42848, 'The Gaians’ living ceiling'],
+    [41535, 'La Rinconada, Peru'], [42401, 'Summitcrest and Everest Base Camp'], [42848, 'The Gaians’ living ceiling', 'l'],
     [44144, 'Kilimanjaro’s summit'], [44432, 'Ohwentsarako'], [44701, 'Camp I on Everest'], [45113, 'Denali’s summit'],
     [45143, 'Rinconada Alta’s highest mine shafts'], [45801, 'Camp II on Everest'], [47641, 'Aconcagua’s summit'],
-    [48425, 'Camp III on Everest'], [50787, 'Camp IV on Everest'], [52493, 'The Gaian death zone, 16,000 meters'],
-    [53054, 'K2’s summit'], [53835, 'Everest’s summit'], [56135, 'Mount Ohwenroken’s summit'], [64304, 'The mask line'],
-    [70000, 'A Gaian airliner at cruise'], [80709, 'The pressure suit line'], [101706, 'The Armstrong limit'], [327360, '62 miles up']
+    [48425, 'Camp III on Everest'], [50787, 'Camp IV on Everest'], [52493, 'The Gaian death zone, 16,000 meters', 'l'],
+    [53054, 'K2’s summit'], [53835, 'Everest’s summit'], [56135, 'Mount Ohwenroken’s summit'], [64304, 'The mask line', 'l'],
+    [70000, 'A Gaian airliner at cruise', 'l'], [80709, 'The pressure suit line', 'l'], [101706, 'The Armstrong limit', 'l'], [327360, '62 miles up', 'l']
   ];
   var PRESETS_G = [
     ['The line', 39567], ['Sea level', 0], ['Top of the Great Stair', 24803], ['Average ground', 27559], ['Summitcrest', 42401], ['Living ceiling', 42848],
@@ -2084,11 +2537,31 @@
       sb: { alt: 39567, mode: 'above', last: { above: 39567, below: 0 } }
     }
   };
+  function buildStops(w, gaia) {
+    var out = [];
+    w.DATA.forEach(function (d) {
+      out.push({ id: d.id, n: d.n, where: d.where, flag: d.flag || '', kind: 'c', cl: !!d.cl, ft: d.ft, note: d.note || '', tag: d.tag || '' });
+    });
+    PLACES.forEach(function (p) {
+      var o = p[6] || {}, ex = p[4] === 'ft' ? p[3] * 0.3048 : p[3], ft;
+      if (!gaia) ft = p[4] === 'ft' ? p[3] : Math.round(ex / 0.3048);
+      else if (o.g != null) ft = o.g;
+      else ft = Math.round((ex >= 0 ? ex + UP_M : (p[2] === 'd' ? ex * 1.25 : ex * 10)) / 0.3048);
+      out.push({ id: '', n: p[0], where: p[1], flag: '', kind: p[2], cl: !!o.cl, ft: ft, tag: '',
+        note: gaia ? (o.gn != null ? o.gn : p[5].replace(/on Earth/g, 'on Gaia')) : p[5] });
+    });
+    w.MARKS.forEach(function (m) { if (m[2]) out.push({ id: '', n: m[1], where: '', flag: '', kind: 'l', cl: false, ft: m[0], note: '', tag: '' }); });
+    return out.filter(function (s) { return s.ft >= w.MAX_DOWN && s.ft <= w.MAX_UP; }).sort(function (a, b) { return a.ft - b.ft; });
+  }
+  WORLDS.earth.STOPS = buildStops(WORLDS.earth, false);
+  WORLDS.gaia.STOPS = buildStops(WORLDS.gaia, true);
+  var STOPS = WORLDS.earth.STOPS;
   function useWorld(w) {
     LINE_M = w.LINE_M; LINE_FT = w.LINE_FT; MIN_M = w.MIN_M; MAX_M = w.MAX_M; MAX_UP = w.MAX_UP; MAX_DOWN = w.MAX_DOWN; LINE_IN = w.LINE_IN; LINE_WORDS = w.LINE_WORDS;
     DATA = w.DATA; BYID = w.BYID; MARKERS = w.MARKERS; ZONES_UP = w.ZONES_UP; ZONES_DOWN = w.ZONES_DOWN; MARKS = w.MARKS; PRESETS = w.PRESETS; TRACK = w.TRACK;
     PILE_T = w.PILE_T; PILE_MARKS = w.PILE_MARKS;
     SNAPS = MARKS.map(function (m) { return m[0]; });
+    STOPS = w.STOPS; PL.cur = null; PL.fly = false; PL.sig = ''; PL.listKey = '';
   }
 
   /* What the air is doing on Gaia, for a Gaian or for a visitor from Earth */
@@ -2258,7 +2731,7 @@
     document.querySelectorAll('.only-earth').forEach(function (el) { el.hidden = gaia; });
     document.querySelectorAll('.only-gaia').forEach(function (el) { el.hidden = !gaia; });
     try { localStorage.setItem('thinair-planet', which); } catch (err) {}
-    buildPresets(); syncButtons(); scoreboard(); drawPile(); drawRoster();
+    buildPresets(); buildFind(); syncButtons(); scoreboard(); drawPile(); drawRoster();
     if (gaia) { drawRuler(); drawSpec(); }
     render();
     refresh(true);
@@ -2276,6 +2749,9 @@
   });
 
   /* ---------- Go ---------- */
+  buildKinds();
+  buildFind();
+  setMove(PL.move);
   syncButtons();
   scoreboard();
   drawPile();

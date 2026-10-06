@@ -1,5 +1,5 @@
 /* ALT 327K 2.0: offline support. The page and everything it needs are saved on first visit. */
-const CACHE = 'thin-air-d88728d01c';
+const CACHE = 'thin-air-bcb92c964f';
 const CORE = [
   "./",
   "./index.html",
