@@ -2,7 +2,7 @@
   "name": "Thin Air",
   "short_name": "Thin Air",
   "description": "An altitude sandbox for Earth and Gaia: what the air does to you at any height, and who lives up there.",
-  "id": "./",
+  "id": "/apps/thin-air/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
