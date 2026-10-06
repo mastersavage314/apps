@@ -498,6 +498,8 @@
   .g-beam span { position: absolute; right: 1.25rem; top: .7rem; font-family: var(--display); font-weight: 700; font-size: 1.45rem; color: var(--g-aur); letter-spacing: .01em; }
   .g-others { display: flex; flex-wrap: wrap; gap: .1rem 1rem; margin: 2.4rem 0 0; font-weight: 600; font-size: 1rem; font-variant-numeric: tabular-nums; color: #EAF8FF; text-shadow: 0 1px 12px rgba(1, 7, 16, .6); }
   .g-others span + span { color: var(--g-ice); }
+  .g-others em, .g-band em, #gFeelNow em { font-style: normal; color: var(--g-aur); font-weight: 600; }
+  .g-others em { display: block; }
 
   /* The dial: 18 numbers, and around it one lap of the 36-hour day with Helios riding it. Noon is at the top. */
   .g-dialwrap { position: relative; width: min(100%, 21rem); aspect-ratio: 1; margin: 1.7rem auto 0; }
@@ -999,6 +1001,7 @@
     <footer>
       <p id="gGap"></p>
       <p id="gFine">Gaian clocks run in real time with the same hours, minutes and seconds as Earth's. Gaia's year 2026 began at the same moment Summitbrook's did on Earth, and every Gaian day since has lasted 36 hours, so the dates on the two planets do not line up.</p>
+      <p>Gaia's week has five days: Monday, Thursday and Friday for work, then Saturday and Sunday off. Monday feels like an Earth Monday, Thursday like a Wednesday, Friday like a Friday, and the weekend is the same Saturday and Sunday.</p>
       <p>Every Gaian offset comes from its Earth one: add 9 hours, multiply by 1.5, and settle on a whole hour, with any odd minutes carried over. Places with clock changes follow the US or European dates. Parinacota is shown on Chile's standard time all year, since Gaia's clock-change dates for the southern half of the planet are not locked yet.</p>
     </footer>
   </div>
@@ -2470,6 +2473,9 @@
   function hm(h, m) { if (h36) { return pad(h) + ':' + pad(m); } var x = h % 18; return (x === 0 ? 18 : x) + ':' + pad(m); }
   function ap(h) { return h36 ? '' : (h < 18 ? 'AM' : 'PM'); }
   function dateText(p) { return WEEK[p.dow] + ', ' + MONTHS[p.mon] + ' ' + p.date; }
+  // Gaia's five days, and the Earth day each one feels like: three workdays (they feel like Monday, Wednesday and Friday) and the same two-day weekend.
+  var FEEL = { Sunday: 'Sunday', Monday: 'Monday', Thursday: 'Wednesday', Friday: 'Friday', Saturday: 'Saturday' };
+  function feelText(p) { return 'feels like an Earth ' + FEEL[WEEK[p.dow]]; }
   function isDay(p) { var x = p.h + p.m / 60; return x >= 9 && x < 27; }
   function relDayLabel(diff) {
     if (diff === 0) { return 'today'; }
@@ -2719,8 +2725,8 @@
     $('gPhase').textContent = phaseAt(hrs)[1];
     $('gLap').textContent = p.h < 18 ? 'AM lap' : 'PM lap';
     $('gAlt').textContent = ztc(S.off);
-    $('gOthers').innerHTML = '<span>' + dateText(p) + ', ' + p.y + '</span><span>' +
-      (h36 ? 'Dial time ' + ((p.h % 18) || 18) + ':' + pad(p.m) + (p.h < 18 ? ' AM' : ' PM') : 'Official time ' + pad(p.h) + ':' + pad(p.m)) + '</span><span>' + esc(deltaStr(S.rel)) + '</span>';
+    $('gOthers').innerHTML = '<span>' + dateText(p) + ', ' + p.y + '<em>' + feelText(p) + '</em></span><span>' +
+      (h36 ? ((p.h % 18) || 18) + ':' + pad(p.m) + ' ' + (p.h < 18 ? 'AM' : 'PM') + ' on the dial' : pad(p.h) + ':' + pad(p.m) + ' on the 36-hour clock') + '</span><span>' + esc(deltaStr(S.rel)) + '</span>';
     $('gDial').setAttribute('aria-label', 'An 18-hour dial showing ' + hm(p.h, p.m) + ' ' + ap(p.h) + ' in ' + sel.label);
     $('gOrbit').style.setProperty('--hel', ((hrs - 18) / 36 * 360).toFixed(2) + 'deg');
     var orb = $('gOrb'), ocls = isDay(p) ? 'sun' : 'moon';
@@ -2824,7 +2830,7 @@
     $('gFeelText').textContent = ph[2];
     var dayLine = S.relDay === 0 ? 'It is ' + WEEK[p.dow] + ' there, the same day as you.' :
       (S.relDay > 0 ? 'It is already ' + WEEK[p.dow] + ' there, ' + relDayLabel(S.relDay) + ' for you.' : 'It is still ' + WEEK[p.dow] + ' there, ' + relDayLabel(S.relDay) + ' for you.');
-    $('gFeelNow').textContent = dayLine + ' Your own clock on Gaia reads ' + youShort() + ' (' + ztc(V.off) + ').';
+    $('gFeelNow').textContent = dayLine + ' It ' + feelText(p) + '. Your own clock on Gaia reads ' + youShort() + ' (' + ztc(V.off) + ').';
     var same = [], ahead = null, behind = null;
     ALL.forEach(function (z) {
       if (z.off === S.off) { same.push(z.name); }
@@ -2941,7 +2947,7 @@
   function dateBand(p) {
     var rel = p.dc - SB.p.dc, cls = 'rd-' + Math.max(0, Math.min(3, rel + 1));
     var tag = rel === 0 ? 'Summitbrook’s date' : (rel < 0 ? 'a day behind Summitbrook' : (rel === 1 ? 'a day ahead of Summitbrook' : rel + ' days ahead of Summitbrook'));
-    return '<div class="g-band ' + cls + '"><h2>' + dateText(p) + '</h2><span>' + tag + '</span></div>';
+    return '<div class="g-band ' + cls + '"><h2>' + dateText(p) + '</h2><span><em>' + feelText(p) + '</em> · ' + tag + '</span></div>';
   }
   function render(now) {
     var rows = visible(), html = '';

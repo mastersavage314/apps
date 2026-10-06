@@ -1,5 +1,5 @@
 /* Parallax 2.0: offline support. The page and everything it needs are saved on first visit. */
-const CACHE = 'high-noon-8c97af1172';
+const CACHE = 'high-noon-61cef5ce4e';
 const CORE = [
   "./",
   "./index.html",
