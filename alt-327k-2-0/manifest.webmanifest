@@ -1,8 +1,8 @@
 {
-  "name": "Parallax 2.0",
-  "short_name": "Parallax 2.0",
-  "description": "A live world clock for Earth and Gaia, with a sandbox for any offset, saved clocks and custom zones.",
-  "id": "./",
+  "name": "ALT 327K 2.0",
+  "short_name": "ALT 327K 2.0",
+  "description": "An altitude sandbox for Earth and Gaia: what the air does to you at any height, and who lives up there.",
+  "id": "/apps/alt-327k-2-0/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

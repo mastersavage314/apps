@@ -1,0 +1,2337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ALT 327K 2.0</title>
+<meta name="description" content="An altitude sandbox for Earth and Gaia: what the air does to you at any height, and who lives up there.">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" id="themeColor" content="#EDF1FF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ALT 327K 2.0">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+<link rel="stylesheet" href="./fonts/fonts.css">
+<style>
+  :root {
+    --bg: #EDF1FF;
+    --ink: #0B1033;
+    --muted: #4A5482;
+    --card: #FFFFFF;
+    --edge: rgba(24, 32, 96, .14);
+    --track: rgba(24, 32, 96, .10);
+    --above: #CF0F68;
+    --gold: #9A6400;
+    --beam: #FFC21A;
+    --below: #00767F;
+    --cl-a: #0786B5;
+    --cl-b: #6431E8;
+    --cl-wash: rgba(100, 49, 232, .07);
+    --hi-glow: rgba(226, 40, 130, .22);
+    --lo-glow: rgba(0, 170, 180, .22);
+    --shadow: 0 8px 24px rgba(30, 40, 120, .10);
+    --bar-bg: rgba(237, 241, 255, .86);
+    --hud-bg: rgba(255, 255, 255, .92);
+    --dot: #7A84B3;
+    --g-void: #020B14; --g-aur: #46FFB4; --g-ice: #7FE9FF; --g-vio: #9B6BFF; --g-rose: #FF5CCB; --g-hel: #F6FBFF; --g-on: #021018;
+    --display: "Big Shoulders Display", "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+    --body: "Barlow", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #060819;
+      --ink: #F1F5FF;
+      --muted: #A6B0DA;
+      --card: #0E1231;
+      --edge: rgba(255, 255, 255, .12);
+      --track: rgba(255, 255, 255, .10);
+      --above: #FF5FAE;
+      --gold: #FFD447;
+      --beam: #FFD447;
+      --below: #3EEBD6;
+      --cl-a: #38D6FF;
+      --cl-b: #A77BFF;
+      --cl-wash: rgba(120, 100, 255, .10);
+      --hi-glow: rgba(255, 60, 160, .26);
+      --lo-glow: rgba(40, 230, 210, .18);
+      --shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --bar-bg: rgba(6, 8, 25, .82);
+      --hud-bg: rgba(14, 18, 49, .94);
+      --dot: #8D97C7;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #060819;
+    --ink: #F1F5FF;
+    --muted: #A6B0DA;
+    --card: #0E1231;
+    --edge: rgba(255, 255, 255, .12);
+    --track: rgba(255, 255, 255, .10);
+    --above: #FF5FAE;
+    --gold: #FFD447;
+    --beam: #FFD447;
+    --below: #3EEBD6;
+    --cl-a: #38D6FF;
+    --cl-b: #A77BFF;
+    --cl-wash: rgba(120, 100, 255, .10);
+    --hi-glow: rgba(255, 60, 160, .26);
+    --lo-glow: rgba(40, 230, 210, .18);
+    --shadow: 0 8px 28px rgba(0, 0, 0, .45);
+    --bar-bg: rgba(6, 8, 25, .82);
+    --hud-bg: rgba(14, 18, 49, .94);
+    --dot: #8D97C7;
+  }
+
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 4.5rem); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 1rem;
+    line-height: 1.45;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+  /* The sky behind the list: warm glow near the top of the ladder, cold glow near the floor. */
+  body::before, body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity .8s ease;
+  }
+  body::before {
+    background: radial-gradient(120% 60% at 90% 0%, var(--hi-glow), transparent 62%),
+                radial-gradient(80% 50% at 0% 30%, var(--hi-glow), transparent 60%);
+    opacity: var(--hi, .5);
+  }
+  body::after {
+    background: radial-gradient(120% 60% at 10% 100%, var(--lo-glow), transparent 62%),
+                radial-gradient(80% 50% at 100% 70%, var(--lo-glow), transparent 60%);
+    opacity: var(--lo, .5);
+  }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  button, input { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--cl-a); outline-offset: 2px; border-radius: 6px; }
+
+  /* ---------- Page ---------- */
+  main { position: relative; z-index: 1; max-width: 46rem; margin: 0 auto; padding: 0 1rem 9rem; }
+  h2 { font-family: var(--display); font-weight: 900; font-size: clamp(2rem, 8.5vw, 2.9rem); line-height: .95; margin: 0 0 .5rem; letter-spacing: .005em; }
+  .sub { margin: 0 0 1rem; color: var(--muted); max-width: 34rem; }
+
+  /* Scoreboard */
+  .score { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; margin: .4rem 0 2.6rem; }
+  .tile { background: var(--card); border: 1px solid var(--edge); border-radius: 18px; padding: .8rem .7rem .85rem; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+  .tile::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: currentColor; }
+  .tile b { display: block; font-family: var(--display); font-weight: 900; font-size: clamp(2.9rem, 13vw, 4.4rem); line-height: .9; font-variant-numeric: tabular-nums; }
+  .tile span { display: block; color: var(--ink); font-weight: 600; font-size: .98rem; line-height: 1.15; margin-top: .25rem; }
+  .tile small { display: block; color: var(--muted); font-size: .8rem; line-height: 1.25; margin-top: .35rem; }
+  .t-above { color: var(--above); }
+  .t-on { color: var(--gold); }
+  .t-on::before { background: var(--beam); box-shadow: 0 0 14px 2px var(--beam); }
+  .t-below { color: var(--below); }
+
+  /* The pile */
+  .pile { margin: 0 0 2.4rem; }
+  #pile { background: var(--card); border: 1px solid var(--edge); border-radius: 22px; box-shadow: var(--shadow); padding: .5rem .25rem .25rem; cursor: pointer; }
+  #pile svg { display: block; width: 100%; height: auto; }
+  #pile text { font-family: var(--body); font-size: 10.5px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  #pile .gline { stroke: var(--track); stroke-width: 1; }
+  #pile .mark { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 4; opacity: .7; }
+  #pile .beamline { stroke: var(--beam); stroke-width: 2.5; filter: drop-shadow(0 0 5px var(--beam)); }
+  #pile .beamtext { fill: var(--gold); font-weight: 600; font-size: 11.5px; }
+  #pile .d-earth { fill: var(--dot); }
+  #pile .d-cl { fill: url(#clgrad); filter: drop-shadow(0 0 3.5px var(--cl-a)); }
+  #pile .d-on { fill: var(--beam); filter: drop-shadow(0 0 4px var(--beam)); }
+  #pile .d-seasonal { fill: none; stroke: var(--cl-b); stroke-width: 1.6; }
+  .legend { list-style: none; display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; margin: .7rem 0 0; padding: 0; color: var(--muted); font-size: .9rem; }
+  .legend li { display: flex; align-items: center; gap: .4rem; }
+  .legend i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  .lg-cl { background: linear-gradient(135deg, var(--cl-a), var(--cl-b)); box-shadow: 0 0 8px var(--cl-a); }
+  .lg-earth { background: var(--dot); }
+  .lg-on { background: var(--beam); box-shadow: 0 0 8px var(--beam); }
+  .lg-seasonal { border: 2px solid var(--cl-b); }
+
+  /* Sticky controls */
+  .controls {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    margin: 0 -1rem 1rem; padding: .55rem 1rem;
+    background: var(--bar-bg);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4);
+    border-bottom: 1px solid var(--edge);
+    display: grid; gap: .5rem;
+  }
+  .seg { display: inline-flex; background: var(--track); border-radius: 999px; padding: 3px; }
+  .seg button { border: 0; background: transparent; padding: .42rem .7rem; border-radius: 999px; font-weight: 600; font-size: .92rem; cursor: pointer; color: var(--muted); white-space: nowrap; min-height: 2.3rem; }
+  .seg button[aria-pressed="true"] { background: linear-gradient(135deg, var(--cl-a), var(--cl-b)); color: #fff; box-shadow: 0 2px 10px rgba(100, 60, 240, .35); }
+  .seg.scope { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .seg.scope button { padding-left: .3rem; padding-right: .3rem; }
+  .controls .row2 { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: .5rem; align-items: center; }
+  #q {
+    width: 100%; min-width: 0; min-height: 2.5rem; border-radius: 999px; border: 1px solid var(--edge);
+    background: var(--card); padding: .4rem 1rem; font-size: 1rem;
+  }
+  #q::placeholder { color: var(--muted); }
+  #sort { border: 1px solid var(--edge); background: var(--card); border-radius: 999px; padding: .4rem .9rem; font-weight: 600; font-size: .92rem; cursor: pointer; white-space: nowrap; min-height: 2.5rem; }
+
+  /* Ladder */
+  .band-h { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin: 1.6rem 0 .7rem; }
+  .band-h h2 { margin: 0; }
+  .band-h span { color: var(--muted); font-weight: 500; font-size: .95rem; white-space: nowrap; }
+  .band-h.above h2 { color: var(--above); }
+  .band-h.below h2 { color: var(--below); }
+
+  .row {
+    position: relative;
+    display: grid; grid-template-columns: 2.3rem 1fr auto; column-gap: .65rem; row-gap: .15rem;
+    background: var(--card); border: 1px solid var(--edge); border-radius: 18px;
+    padding: .8rem .9rem 1rem; margin: 0 0 .55rem;
+    box-shadow: var(--shadow);
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    overflow: hidden;
+  }
+  .row.cl { background: linear-gradient(var(--card), var(--card)) padding-box, linear-gradient(135deg, var(--cl-a), var(--cl-b)) border-box; border: 2px solid transparent; }
+  .row.cl::before { content: ""; position: absolute; inset: 0; background: var(--cl-wash); pointer-events: none; }
+  .row.active { transform: scale(1.012); border-color: var(--band); box-shadow: 0 0 0 1px var(--band), 0 10px 34px color-mix(in srgb, var(--band) 38%, transparent); }
+  .row.cl.active { border-color: transparent; box-shadow: 0 0 0 1px var(--cl-a), 0 10px 38px color-mix(in srgb, var(--cl-b) 55%, transparent); }
+  .row.flash { animation: flash 1.4s ease 1; }
+  @keyframes flash { 0%, 60% { box-shadow: 0 0 0 4px var(--beam), 0 0 40px var(--beam); } 100% { box-shadow: var(--shadow); } }
+  .row.above { --band: var(--above); }
+  .row.on { --band: var(--beam); }
+  .row.below { --band: var(--below); }
+
+  .rank { grid-row: 1 / span 2; font-family: var(--display); font-weight: 900; font-size: 1.9rem; line-height: 1; color: var(--muted); font-variant-numeric: tabular-nums; position: relative; }
+  .row.cl .rank { background: linear-gradient(135deg, var(--cl-a), var(--cl-b)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .rank.none { font-size: 1.2rem; }
+  .who { min-width: 0; position: relative; }
+  .who h3 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 1.55rem; line-height: 1.02; letter-spacing: .01em; overflow-wrap: anywhere; }
+  .where { margin: .2rem 0 0; color: var(--muted); font-size: .92rem; line-height: 1.25; }
+  .badge { display: inline-block; font-family: var(--display); font-weight: 900; font-size: .82rem; letter-spacing: .04em; padding: .05rem .38rem .08rem; border-radius: 6px; color: #fff; background: linear-gradient(135deg, var(--cl-a), var(--cl-b)); margin-right: .3rem; vertical-align: 1px; }
+  .elev { text-align: right; position: relative; white-space: nowrap; }
+  .elev b { font-family: var(--display); font-weight: 900; font-size: 1.95rem; line-height: 1; color: var(--band); font-variant-numeric: tabular-nums; }
+  .elev i { font-style: normal; font-family: var(--display); font-weight: 700; font-size: 1rem; color: var(--band); margin-left: .15rem; }
+  .elev small { display: block; color: var(--muted); font-size: .88rem; font-variant-numeric: tabular-nums; margin-top: .1rem; }
+  .meta { grid-column: 2 / -1; margin: .35rem 0 0; display: flex; flex-wrap: wrap; gap: .3rem .45rem; font-size: .88rem; position: relative; }
+  .chip { border-radius: 999px; padding: .12rem .6rem; background: var(--track); color: var(--ink); font-weight: 500; }
+  .chip.delta { background: color-mix(in srgb, var(--band) 16%, transparent); color: var(--band); font-weight: 600; }
+  .row.on .chip.delta { color: var(--gold); }
+  .row.on .elev b, .row.on .elev i { color: var(--gold); }
+  .chip.tag { border: 1px dashed var(--muted); background: transparent; color: var(--muted); }
+  .note { grid-column: 2 / -1; margin: .45rem 0 0; color: var(--ink); font-size: .95rem; line-height: 1.4; position: relative; opacity: .9; }
+  .bar { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--track); }
+  .bar span { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--band) 35%, transparent), var(--band)); border-radius: 0 5px 5px 0; }
+  .bar i { position: absolute; top: -2px; bottom: 0; width: 2px; background: var(--beam); box-shadow: 0 0 6px var(--beam); }
+
+  .marker { display: grid; grid-template-columns: auto 1fr; gap: .8rem; align-items: center; margin: 1rem 0 1rem; padding: .1rem .2rem; color: var(--muted); }
+  .marker b { font-family: var(--display); font-weight: 900; font-size: 1.35rem; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .marker p { margin: 0; font-size: .92rem; line-height: 1.3; border-left: 2px dashed var(--muted); padding-left: .8rem; }
+
+  .lineblock {
+    position: relative; margin: 1.8rem -1rem 1rem; padding: 1.3rem 1rem 1.1rem;
+    color: #1B1200;
+    background: linear-gradient(90deg, #FFB300 0%, #FFD447 30%, #FFF6D0 50%, #FFD447 70%, #FFB300 100%) 0 0 / 200% 100% repeat-x;
+    animation: shimmer 6s linear infinite;
+    box-shadow: 0 0 34px 6px rgba(255, 196, 40, .55);
+  }
+  .lineblock h2 { margin: 0; font-size: clamp(2.6rem, 12vw, 4rem); color: #1B1200; }
+  .lineblock p { margin: .3rem 0 0; font-weight: 600; max-width: 30rem; }
+
+  .empty { background: var(--card); border: 1px dashed var(--muted); border-radius: 18px; padding: 1.2rem; text-align: center; }
+  .empty button { margin-top: .6rem; border: 0; border-radius: 999px; padding: .5rem 1.1rem; font-weight: 600; color: #fff; cursor: pointer; background: linear-gradient(135deg, var(--cl-a), var(--cl-b)); }
+
+  /* Roster */
+  .roster { margin-top: 3.2rem; }
+  .group { margin: 1.5rem 0 0; }
+  .group h3 { font-family: var(--display); font-weight: 700; font-size: 1.5rem; line-height: 1.05; margin: 0; }
+  .group p { margin: .15rem 0 .6rem; color: var(--muted); font-size: .92rem; }
+  .towns { display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; margin: 0; padding: 0; }
+  .town { border-radius: 14px; border: 1px solid var(--edge); background: var(--card); padding: .35rem .7rem .4rem; font-size: .95rem; line-height: 1.2; text-align: left; }
+  .town b { font-weight: 600; }
+  .town small { display: block; color: var(--muted); font-size: .8rem; }
+  button.town { cursor: pointer; border: 2px solid transparent; background: linear-gradient(var(--card), var(--card)) padding-box, linear-gradient(135deg, var(--cl-a), var(--cl-b)) border-box; box-shadow: 0 0 14px color-mix(in srgb, var(--cl-b) 30%, transparent); }
+  button.town small { color: var(--cl-b); font-weight: 600; }
+
+  footer { margin-top: 3rem; color: var(--muted); font-size: .9rem; max-width: 36rem; }
+  footer p { margin: 0 0 .6rem; }
+
+  /* Altimeter */
+  .hud {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
+    padding: .55rem 1rem calc(.6rem + env(safe-area-inset-bottom, 0px));
+    background: var(--hud-bg);
+    -webkit-backdrop-filter: blur(16px) saturate(1.5); backdrop-filter: blur(16px) saturate(1.5);
+    border-top: 1px solid var(--edge);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, .18);
+    transform: translateY(110%);
+    transition: transform .35s ease;
+  }
+  .hud.show { transform: none; }
+  .hud-in { max-width: 44rem; margin: 0 auto; display: grid; grid-template-columns: auto 1fr auto; gap: .8rem; align-items: center; }
+  .gauge { position: relative; width: 10px; height: 3.3rem; border-radius: 6px; background: linear-gradient(180deg, var(--above), var(--beam) 53%, var(--below)); }
+  .gauge i { position: absolute; left: -5px; width: 20px; height: 4px; border-radius: 3px; background: var(--ink); box-shadow: 0 0 0 2px var(--hud-bg); transition: top .35s ease; }
+  .hud-read { min-width: 0; }
+  .hud-name { font-weight: 600; font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hud-num { font-family: var(--display); font-weight: 900; font-size: 2.2rem; line-height: .95; font-variant-numeric: tabular-nums; color: var(--hudband, var(--ink)); }
+  .hud-num i { font-style: normal; font-size: 1.1rem; font-weight: 700; margin-left: .2rem; }
+  .hud-delta { font-size: .82rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #jump { border: 0; border-radius: 999px; padding: .55rem .9rem; min-height: 2.6rem; font-weight: 600; font-size: .9rem; cursor: pointer; color: #1B1200; background: linear-gradient(135deg, #FFB300, #FFE27A); box-shadow: 0 0 16px rgba(255, 196, 40, .6); white-space: nowrap; }
+
+  @media (min-width: 640px) {
+    .controls { grid-template-columns: minmax(20rem, auto) 1fr; align-items: center; }
+    .row { grid-template-columns: 3rem 1fr auto; padding: 1rem 1.2rem 1.15rem; }
+    .who h3 { font-size: 1.8rem; }
+    .elev b { font-size: 2.3rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .aurora i, .beam, .lineblock { animation: none; }
+    .row, .hud, .gauge i, body::before, body::after { transition: none; }
+    .row.flash { animation: none; outline: 3px solid var(--beam); }
+  }
+
+  /* ---------- Sandbox: the scene is always the real sky or sea ---------- */
+  .sand { position: relative; z-index: 1; }
+  .scene { position: relative; height: min(64vh, 540px); min-height: 370px; overflow: hidden; background: #03021A; color: #F4F7FF; }
+  #view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .scene-top { position: absolute; left: 1rem; right: 1rem; top: .9rem; display: grid; gap: .6rem; pointer-events: none; }
+  .scene-bar { display: flex; justify-content: space-between; align-items: flex-start; gap: .75rem; }
+  .wordmark { margin: 0; white-space: nowrap; font-family: var(--display); font-weight: 900; font-size: 1.3rem; line-height: 1; letter-spacing: .01em; text-shadow: 0 1px 10px rgba(0, 0, 0, .7); }
+  .zone { font-weight: 600; font-size: .9rem; line-height: 1.2; padding: .34rem .8rem; border-radius: 999px; background: rgba(6, 8, 25, .58); border: 1px solid rgba(255, 255, 255, .24); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); text-align: right; min-width: 0; }
+  .readout { position: absolute; left: 1rem; right: 1rem; bottom: .9rem; text-shadow: 0 2px 16px rgba(0, 0, 0, .8), 0 0 2px rgba(0, 0, 0, .6); }
+  .readout label { display: block; font-weight: 600; font-size: .95rem; color: #E3EAFF; margin-bottom: .1rem; }
+  .altline { display: flex; align-items: flex-end; gap: .14em; font-family: var(--display); font-weight: 900; font-size: clamp(4.4rem, 22vw, 8.4rem); line-height: .86; }
+  #alt {
+    font: inherit; color: #FFFFFF; background: transparent; border: 0; border-bottom: 3px dashed rgba(255, 255, 255, .45); border-radius: 0;
+    padding: 0 0 .04em; margin: 0; min-width: 1.2em; max-width: 100%; letter-spacing: -.01em; font-variant-numeric: tabular-nums;
+    text-shadow: inherit; caret-color: #FFD447; -webkit-appearance: none; appearance: none;
+  }
+  #alt:focus { outline: none; border-bottom: 3px solid #FFD447; }
+  #altMirror { position: absolute; visibility: hidden; white-space: pre; font-family: var(--display); font-weight: 900; font-size: clamp(4.4rem, 22vw, 8.4rem); letter-spacing: -.01em; font-variant-numeric: tabular-nums; pointer-events: none; }
+  #altUnit { font-size: .36em; color: #FFD447; padding-bottom: .2em; }
+  .others { display: flex; flex-wrap: wrap; gap: .1rem 1rem; margin: .45rem 0 0; font-weight: 600; font-size: 1rem; font-variant-numeric: tabular-nums; color: #EEF2FF; }
+  .said { min-height: 1.3em; margin: .25rem 0 0; font-size: .88rem; font-weight: 600; color: #FFD447; }
+
+  .deck { position: relative; z-index: 1; max-width: 46rem; margin: 0 auto; padding: 1rem 1rem 0; }
+  .seg.two { display: grid; grid-template-columns: 1fr 1fr; }
+  .seg.four { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: .7rem; }
+  .slide { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .6rem; align-items: center; margin: .9rem 0 0; }
+  .nudge { width: 2.75rem; height: 2.75rem; border-radius: 50%; border: 1px solid var(--edge); background: var(--card); font-size: 1.5rem; font-weight: 600; line-height: 1; cursor: pointer; box-shadow: var(--shadow); padding: 0; }
+  #slider { -webkit-appearance: none; appearance: none; width: 100%; height: 2.75rem; margin: 0; background: transparent; cursor: pointer; touch-action: pan-y; }
+  #slider::-webkit-slider-runnable-track { height: 14px; border-radius: 9px; background: var(--trackgrad); box-shadow: inset 0 0 0 1px var(--edge); }
+  #slider::-moz-range-track { height: 14px; border-radius: 9px; background: var(--trackgrad); box-shadow: inset 0 0 0 1px var(--edge); }
+  #slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 32px; height: 32px; margin-top: -9px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFFFF, #FFD447 55%, #FF9D2E); border: 3px solid #FFFFFF; box-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 0 18px rgba(255, 196, 40, .85); }
+  #slider::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFFFF, #FFD447 55%, #FF9D2E); border: 3px solid #FFFFFF; box-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 0 18px rgba(255, 196, 40, .85); }
+  .ends { display: flex; justify-content: space-between; color: var(--muted); font-size: .84rem; margin: -.1rem 3.4rem 0; }
+  .presets { display: flex; gap: .45rem; overflow-x: auto; margin: .9rem -1rem 0; padding: .2rem 1rem .7rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .presets::-webkit-scrollbar { display: none; }
+  .presets button { flex: none; border-radius: 999px; border: 1px solid var(--edge); background: var(--card); padding: .45rem .9rem; font-weight: 600; font-size: .92rem; white-space: nowrap; min-height: 2.5rem; cursor: pointer; box-shadow: var(--shadow); }
+  .presets button[aria-pressed="true"] { background: linear-gradient(135deg, #FFB300, #FFE27A); color: #1B1200; border-color: transparent; box-shadow: 0 0 16px rgba(255, 196, 40, .6); }
+
+  .feel { margin: .5rem 0 0; }
+  .feel h2 { margin: 0 0 .35rem; }
+  .feel p { margin: 0 0 .55rem; max-width: 36rem; font-size: 1.05rem; }
+  .feel .now { color: var(--muted); font-size: .98rem; }
+  .near { list-style: none; margin: .2rem 0 0; padding: 0; display: grid; gap: .3rem; font-size: .95rem; }
+  .near li { display: grid; grid-template-columns: 5.6rem 1fr; gap: .5rem; }
+  .near span { color: var(--muted); font-weight: 600; }
+  .near .lv { color: var(--gold); }
+
+  .gauges { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin: 1.1rem 0 0; }
+  .g { background: var(--card); border: 1px solid var(--edge); border-radius: 18px; padding: .75rem .8rem .85rem; box-shadow: var(--shadow); min-width: 0; position: relative; overflow: hidden; }
+  .g::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: linear-gradient(90deg, var(--cl-a), var(--cl-b)); }
+  .g span { display: block; font-weight: 600; font-size: .9rem; line-height: 1.2; color: var(--muted); }
+  .g b { display: block; font-family: var(--display); font-weight: 900; font-size: clamp(1.9rem, 8.6vw, 2.6rem); line-height: 1; margin-top: .3rem; font-variant-numeric: tabular-nums; }
+  .g b.long { font-size: clamp(1.45rem, 6.4vw, 2rem); }
+  .g b i { font-style: normal; font-size: .5em; font-weight: 700; margin-left: .22em; }
+  .g small { display: block; color: var(--muted); font-size: .82rem; line-height: 1.3; margin-top: .35rem; }
+  .g.wide { grid-column: 1 / -1; }
+  .g.good b { color: var(--below); }
+  .g.warn b { color: var(--gold); }
+  .g.bad b { color: var(--above); }
+  .g.sea::before { background: linear-gradient(90deg, #19B5D6, #0A3D8F); }
+  .fine { margin: .9rem 0 0; color: var(--muted); font-size: .86rem; max-width: 36rem; }
+
+  .lead { margin: 2.6rem 0 1rem; }
+  .lead h2 { margin: 0 0 .4rem; }
+  #unitcycle { border: 0; border-radius: 999px; min-width: 3.1rem; min-height: 2.5rem; padding: .4rem .7rem; font-weight: 700; font-size: .95rem; cursor: pointer; color: #fff; background: linear-gradient(135deg, var(--cl-a), var(--cl-b)); box-shadow: 0 2px 10px rgba(100, 60, 240, .35); }
+  button.chip.go { border: 0; cursor: pointer; font: inherit; font-weight: 600; color: #1B1200; background: linear-gradient(135deg, #FFB300, #FFE27A); }
+
+  [hidden] { display: none !important; }
+
+  /* ============================================================
+     Gaia: the mirror planet. The same sandbox, pills and cards in Gaia's own colors,
+     under Helios, Selene and the aurora. Always dark, like the Gaia side of Parallax 2.0.
+     ============================================================ */
+  .planets { flex: none; display: inline-flex; gap: 3px; padding: 3px; border-radius: 999px; background: rgba(6, 8, 25, .5); border: 1px solid rgba(255, 255, 255, .24); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: auto; }
+  .planets button { border: 0; background: transparent; color: #DCE6FF; font-weight: 600; font-size: .95rem; padding: .4rem 1.05rem; min-height: 2.4rem; border-radius: 999px; cursor: pointer; }
+  .planets button[data-planet="earth"][aria-pressed="true"] { background: linear-gradient(135deg, #FFB300, #FFE27A); color: #1B1200; box-shadow: 0 0 16px rgba(255, 196, 40, .6); }
+  .planets button[data-planet="gaia"][aria-pressed="true"] { background: linear-gradient(135deg, var(--g-aur), var(--g-ice) 55%, var(--g-vio)); color: var(--g-on); box-shadow: 0 0 18px rgba(70, 255, 180, .65); }
+  .seg.who { margin-top: .7rem; }
+
+  body.is-gaia {
+    --bg: #020B14; --ink: #EAF8FF; --muted: #9CBFD2; --card: #06182A;
+    --edge: rgba(127, 233, 255, .2); --track: rgba(127, 233, 255, .1);
+    --above: #FF5CCB; --gold: #46FFB4; --beam: #46FFB4; --below: #7FE9FF;
+    --cl-a: #46FFB4; --cl-b: #9B6BFF; --cl-wash: rgba(70, 255, 180, .06);
+    --hi-glow: rgba(155, 107, 255, .2); --lo-glow: rgba(70, 255, 180, .13);
+    --shadow: 0 8px 28px rgba(0, 0, 0, .5); --bar-bg: rgba(2, 11, 20, .86); --hud-bg: rgba(6, 24, 42, .95); --dot: #6C93AA;
+    color-scheme: dark;
+  }
+  body.is-gaia .scene { background: var(--g-void); }
+  body.is-gaia .zone { background: rgba(2, 11, 20, .55); border-color: rgba(127, 233, 255, .45); color: var(--g-ice); }
+  body.is-gaia #alt { caret-color: var(--g-aur); border-bottom-color: rgba(127, 233, 255, .6); }
+  body.is-gaia #alt:focus { border-bottom: 3px solid var(--g-aur); }
+  body.is-gaia #altUnit, body.is-gaia .said { color: var(--g-aur); }
+  body.is-gaia .seg button[aria-pressed="true"],
+  body.is-gaia #unitcycle,
+  body.is-gaia .empty button { background: linear-gradient(135deg, var(--g-aur), var(--g-ice) 60%, var(--g-vio)); color: var(--g-on); box-shadow: 0 2px 10px rgba(70, 255, 180, .35); }
+  body.is-gaia .badge { color: var(--g-on); background: linear-gradient(135deg, var(--g-aur), var(--g-ice)); }
+  body.is-gaia .presets button[aria-pressed="true"],
+  body.is-gaia #jump { background: linear-gradient(135deg, var(--g-aur), var(--g-ice)); color: var(--g-on); border-color: transparent; box-shadow: 0 0 16px rgba(70, 255, 180, .6); }
+  body.is-gaia button.chip.go { background: linear-gradient(135deg, var(--g-aur), var(--g-ice)); color: var(--g-on); }
+  body.is-gaia #slider::-webkit-slider-thumb { background: radial-gradient(circle at 35% 30%, #FFFFFF, #7FE9FF 55%, #46FFB4); box-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 0 18px rgba(70, 255, 180, .85); }
+  body.is-gaia #slider::-moz-range-thumb { background: radial-gradient(circle at 35% 30%, #FFFFFF, #7FE9FF 55%, #46FFB4); box-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 0 18px rgba(70, 255, 180, .85); }
+  body.is-gaia .feel h2 { background: linear-gradient(135deg, #FF5CCB, #FFD1F2 55%, #9B6BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  body.is-gaia .g::before { background: linear-gradient(90deg, var(--g-aur), var(--g-ice) 55%, var(--g-vio)); }
+  body.is-gaia .g.sea::before { background: linear-gradient(90deg, #7FE9FF, #0A4460); }
+  body.is-gaia .g.good b { color: var(--g-aur); }
+  body.is-gaia .g.warn b { color: #BDA6FF; }
+  body.is-gaia .g.bad b { color: var(--g-rose); }
+  body.is-gaia .lineblock { color: var(--g-on); background: linear-gradient(90deg, #46FFB4 0%, #7FE9FF 30%, #F6FBFF 50%, #7FE9FF 70%, #46FFB4 100%) 0 0 / 200% 100% repeat-x; box-shadow: 0 0 34px 6px rgba(70, 255, 180, .5); }
+  body.is-gaia .lineblock h2 { color: var(--g-on); }
+
+  /* Two rulers: where each of Earth's lines lands on Gaia */
+  .twin { margin: 2.6rem 0 0; }
+  #ruler { background: var(--card); border: 1px solid var(--edge); border-radius: 22px; box-shadow: var(--shadow); padding: .6rem .3rem .3rem; cursor: pointer; }
+  #ruler svg { display: block; width: 100%; max-width: 31rem; height: auto; margin: 0 auto; }
+  #ruler text { font-family: var(--body); font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  #ruler text.nm { fill: var(--ink); font-weight: 600; }
+  #ruler text.hd { font-family: var(--display); font-weight: 900; font-size: 21px; fill: var(--ink); letter-spacing: .01em; }
+  #ruler text.hd.ga { fill: var(--g-aur); }
+  #ruler .trk { stroke: var(--track); stroke-width: 10; stroke-linecap: round; }
+  #ruler .stair { fill: url(#stairgrad); }
+  #ruler .sea { stroke: var(--g-ice); stroke-width: 1.5; stroke-dasharray: 2 5; stroke-linecap: round; opacity: .8; }
+  #ruler .lnk { stroke: var(--muted); stroke-width: 1.2; opacity: .5; }
+  #ruler .lnk.hot { stroke: var(--beam); stroke-width: 2.6; opacity: 1; filter: drop-shadow(0 0 4px var(--beam)); }
+  #ruler .lead { fill: none; stroke: var(--muted); stroke-width: 1; opacity: .55; }
+  #ruler .dotE { fill: var(--dot); }
+  #ruler .dotG { fill: var(--g-ice); }
+  #ruler .dotE.hot, #ruler .dotG.hot { fill: var(--beam); filter: drop-shadow(0 0 4px var(--beam)); }
+  #ruler .you { fill: #FFFFFF; stroke: var(--g-rose); stroke-width: 3; filter: drop-shadow(0 0 6px var(--g-rose)); }
+  .built { margin: 3.2rem 0 0; }
+  .spec .g b { color: var(--g-aur); }
+  .spec .g b i { color: var(--g-ice); }
+
+  @media (min-width: 640px) {
+    .gauges { grid-template-columns: repeat(3, 1fr); }
+    .gauges.spec { grid-template-columns: repeat(4, 1fr); }
+    .scene-top, .readout { left: max(1rem, calc(50% - 22rem)); right: max(1rem, calc(50% - 22rem)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lineblock { animation: none; }
+  }
+  @keyframes shimmer { from { background-position: 0 0; } to { background-position: -200% 0; } }
+</style>
+</head>
+<body>
+
+<header class="sand" id="sandbox">
+  <div class="scene">
+    <canvas id="view" aria-hidden="true"></canvas>
+    <div class="scene-top">
+      <div class="scene-bar">
+        <div class="planets" role="group" aria-label="Which planet">
+          <button type="button" data-planet="earth" aria-pressed="true">Earth</button>
+          <button type="button" data-planet="gaia" aria-pressed="false">Gaia</button>
+        </div>
+        <div class="zone" id="zone">Thick air</div>
+      </div>
+      <p class="wordmark" data-gaia="ALT 327K 2.0 on Gaia">ALT 327K 2.0</p>
+    </div>
+    <div class="readout">
+      <h1 class="sr" data-gaia="ALT 327K 2.0: an altitude sandbox for Gaia, Earth's mirror planet">ALT 327K 2.0: an altitude sandbox for Earth</h1>
+      <label for="alt" data-gaia="Your altitude on Gaia. Tap the number to type one.">Your altitude. Tap the number to type one.</label>
+      <div class="altline">
+        <input id="alt" type="text" inputmode="decimal" enterkeyhint="go" autocomplete="off" autocorrect="off" spellcheck="false" value="0">
+        <span id="altUnit">ft</span>
+      </div>
+      <span id="altMirror" aria-hidden="true"></span>
+      <div class="others" id="others"></div>
+      <p class="said" id="said" role="status"></p>
+    </div>
+  </div>
+
+  <div class="deck">
+    <div class="seg two" role="group" aria-label="Above or below sea level">
+      <button type="button" data-mode="above" aria-pressed="true">Above sea level</button>
+      <button type="button" data-mode="below" aria-pressed="false">Below sea level</button>
+    </div>
+    <div class="slide">
+      <button type="button" class="nudge" id="down" aria-label="Go lower">&minus;</button>
+      <input id="slider" type="range" min="0" max="2000" step="1" value="0" aria-label="Altitude slider">
+      <button type="button" class="nudge" id="up" aria-label="Go higher">+</button>
+    </div>
+    <div class="ends"><span id="endA">Sea level</span><span id="endB">62 miles up</span></div>
+    <div class="seg four" role="group" aria-label="Units">
+      <button type="button" data-unit="ft" aria-pressed="true">Feet</button>
+      <button type="button" data-unit="m" aria-pressed="false">Meters</button>
+      <button type="button" data-unit="mi" aria-pressed="false">Miles</button>
+      <button type="button" data-unit="km" aria-pressed="false">Kilometers</button>
+    </div>
+    <div class="seg two who only-gaia" role="group" aria-label="Whose lungs are breathing" hidden>
+      <button type="button" data-who="gaian" aria-pressed="true">Gaian lungs</button>
+      <button type="button" data-who="visitor" aria-pressed="false">Earth visitor</button>
+    </div>
+    <div class="presets" id="presets" role="group" aria-label="Jump to a famous height"></div>
+
+    <section class="feel" aria-live="off">
+      <h2 id="feelTitle">Thick air</h2>
+      <p id="feelText"></p>
+      <p class="now" id="feelNow"></p>
+      <ul class="near" id="near"></ul>
+    </section>
+
+    <section class="gauges" aria-label="What the air is doing at this altitude">
+      <div class="g" id="gP"><span id="gPl">Pressure</span><b></b><small></small></div>
+      <div class="g" id="gD"><span>Air density</span><b></b><small></small></div>
+      <div class="g" id="gS"><span id="gSl">Simulated SpO2</span><b></b><small></small></div>
+      <div class="g" id="gB"><span>Boiling point of water</span><b></b><small></small></div>
+      <div class="g" id="gO"><span>Dry O2 pressure</span><b></b><small></small></div>
+      <div class="g" id="gF"><span id="gFl">FAA performance time</span><b></b><small></small></div>
+      <div class="g wide" id="gE" hidden><span>Earth has this air pressure at</span><b></b><small></small></div>
+      <div class="g wide" id="gK" hidden><span id="gKl">What a Gaian needs here</span><b></b><small></small></div>
+      <div class="g wide sea" id="gW" hidden><span>Ocean pressure at this depth</span><b></b><small></small></div>
+    </section>
+    <p class="fine" id="fine"></p>
+  </div>
+</header>
+
+<main>
+  <section class="twin only-gaia" aria-labelledby="h-twin" hidden>
+    <h2 id="h-twin">Same lines, higher up</h2>
+    <p class="sub">Every height on Earth sits 7,560 meters higher on Gaia, and the sea is the one line that never moved. The white dot is where the sandbox is standing. Tap the ruler to stand at that height.</p>
+    <div id="ruler" role="img" aria-label="Two rulers side by side. Each of Earth's big lines, from the coast to the Armstrong limit, connects to the higher line it becomes on Gaia."></div>
+  </section>
+
+  <section class="lead" aria-labelledby="h-lead">
+    <h2 id="h-lead">Who lives up here</h2>
+    <p class="sub only-earth">One line, 4,500 meters up, and Summitbrook sits on it to the foot. This is everyone on Earth living above it, on it, and below it, with all of Colorandoa on the board. Tap "Stand here" on any town to put the sandbox at its height.</p>
+    <p class="sub only-gaia" hidden>One line, 12,060 meters up, and Summitbrook sits on it here too. Every town on the Earth board is on this one, 7,560 meters higher and in the same order. Tap "Stand here" on any town to put the sandbox at its height.</p>
+  </section>
+
+  <section class="score" aria-label="How many settlements sit above, on, and below the line">
+    <div class="tile t-above"><b id="nAbove">0</b><span>above the line</span><small id="sAbove"></small></div>
+    <div class="tile t-on"><b id="nOn">0</b><span>on the line</span><small id="sOn"></small></div>
+    <div class="tile t-below"><b id="nBelow">0</b><span>below the line</span><small id="sBelow"></small></div>
+  </section>
+
+  <section class="pile" aria-labelledby="h-pile">
+    <h2 id="h-pile">The whole pile</h2>
+    <p class="sub only-earth">Every dot is a settlement, stacked at its height. The glowing ones are Colorandoa, and they own the summit. Tap anywhere on the pile to jump to that height.</p>
+    <p class="sub only-gaia" hidden>Every dot is a settlement, stacked at its height on Gaia. The glowing ones are Colorandoa, and they own the summit here too. Tap anywhere on the pile to jump to that height.</p>
+    <div id="pile" role="img" aria-label="Dot chart of every settlement by elevation. Colorandoa holds every spot at the top."></div>
+    <ul class="legend">
+      <li><i class="lg-cl"></i>Colorandoa</li>
+      <li><i class="lg-earth"></i><span data-gaia="Rest of Gaia">Rest of Earth</span></li>
+      <li><i class="lg-on"></i>On the line</li>
+      <li><i class="lg-seasonal"></i>Seasonal only</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="h-ladder">
+    <h2 id="h-ladder" class="sr">The ladder</h2>
+    <div class="controls">
+      <div class="seg scope" role="group" aria-label="Which settlements to show">
+        <button type="button" data-scope="all" aria-pressed="true">Everyone</button>
+        <button type="button" data-scope="cl" aria-pressed="false">Colorandoa</button>
+        <button type="button" data-scope="earth" aria-pressed="false" data-gaia="Rest of Gaia">Rest of Earth</button>
+      </div>
+      <div class="row2">
+        <input id="q" type="search" placeholder="Find a town" aria-label="Find a town or country" autocomplete="off">
+        <button type="button" id="unitcycle" aria-label="Change units">ft</button>
+        <button type="button" id="sort">Highest first</button>
+      </div>
+    </div>
+    <div id="ladder"></div>
+  </section>
+
+  <section class="roster" aria-labelledby="h-roster">
+    <h2 id="h-roster">All of Colorandoa so far</h2>
+    <p class="sub only-earth">Every town on the board. Nothing in the state sits below 10,560 ft, so all of it is high country. Glowing towns have a locked elevation and a spot on the ladder. Tap one to go there.</p>
+    <p class="sub only-gaia" hidden>Every town on the board, at its height on Gaia. Nothing in the state sits below 35,363 ft. Glowing towns have a locked elevation and a spot on the ladder. Tap one to go there.</p>
+    <div id="roster"></div>
+  </section>
+
+  <section class="built only-gaia" aria-labelledby="h-built" hidden>
+    <h2 id="h-built">How Gaia is built</h2>
+    <div class="gauges spec" id="spec"></div>
+  </section>
+
+  <footer class="only-gaia" hidden>
+    <p>Gaia's air follows its locked numbers: 123.262 kPa at the sea, 55.000 kPa at 8,400 m, 21% oxygen, 130°F at the coast, and 5.2°C cooler with every kilometer you climb. Above Mount Ohwenroken no temperature is locked yet, so the sandbox keeps cooling the air until it hits &minus;70°F, the temperature of Earth's stratosphere, and holds it there.</p>
+    <p>SpO2 is a simulation, not a medical reading. Gaian lungs are fitted to the Gaians' own lines: a Gaian breathes like someone from Earth does 7,560 m lower, all the way up to the living ceiling at 13,060 m, and the Gaian death zone starts at 16,000 m. The Earth visitor is an acclimatized adult from Earth breathing Gaia's outside air with no gear. Performance time reads the FAA's table at the matching Earth altitude.</p>
+    <p>The visitor's gear follows the locked survival kit. Between average ground and Summitbrook, the switch from a tube to a full mask sits where the air is as thin as Earth's at 18,000 ft, the height where the FAA stops allowing nasal tubes.</p>
+    <p>Every elevation here is its Earth elevation plus 7,560 m. Dry land below sea level is 10 times deeper, and the oceans are 1.25 times deeper. Coalinga, Ospero, and Cyrillo are shown at the surface of the lake they sit on.</p>
+  </footer>
+
+  <footer class="only-earth">
+    <p>Air numbers come from the 1976 US Standard Atmosphere, which is a yearly average. Real weather pushes them around. Below sea level, they assume a dry shaft open to the sky, and the ocean tile shows the real water pressure.</p>
+    <p>SpO2 is a simulation for an acclimatized adult at rest breathing outside air. It is not a medical reading. Performance time follows the FAA's Advisory Circular 61-107B and is smoothed between the altitudes it lists.</p>
+    <p>Elevations outside Colorandoa follow Wikipedia's list of highest settlements, which covers year-round settlements at 3,500 m and up and says itself that it's incomplete. Colorandoa numbers are the locked ones. Coalinga, Ospero, and Cyrillo are shown at the surface of the lake they sit on, since their own elevations aren't locked yet.</p>
+  </footer>
+</main>
+
+<div class="hud" id="hud" aria-live="off">
+  <div class="hud-in">
+    <div class="gauge" aria-hidden="true"><i id="needle"></i></div>
+    <div class="hud-read">
+      <div class="hud-name" id="hudName">Summitcrest</div>
+      <div class="hud-num"><span id="hudNum">17,598</span><i id="hudUnit">ft</i></div>
+      <div class="hud-delta" id="hudDelta"></div>
+    </div>
+    <button type="button" id="jump">Jump to the line</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var LINE_M = 4500, LINE_FT = 14764, MIN_M = 3200, MAX_M = 6000;
+  var MAX_UP = 327360, MAX_DOWN = -35876;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var clamp01 = function (x) { return x < 0 ? 0 : (x > 1 ? 1 : x); };
+  var toFt = function (m) { return Math.round(m / 0.3048); };
+  var toM = function (ft) { return Math.round(ft * 0.3048); };
+
+  /* Standard atmosphere + physiology helpers, shared by test and page */
+  var PHYS = (function () {
+    var R0 = 6356766, RA = 287.053, GMR = 0.0341631947; // K/m
+    var LAY = [
+      [0, 288.15, -0.0065, 101325],
+      [11000, 216.65, 0, 22632.06],
+      [20000, 216.65, 0.001, 5474.889],
+      [32000, 228.65, 0.0028, 868.0187],
+      [47000, 270.65, 0, 110.9063],
+      [51000, 270.65, -0.0028, 66.93887],
+      [71000, 214.65, -0.002, 3.95642]
+    ];
+    var HI = [[86000, 186.87, 0.37338, 6.958e-6], [90000, 186.87, 0.18359, 3.416e-6], [95000, 188.42, 0.075966, 1.393e-6], [100000, 195.08, 0.032011, 5.604e-7]];
+    function atm(z) { // geometric metres
+      if (z >= 86000) {
+        var i = 0;
+        while (i < HI.length - 2 && z > HI[i + 1][0]) i++;
+        var a = HI[i], b = HI[i + 1], f = (z - a[0]) / (b[0] - a[0]);
+        return { T: a[1] + (b[1] - a[1]) * f, P: Math.exp(Math.log(a[2]) + (Math.log(b[2]) - Math.log(a[2])) * f), rho: Math.exp(Math.log(a[3]) + (Math.log(b[3]) - Math.log(a[3])) * f) };
+      }
+      var h = R0 * z / (R0 + z), k = 0;
+      for (var j = 1; j < LAY.length; j++) if (h >= LAY[j][0]) k = j;
+      var L = LAY[k], T, P;
+      if (L[2] === 0) { T = L[1]; P = L[3] * Math.exp(-GMR * (h - L[0]) / L[1]); }
+      else { T = L[1] + L[2] * (h - L[0]); P = L[3] * Math.pow(L[1] / T, GMR / L[2]); }
+      return { T: T, P: P, rho: P / (RA * T) };
+    }
+    // Water: boiling temperature from pressure (IAPWS-IF97 backward equation), ice below the triple point (Murphy & Koop)
+    var n = [0, 0.11670521452767e4, -0.72421316703206e6, -0.17073846940092e2, 0.12020824702470e5, -0.32325550322333e7, 0.14915108613530e2, -0.48232657361591e4, 0.40511340542057e6, -0.23855557567849, 0.65017534844798e3];
+    function boil(P) { // Pa -> {K, ice}
+      if (P >= 611.657) {
+        var be = Math.pow(P / 1e6, 0.25), E = be * be + n[3] * be + n[6], F = n[1] * be * be + n[4] * be + n[7], G = n[2] * be * be + n[5] * be + n[8];
+        var D = 2 * G / (-F - Math.sqrt(F * F - 4 * E * G));
+        return { K: (n[10] + D - Math.sqrt((n[10] + D) * (n[10] + D) - 4 * (n[9] + n[10] * D))) / 2, ice: false };
+      }
+      var lo = 110, hi = 273.16, lp = Math.log(P);
+      for (var i = 0; i < 60; i++) {
+        var T = (lo + hi) / 2, v = 9.550426 - 5723.265 / T + 3.53068 * Math.log(T) - 0.00728332 * T;
+        if (v > lp) hi = T; else lo = T;
+      }
+      return { K: (lo + hi) / 2, ice: true };
+    }
+    // Simulated SpO2: acclimatised adult at rest breathing outside air
+    function spo2(P) {
+      var PB = P / 133.322, PI = 0.2095 * (PB - 47);
+      if (PI <= 0) return 0;
+      var co2 = Math.max(8, Math.min(40, 40 - 0.252 * (149.4 - PI)));
+      var PA = PI - co2 / 0.8, grad = 2 + 3 * Math.min(1, PI / 149.4), Pa = PA - grad;
+      if (Pa <= 0) return 0;
+      Pa *= 1 + 0.25 * (40 - co2) / 30; // respiratory alkalosis shifts the curve left
+      var S = 100 / (1 + 23400 / (Pa * Pa * Pa + 150 * Pa));
+      return Math.min(100, S);
+    }
+    // FAA AC 61-107B Figure 2-3, TUC/EPT in seconds [alt ft, low, high]
+    var FAA = [[18000, 1200, 1800], [22000, 600, 600], [25000, 180, 300], [28000, 150, 180], [30000, 60, 120], [35000, 30, 60], [40000, 15, 20], [43000, 9, 12], [50000, 9, 12]];
+    function ept(ft) {
+      if (ft < 18000) return null;
+      if (ft >= 50000) return [9, 12];
+      for (var i = 0; i < FAA.length - 1; i++) {
+        var a = FAA[i], b = FAA[i + 1];
+        if (ft <= b[0]) {
+          var f = (ft - a[0]) / (b[0] - a[0]);
+          return [Math.exp(Math.log(a[1]) + (Math.log(b[1]) - Math.log(a[1])) * f), Math.exp(Math.log(a[2]) + (Math.log(b[2]) - Math.log(a[2])) * f)];
+        }
+      }
+      return [9, 12];
+    }
+    // The altitude (metres) where Earth's standard atmosphere has this pressure
+    function alt(P) {
+      var lo = -24000, hi = 100000;
+      for (var i = 0; i < 48; i++) { var mid = (lo + hi) / 2; if (atm(mid).P > P) lo = mid; else hi = mid; }
+      return (lo + hi) / 2;
+    }
+    return { atm: atm, boil: boil, spo2: spo2, ept: ept, alt: alt };
+  })();
+
+  /* Gaia's air, from its locked numbers: 123.262 kPa at the sea, 55.000 kPa at 8,400 m, 21% oxygen,
+     130°F at the coast and 5.2°C cooler per km. Past the locked heights the cooling stops at Earth's stratosphere temperature. */
+  var GAIA = (function () {
+    var P0 = 123262, SCALE = 8400 / Math.log(123262 / 55000), T0 = 327.594, LAPSE = 0.0052, TMIN = 216.65;
+    function atm(z) { // metres above Gaia's sea
+      var T = Math.max(TMIN, T0 - LAPSE * z), P = P0 * Math.exp(-z / SCALE);
+      return { T: T, P: P, rho: P / (287.053 * T) };
+    }
+    var MASK = PHYS.alt(atm(19600).P);
+    // The Earth altitude a Gaian's body feels. The formula's 7,560 m up to the living ceiling (13,060 m),
+    // the death zone at 16,000 m, and no edge at all past the mask line (19,600 m). `same` is the Earth altitude with equal pressure.
+    function lungs(z, same) {
+      if (z <= 13060) return z - 7560;
+      if (z <= 16000) return 5500 + (z - 13060) / 2940 * 2500;
+      if (z <= 19600) return 8000 + (z - 16000) / 3600 * (MASK - 8000);
+      return same;
+    }
+    function sat(who, z, P) { return (who === 'gaian' && z <= 19600) ? PHYS.spo2(PHYS.atm(lungs(z, 0)).P) : PHYS.spo2(P); }
+    return { atm: atm, lungs: lungs, sat: sat, P0: P0, RHO0: atm(0).rho };
+  })();
+  var PLANET = 'earth', WHO = 'gaian';
+
+  /* ---------- Units ---------- */
+  var UNITS = ['ft', 'm', 'mi', 'km'];
+  var PER_FT = { ft: 1, m: 0.3048, mi: 1 / 5280, km: 0.0003048 };
+  var DEC = { ft: 0, m: 0, mi: 3, km: 3 };
+  var PAIR = { ft: 'm', m: 'ft', mi: 'km', km: 'mi' };
+  var LINE_IN = { ft: '14,764 ft', m: '4,500 m', mi: '2.796 mi', km: '4.500 km' };
+  var LINE_WORDS = { ft: '4,500 meters', m: '14,764 feet', mi: '4.5 kilometers', km: '2.796 miles' };
+  function num(v, dec) { return v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+  function altStr(ft, unit) {
+    var v = ft * PER_FT[unit], a = Math.abs(v), s = num(a, DEC[unit]);
+    return (v < 0 && +a.toFixed(DEC[unit]) > 0 ? '\u2212' : '') + s;
+  }
+
+  /* ---------- Colorandoa: locked numbers (feet unless m is given) ---------- */
+  var CL = [
+    { id: 'ohwentsarako', n: 'Ohwentsarako', where: 'The Rokens, Colorandoa', m: 5983, tag: 'Seasonal only', seasonal: true,
+      note: 'Gateway town for Roken climbers. It sits above the long-term limit for human life, so nobody stays year-round.' },
+    { id: 'summitcrest', n: 'Summitcrest', where: 'Colorandoa', ft: 17598, pop: '~30,000',
+      note: 'The highest permanent settlement on Earth, level with Everest South Base Camp. About 75,000 people with its four districts. The athletic training capital of the US.' },
+    { id: 'axspororidge', n: 'Axspororidge', where: 'Summitcrest district, Colorandoa', ft: 17552, pop: '~12,000',
+      note: 'The highest of Summitcrest\u2019s four districts.' },
+    { id: 'luxora', n: 'Luxora', where: 'Summitcrest district, Colorandoa', ft: 17520, pop: '~12,000' },
+    { id: 'teyakenroken', n: 'Teyake\u00F1roken', where: 'Summitcrest district, Colorandoa', ft: 17470, pop: '~10,000',
+      note: 'The name means \u201Cbetween two peaks.\u201D Summitcrest\u2019s fourth district.' },
+    { id: 'bressler', n: 'Bressler', where: 'Summitcrest district, Colorandoa', ft: 17454, pop: '~11,000' },
+    { id: 'skawenta', n: 'Skawenta', where: 'Colorandoa', ft: 17421,
+      note: 'Tsi\u02BCkaro\u00F1waheh, \u201Cwhere the clouds sleep,\u201D towers over town at 8,150 m.' },
+    { id: 'rinconada-alta', n: 'Rinconada Alta', where: 'The Gold Tier, Colorandoa', ft: 17388, pop: '~50,000',
+      note: 'Old gold-mining town near the New Moxelo border. Its shafts climb to about 20,340 ft, the highest mines in the world. Home of the Mineros.' },
+    { id: 'coalinga', n: 'Coalinga', where: 'Lake Erawie, Colorandoa', ft: 15526, tag: 'Lake level',
+      note: 'Sits on Lake Erawie. Home of the University at Coalinga and Coalinga State.' },
+    { id: 'bouldren', n: 'Bouldren', where: 'Colorandoa', ft: 15430,
+      note: 'Home of the University of Colorandoa Yaks. Folston Field sits at 15,360 ft.' },
+    { id: 'ospero', n: 'Ospero', where: 'Lake Rokentario, Colorandoa', ft: 15200, tag: 'Lake level',
+      note: 'Sits on Lake Rokentario. Home of the SUCL Ospero Tarners.' },
+    { id: 'cyrillo', n: 'Cyrillo', where: 'Oneywaka Lake, Colorandoa', ft: 14770, pop: '~63,000', tag: 'Lake level',
+      note: 'On the shore of Oneywaka Lake, just outside Summitbrook, with the hamlet of Breverton inside it.' },
+    { id: 'summitbrook', n: 'Summitbrook', where: 'The Crown Heart, Colorandoa', ft: 14764, pop: '10 million',
+      note: 'Capital of Colorandoa, the biggest city in the US with 24 million in the metro, and the highest major city on Earth. Pyratech Arena sits a little higher, at 14,877 ft.' },
+    { id: 'aspenwood', n: 'Aspenwood', where: 'Eastern Basin, Colorandoa', ft: 13796, pop: '~1.1 million',
+      note: 'Summitbrook\u2019s biggest suburb. SOVRN Arena, home of the Pallor Wraith and the Hoarfrost, sits at 13,846 ft.' },
+    { id: 'colorandoa-city', n: 'Colorandoa City', where: 'The Metro, Colorandoa', ft: 13764, pop: '8.9 million',
+      note: 'Five boroughs: Manhawen, Brecklyn, Crowns, the Branx, and Staton Mesa. Second-biggest city in the US.' },
+    { id: 'ohwensennaha', n: 'Ohwensennaha', where: 'The Rokens, Colorandoa', m: 3986,
+      note: 'Gateway town on the way up into the Rokens.' },
+    { id: 'blackened-hills', n: 'Blackened Hills', where: 'The Aleron Region, Colorandoa', ft: 12407,
+      note: 'Home of the BH-BL Hoplites. Just under the oxygen line, so the air is raw.' },
+    { id: 'cliffton-mesa', n: 'Cliffton Mesa', where: 'The Aleron Region, Colorandoa', ft: 12318,
+      note: 'Home of the Shen Highlanders, next door to Blackened Hills. Raw air here too.' },
+    { id: 'colorandoa-springs', n: 'Colorandoa Springs', where: 'Roken foothills, Colorandoa', ft: 12100, approx: true, pop: '~450,000',
+      note: 'Hot-springs resort city south of Summitbrook, where the basin climbs into the foothills.' },
+    { id: 'ohwenkara', n: 'Ohwenkara', where: 'The Rokens, Colorandoa', m: 3314,
+      note: 'The lowest of the three Roken gateway towns.' },
+    { id: 'selvak', n: 'Selvak', where: 'The Doorlands, Colorandoa', ft: 10560,
+      note: 'Senweka land, home of Weka, and the lowest ground in the whole state.' }
+  ];
+
+  /* ---------- Rest of Earth: name, region, country, flag, meters, population, note ---------- */
+  var EARTH = [
+    ['La Rinconada', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 5100, '29,746 (2017)', 'Gold-mining town. Peru\u2019s statistics office measures it at 5,052 m. The highest town on Earth outside Colorandoa.'],
+    ['Tuiwa', 'Tibet', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 5070, '', ''],
+    ['Chasangcun', 'Tibet', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 5011, '', ''],
+    ['Rongbuk Monastery', 'Tibet', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 4980, '', 'Monastery at the foot of Everest\u2019s north side.'],
+    ['Shuanghu', 'Tibet', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 4950, '', ''],
+    ['Lobuche', 'Koshi', 'Nepal', '\uD83C\uDDF3\uD83C\uDDF5', 4940, '', 'Among the last places to sleep in a lodge on the trek to Everest Base Camp.'],
+    ['Wenquan', 'Qinghai', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 4870, '', 'Guinness once listed this small settlement as the highest \u201Ccity\u201D in the world.'],
+    ['Santa B\u00E1rbara', 'Potos\u00ED', 'Bolivia', '\uD83C\uDDE7\uD83C\uDDF4', 4770, '', 'Miners\u2019 village.'],
+    ['Lungring', 'Tibet', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 4735, '', ''],
+    ['Yanshiping', 'Tibet and Qinghai', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 4720, '2,919 (2017)', ''],
+    ['Amdo', 'Tibet', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 4710, '3,327 (2017)', ''],
+    ['Phinaya', 'Cusco', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 4700, '339', ''],
+    ['Domar', 'Tibet', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 4695, '1,488', ''],
+    ['Condoroma', 'Cusco', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 4660, '533', ''],
+    ['Ananea', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 4660, '1,729', ''],
+    ['Komic', 'Himachal Pradesh', 'India', '\uD83C\uDDEE\uD83C\uDDF3', 4587, '114', 'Village in the Spiti Valley.'],
+    ['Karzok', 'Ladakh', 'India', '\uD83C\uDDEE\uD83C\uDDF3', 4570, '1,291 (2011)', 'On the shore of Tso Moriri.'],
+    ['Hanle', 'Ladakh', 'India', '\uD83C\uDDEE\uD83C\uDDF3', 4500, '', 'Home of the Indian Astronomical Observatory.'],
+    ['Nagqu', 'Tibet', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 4500, '42,984 (2010)', ''],
+    ['Quzong', 'Tibet', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 4470, '276', ''],
+    ['Dingboche', 'Khumbu', 'Nepal', '\uD83C\uDDF3\uD83C\uDDF5', 4410, '', 'Sherpa village on the Everest trek.'],
+    ['Parinacota', 'Arica and Parinacota', 'Chile', '\uD83C\uDDE8\uD83C\uDDF1', 4400, '29 (2002)', ''],
+    ['Cojata', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 4350, '', ''],
+    ['Chharka', 'Dolpa', 'Nepal', '\uD83C\uDDF3\uD83C\uDDF5', 4350, '', 'Old Buddhist village in Dolpa.'],
+    ['Achirik', 'Ladakh', 'India', '\uD83C\uDDEE\uD83C\uDDF3', 4349, '', ''],
+    ['Mina Pirquitas', 'Jujuy', 'Argentina', '\uD83C\uDDE6\uD83C\uDDF7', 4340, '', 'Mining company town. The highest settlement in Argentina.'],
+    ['Cerro de Pasco', 'Pasco', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 4338, '66,860 (2007)', 'Mining city.'],
+    ['Macusani', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 4315, '', ''],
+    ['Hankar', 'Ladakh', 'India', '\uD83C\uDDEE\uD83C\uDDF3', 4310, '', ''],
+    ['Pagri', 'Tibet', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 4300, '2,121 (2004)', 'Town near the border with Bhutan.'],
+    ['Ating', 'Ladakh', 'India', '\uD83C\uDDEE\uD83C\uDDF3', 4279, '', ''],
+    ['Khuldo', 'Ladakh', 'India', '\uD83C\uDDEE\uD83C\uDDF3', 4272, '', ''],
+    ['Kibber', 'Himachal Pradesh', 'India', '\uD83C\uDDEE\uD83C\uDDF3', 4270, '', 'Village in the Spiti Valley.'],
+    ['Demchok', 'Ladakh and Tibet', 'India and China', '\uD83C\uDDEE\uD83C\uDDF3\uD83C\uDDE8\uD83C\uDDF3', 4226, 'about 150', 'One hamlet split between the Indian and Chinese sides.'],
+    ['Ngari (Shiquanhe)', 'Tibet', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 4200, '10,282 (2010)', ''],
+    ['Colquechaca', 'Potos\u00ED', 'Bolivia', '\uD83C\uDDE7\uD83C\uDDF4', 4170, '4,272 (2012)', ''],
+    ['El Alto', 'La Paz', 'Bolivia', '\uD83C\uDDE7\uD83C\uDDF4', 4150, '846,880 (2012)', 'Part of the La Paz metro, and where La Paz\u2019s airport is.'],
+    ['Jun\u00EDn', 'Jun\u00EDn', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 4105, '', ''],
+    ['Ampultun', 'Ladakh', 'India', '\uD83C\uDDEE\uD83C\uDDF3', 4105, '', ''],
+    ['Jama', 'Jujuy', 'Argentina', '\uD83C\uDDE6\uD83C\uDDF7', 4100, '', 'Border post and settlement.'],
+    ['Durbuk', 'Ladakh', 'India', '\uD83C\uDDEE\uD83C\uDDF3', 4100, 'about 300', ''],
+    ['Nyoma', 'Ladakh', 'India', '\uD83C\uDDEE\uD83C\uDDF3', 4100, '', ''],
+    ['Potos\u00ED', 'Potos\u00ED', 'Bolivia', '\uD83C\uDDE7\uD83C\uDDF4', 4090, '176,022 (2012)', 'Capital of its department, famous for its silver mountain.'],
+    ['Gaocheng (Litang)', 'Sichuan', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 4014, '', ''],
+    ['Chatyndy', '', 'Kyrgyzstan', '\uD83C\uDDF0\uD83C\uDDEC', 4013, '', ''],
+    ['El Aguilar', 'Jujuy', 'Argentina', '\uD83C\uDDE6\uD83C\uDDF7', 3980, '3,655 (2001)', 'Mining company town.'],
+    ['Huanuni', 'Oruro', 'Bolivia', '\uD83C\uDDE7\uD83C\uDDF4', 3970, '20,336 (2012)', ''],
+    ['Dolpa', 'Karnali', 'Nepal', '\uD83C\uDDF3\uD83C\uDDF5', 3963, '', ''],
+    ['Castrovirreyna', 'Huancavelica', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3956, '', ''],
+    ['Catua', 'Jujuy', 'Argentina', '\uD83C\uDDE6\uD83C\uDDF7', 3950, '', ''],
+    ['Coranzuli', 'Jujuy', 'Argentina', '\uD83C\uDDE6\uD83C\uDDF7', 3940, '', ''],
+    ['Yauri', 'Cusco', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3924, '24,566 (2007)', ''],
+    ['Ayaviri', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3907, '18,881 (2007)', ''],
+    ['Llallagua', 'Potos\u00ED', 'Bolivia', '\uD83C\uDDE7\uD83C\uDDF4', 3895, '25,166 (2012)', ''],
+    ['Lampa', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3892, '', ''],
+    ['Putina', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3878, '14,318 (2007)', ''],
+    ['Viacha', 'La Paz', 'Bolivia', '\uD83C\uDDE7\uD83C\uDDF4', 3871, '62,516 (2012)', ''],
+    ['Juli', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3869, '', ''],
+    ['Ilave', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3862, '22,153 (2007)', ''],
+    ['Az\u00E1ngaro', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3859, '16,035 (2007)', ''],
+    ['Rinconada', 'Jujuy', 'Argentina', '\uD83C\uDDE6\uD83C\uDDF7', 3851, '', ''],
+    ['Laya', '', 'Bhutan', '\uD83C\uDDE7\uD83C\uDDF9', 3850, '', ''],
+    ['Tiwanaku', 'La Paz', 'Bolivia', '\uD83C\uDDE7\uD83C\uDDF4', 3850, '860 (2013)', 'Next to the ancient ruins of the same name.'],
+    ['Yunguyo', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3847, '11,934 (2007)', ''],
+    ['Huarina', 'La Paz', 'Bolivia', '\uD83C\uDDE7\uD83C\uDDF4', 3847, '', ''],
+    ['Shigatse', 'Tibet', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 3836, '63,967 (2010)', ''],
+    ['Huancan\u00E9', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3825, '', ''],
+    ['Juliaca', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3824, '216,716 (2007)', ''],
+    ['Puno', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3819, '120,229 (2007)', 'On the shore of Lake Titicaca.'],
+    ['Desaguadero', 'Puno', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3809, '14,365 (2007)', 'Border town on the line with Bolivia.'],
+    ['San Antonio de los Cobres', 'Salta', 'Argentina', '\uD83C\uDDE6\uD83C\uDDF7', 3775, '5,482 (2001)', ''],
+    ['Olacapato', 'Salta', 'Argentina', '\uD83C\uDDE6\uD83C\uDDF7', 3760, '', ''],
+    ['La Oroya', 'Jun\u00EDn', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3745, '29,417 (2007)', ''],
+    ['Oruro', 'Oruro', 'Bolivia', '\uD83C\uDDE7\uD83C\uDDF4', 3706, '264,943 (2012)', ''],
+    ['Gy\u00EAgu', 'Qinghai', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 3700, '', ''],
+    ['Santo Tom\u00E1s', 'Cusco', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3678, '', ''],
+    ['Huancavelica', 'Huancavelica', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3676, '41,331 (2007)', ''],
+    ['Uyuni', 'Potos\u00ED', 'Bolivia', '\uD83C\uDDE7\uD83C\uDDF4', 3660, '18,068 (2012)', 'Gateway to the salt flats.'],
+    ['Lhasa', 'Tibet', 'China', '\uD83C\uDDE8\uD83C\uDDF3', 3658, '216,663 (2010)', 'Capital of Tibet.'],
+    ['La Paz', 'La Paz', 'Bolivia', '\uD83C\uDDE7\uD83C\uDDF4', 3650, '758,845 (2012)', 'Bolivia\u2019s seat of government and the highest national capital on Earth.'],
+    ['Murghob', 'Gorno-Badakhshan', 'Tajikistan', '\uD83C\uDDF9\uD83C\uDDEF', 3618, '7,468 (2015)', 'On the Pamir Highway.'],
+    ['Sicuani', 'Cusco', 'Peru', '\uD83C\uDDF5\uD83C\uDDEA', 3548, '42,551 (2007)', '']
+  ];
+
+  /* ---------- Normalise ---------- */
+  var DATA = [];
+  CL.forEach(function (d) {
+    var e = { id: d.id, n: d.n, where: d.where, cl: true, pop: d.pop || '', note: d.note || '', tag: d.tag || '', seasonal: !!d.seasonal, approx: !!d.approx };
+    if (d.ft != null) { e.ft = d.ft; e.m = toM(d.ft); e.exact = d.ft * 0.3048; e.band = d.ft > LINE_FT ? 'above' : (d.ft === LINE_FT ? 'on' : 'below'); }
+    else { e.m = d.m; e.ft = toFt(d.m); e.exact = d.m; e.band = d.m > LINE_M ? 'above' : (d.m === LINE_M ? 'on' : 'below'); }
+    e.search = (d.n + ' ' + d.where + ' colorandoa cl usa').toLowerCase();
+    DATA.push(e);
+  });
+  EARTH.forEach(function (a, i) {
+    var m = a[4];
+    DATA.push({
+      id: 'e' + i, n: a[0], where: (a[1] ? a[1] + ', ' : '') + a[2], flag: a[3], cl: false,
+      m: m, ft: toFt(m), exact: m, pop: a[5], note: a[6], tag: '', seasonal: false, approx: false,
+      band: m > LINE_M ? 'above' : (m === LINE_M ? 'on' : 'below'),
+      search: (a[0] + ' ' + a[1] + ' ' + a[2]).toLowerCase()
+    });
+  });
+  DATA.forEach(function (d) {
+    d.dFt = d.ft - LINE_FT; d.dM = d.m - LINE_M;
+    if (d.seasonal) { d.rank = null; return; }
+    d.rank = 1 + DATA.filter(function (o) { return !o.seasonal && o.m > d.m; }).length;
+  });
+  var BYID = {};
+  DATA.forEach(function (d) { BYID[d.id] = d; });
+  BYID.__line = { id: '__line', n: 'The line', ft: LINE_FT, m: LINE_M, exact: LINE_M, band: 'on' };
+
+  var MARKERS = [
+    { m: 5500, show: 5500, ft: 18045, text: 'The long-term limit for human life. Anything higher is a seasonal stop for climbers.', scope: 'any' },
+    { m: 4998.7, show: 4999, ft: 16400, text: 'Colorandoa\u2019s treeline. The last twisted Rokerions stop here.', scope: 'cl' },
+    { m: 3800, show: 3800, ft: 12467, text: 'Colorandoa\u2019s oxygen line. At or above it, enrichment is basically everywhere. Below it, raw air.', scope: 'cl' },
+    { m: 3500, show: 3500, ft: 11483, text: 'The world list stops here. Below this, only Colorandoa is on the board.', scope: 'all' },
+    { m: 3218, show: 3219, ft: 10560, text: 'Colorandoa\u2019s floor. Nothing in the state sits lower.', scope: 'cl' }
+  ];
+
+  /* ---------- State ---------- */
+  var state = { scope: 'all', unit: 'ft', desc: true, q: '' };
+  try { var u0 = localStorage.getItem('line-unit'); if (UNITS.indexOf(u0) !== -1) state.unit = u0; } catch (err) {}
+
+  function val(d, unit) { return unit === 'ft' ? d.ft : (unit === 'm' ? d.m : (unit === 'mi' ? d.exact / 1609.344 : d.exact / 1000)); }
+  function elevStr(d, unit) { return (d.approx ? '~' : '') + num(val(d, unit), DEC[unit]); }
+  function deltaStr(d, unit) {
+    if (d.band === 'on') return d.id === 'summitbrook' ? 'On the line, to the foot' : 'On the line';
+    var v = unit === 'ft' ? d.dFt : (unit === 'm' ? d.dM : (d.exact - LINE_M) / (unit === 'mi' ? 1609.344 : 1000));
+    return (d.approx ? 'about ' : '') + num(Math.abs(v), DEC[unit]) + ' ' + unit + (v > 0 ? ' above the line' : ' below the line');
+  }
+  function visible() {
+    return DATA.filter(function (d) {
+      if (state.scope === 'cl' && !d.cl) return false;
+      if (state.scope === 'earth' && d.cl) return false;
+      if (state.q && d.search.indexOf(state.q) === -1) return false;
+      return true;
+    });
+  }
+
+  /* ---------- Scoreboard ---------- */
+  function scoreboard() {
+    ['above', 'on', 'below'].forEach(function (b) {
+      var all = DATA.filter(function (d) { return d.band === b; });
+      var cl = all.filter(function (d) { return d.cl; }).length;
+      var key = b === 'above' ? 'Above' : (b === 'on' ? 'On' : 'Below');
+      $('n' + key).textContent = all.length;
+      $('s' + key).textContent = cl + ' Colorandoa, ' + (all.length - cl) + (PLANET === 'gaia' ? ' rest of Gaia' : ' rest of Earth');
+    });
+  }
+
+  /* ---------- Ladder ---------- */
+  function rowHTML(d) {
+    var unit = state.unit, other = PAIR[unit];
+    var pct = Math.max(2, Math.min(100, (d.exact - MIN_M) / (MAX_M - MIN_M) * 100));
+    var linePct = (LINE_M - MIN_M) / (MAX_M - MIN_M) * 100;
+    var chips = '<span class="chip delta">' + esc(deltaStr(d, unit)) + '</span>';
+    if (d.pop) chips += '<span class="chip">Pop. ' + esc(d.pop) + '</span>';
+    if (d.tag) chips += '<span class="chip tag">' + esc(d.tag) + '</span>';
+    chips += '<button type="button" class="chip go" data-stand="' + d.id + '">Stand here</button>';
+    return '<article class="row ' + d.band + (d.cl ? ' cl' : '') + '" id="r-' + d.id + '" data-id="' + d.id + '">' +
+      '<div class="rank' + (d.rank ? '' : ' none') + '" aria-label="' + (d.rank ? 'Number ' + d.rank + ' by height' : 'Not ranked, seasonal') + '">' + (d.rank || '\u2014') + '</div>' +
+      '<div class="who"><h3>' + esc(d.n) + '</h3><p class="where">' +
+        (d.cl ? '<span class="badge">CL</span>' : (d.flag ? d.flag + ' ' : '')) + esc(d.where) + '</p></div>' +
+      '<div class="elev"><b>' + elevStr(d, unit) + '</b><i>' + unit + '</i><small>' + elevStr(d, other) + ' ' + other + '</small></div>' +
+      '<p class="meta">' + chips + '</p>' +
+      (d.note ? '<p class="note">' + esc(d.note) + '</p>' : '') +
+      '<div class="bar" aria-hidden="true"><span style="width:' + pct.toFixed(1) + '%"></span><i style="left:' + linePct.toFixed(1) + '%"></i></div>' +
+      '</article>';
+  }
+  function markerHTML(mk) {
+    var unit = state.unit;
+    return '<div class="marker"><b>' + (unit === 'm' ? num(mk.show, 0) : altStr(mk.ft, unit)) + ' ' + unit + '</b><p>' + esc(mk.text) + '</p></div>';
+  }
+  function bandHead(b, n) {
+    var title = b === 'above' ? 'Above the line' : 'Below the line';
+    return '<div class="band-h ' + b + '"><h2>' + title + '</h2><span>' + n + (n === 1 ? ' settlement' : ' settlements') + '</span></div>';
+  }
+  function lineBlock() {
+    return '<div class="lineblock" id="theline" data-id="__line"><h2>The line: ' + LINE_IN[state.unit] + '</h2>' +
+      '<p>' + LINE_WORDS[state.unit] + (PLANET === 'gaia' ? ' above the sea. Summitbrook lives here on Gaia too, with the same town in Tibet and the same village in Ladakh.' :
+        ' above the sea. Summitbrook lives here, and so do a town in Tibet and a village in Ladakh.') + '</p></div>';
+  }
+  function render() {
+    var rows = visible();
+    var searching = !!state.q;
+    var things = rows.map(function (d) { return { m: d.exact, d: d }; });
+    if (!searching) {
+      MARKERS.forEach(function (mk) {
+        if (mk.scope === 'cl' && state.scope === 'earth') return;
+        if (mk.scope === 'all' && state.scope !== 'all') return;
+        things.push({ m: mk.m, mk: mk });
+      });
+    }
+    things.sort(function (a, b) { return state.desc ? b.m - a.m : a.m - b.m; });
+    var bands = { above: [], on: [], below: [] };
+    things.forEach(function (t) {
+      var b = t.d ? t.d.band : (t.m > LINE_M ? 'above' : 'below');
+      bands[b].push(t);
+    });
+    var count = function (b) { return bands[b].filter(function (t) { return t.d; }).length; };
+    var html = '';
+    var emit = function (b) {
+      if (b === 'on') {
+        if (!searching || count('on')) html += lineBlock();
+      } else if (count(b)) {
+        html += bandHead(b, count(b));
+      }
+      bands[b].forEach(function (t) { html += t.d ? rowHTML(t.d) : (count(b) ? markerHTML(t.mk) : ''); });
+    };
+    (state.desc ? ['above', 'on', 'below'] : ['below', 'on', 'above']).forEach(emit);
+    if (!rows.length) {
+      html = '<div class="empty">No settlement matches \u201C' + esc(state.q) + '\u201D. Check the spelling, or clear the search to see the whole ladder.<br><button type="button" id="clearq">Clear the search</button></div>';
+    }
+    $('ladder').innerHTML = html;
+    var c = $('clearq');
+    if (c) c.addEventListener('click', function () { $('q').value = ''; state.q = ''; render(); });
+    observeRows();
+  }
+  $('ladder').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-stand]');
+    if (!b) return;
+    var d = BYID[b.getAttribute('data-stand')];
+    if (!d) return;
+    $('sandbox').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    flyTo(d.ft, d.n);
+  });
+
+  /* ---------- The pile ---------- */
+  var PILE_T = { ft: [[11000, 13000, 17000, 19000], 0.3048, 0], m: [[3500, 4000, 5000, 5500], 1, 0], mi: [[2.25, 2.5, 3, 3.5], 1609.344, 2], km: [[3.5, 4, 5, 5.5], 1000, 1] };
+  var PILE_MARKS = [[3800, 'oxygen line'], [5500, 'human limit']];
+  function drawPile() {
+    var W = 360, padL = 52, padR = 46, top = 12, rowH = 13, bins = 29;
+    var plotH = (bins - 1) * rowH, H = top + plotH + 16;
+    var y = function (m) { return top + (MAX_M - m) / (MAX_M - MIN_M) * plotH; };
+    var cx = padL + (W - padL - padR) / 2;
+    var groups = [];
+    for (var i = 0; i < bins; i++) groups.push([]);
+    DATA.forEach(function (d) {
+      if (state.scope === 'cl' && !d.cl) return;
+      if (state.scope === 'earth' && d.cl) return;
+      var idx = Math.max(0, Math.min(bins - 1, Math.round((d.exact - MIN_M) / 100)));
+      groups[idx].push(d);
+    });
+    var unit = state.unit;
+    var T = PILE_T[unit];
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' +
+      '<defs><linearGradient id="clgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--cl-a)"/><stop offset="1" stop-color="var(--cl-b)"/></linearGradient></defs>';
+    T[0].forEach(function (t) {
+      var yy = y(t * T[1]).toFixed(1);
+      s += '<line class="gline" x1="' + padL + '" x2="' + (W - 8) + '" y1="' + yy + '" y2="' + yy + '"/>' +
+        '<text x="' + (padL - 8) + '" y="' + (+yy + 3.5) + '" text-anchor="end">' + num(t, T[2]) + '</text>';
+    });
+    var yl = y(LINE_M).toFixed(1);
+    s += '<line class="beamline" x1="' + (padL - 6) + '" x2="' + (W - 6) + '" y1="' + yl + '" y2="' + yl + '"/>' +
+      '<text class="beamtext" x="' + (padL - 8) + '" y="' + (+yl + 4) + '" text-anchor="end">' + LINE_IN[unit].split(' ')[0] + '</text>' +
+      '<text x="' + (W - 6) + '" y="' + (+yl - 6) + '" text-anchor="end" class="beamtext">the line</text>';
+    if (state.scope !== 'earth') {
+      PILE_MARKS.forEach(function (pm) {
+        var ym = y(pm[0]).toFixed(1);
+        s += '<line class="mark" x1="' + padL + '" x2="' + (W - 6) + '" y1="' + ym + '" y2="' + ym + '"/>' +
+          '<text x="' + (W - 6) + '" y="' + (+ym + 12) + '" text-anchor="end">' + pm[1] + '</text>';
+      });
+    }
+    groups.forEach(function (g, idx) {
+      g.sort(function (a, b) { return (b.cl - a.cl) || (b.exact - a.exact); });
+      var order = [];
+      g.forEach(function (d, k) { if (k % 2) order.push(d); else order.unshift(d); });
+      var step = Math.min(11, (W - padL - padR - 8) / Math.max(1, order.length));
+      var yy = y(MIN_M + idx * 100);
+      order.forEach(function (d, k) {
+        var x = cx + (k - (order.length - 1) / 2) * step;
+        var cls = d.seasonal ? 'd-seasonal' : (d.band === 'on' ? 'd-on' : (d.cl ? 'd-cl' : 'd-earth'));
+        s += '<circle class="' + cls + '" cx="' + x.toFixed(1) + '" cy="' + yy.toFixed(1) + '" r="' + (d.cl ? 4.6 : 3.9) + '"><title>' + esc(d.n) + ', ' + elevStr(d, unit) + ' ' + unit + '</title></circle>';
+      });
+    });
+    s += '</svg>';
+    var el = $('pile');
+    el.innerHTML = s;
+    el._y = function (clientY) {
+      var r = el.querySelector('svg').getBoundingClientRect();
+      var py = (clientY - r.top) / r.height * H;
+      return MAX_M - (py - top) / plotH * (MAX_M - MIN_M);
+    };
+  }
+  $('pile').addEventListener('click', function (ev) {
+    var m = this._y(ev.clientY), best = null;
+    visible().forEach(function (d) { if (!best || Math.abs(d.exact - m) < Math.abs(best.exact - m)) best = d; });
+    if (best) goTo(best.id);
+  });
+
+  /* ---------- Roster ---------- */
+  var ROSTER = [
+    ['Summitcrest and the sky towns', 'The seven highest permanent settlements on Earth, plus the seasonal town above them.',
+      [['Summitcrest', '~30,000', 'summitcrest'], ['Axspororidge', '~12,000', 'axspororidge'], ['Luxora', '~12,000', 'luxora'], ['Teyake\u00F1roken', '~10,000', 'teyakenroken'], ['Bressler', '~11,000', 'bressler'], ['Skawenta', '', 'skawenta'], ['Rinconada Alta', '~50,000', 'rinconada-alta'], ['Ohwentsarako', 'seasonal', 'ohwentsarako']]],
+    ['Summitbrook and the inner ring', 'The capital and the towns right around it, in the Crown Heart.',
+      [['Summitbrook', '10 million', 'summitbrook'], ['Cyrillo', '~63,000', 'cyrillo'], ['Shale', '~116,000'], ['Camillon', '~50,000'], ['Lysandor', '~46,000'], ['Van Burrow', '~26,000'], ['Skeneatola', '~14,400'], ['Magnus', '~14,000'], ['North Summitbrook', '~13,600'], ['Cazenara', '~13,600'], ['Solmere', '~13,000'], ['Mattiesdale', '~12,800'], ['Marcova', '~12,400'], ['Eldridge', '~11,600'], ['Rochambeau', '~9,800'], ['Breverton', '~8,000'], ['Knossa', '~6,800'], ['East Summitbrook', '~6,000'], ['Tullian', '~5,400'], ['Liverport', '~4,600'], ['Nedwyn', '~4,400'], ['Ohwendaga'], ['Geddmons'], ['Baldenville'], ['Manlow'], ['Halite'], ['DeWinter']]],
+    ['Eastern Basin', 'About 3.5 million people.',
+      [['Aspenwood', '~1.1 million', 'aspenwood'], ['Bristlecone', '~600,000'], ['Larchfield', '~500,000'], ['Silverleaf', '~300,000'], ['Timberline', '~250,000'], ['Tamarack', '~220,000'], ['Ashgrove', '~200,000'], ['Redbark', '~180,000'], ['Hemlock', '~150,000']]],
+    ['Southern Foothills', 'About 3.3 million people.',
+      [['Monolith', '~800,000'], ['Cotton Butte', '~600,000'], ['Cragscarp', '~500,000'], ['Quartzite', '~400,000'], ['Cairnfield', '~300,000'], ['Talus', '~250,000'], ['Moraine', '~250,000'], ['Arete', '~200,000']]],
+    ['Northern Lakeshore', 'About 3.3 million people.',
+      [['Riptide', '~800,000'], ['Beacon', '~600,000'], ['Breakwater', '~500,000'], ['Sandbar', '~400,000'], ['Kingfisher', '~300,000'], ['Whitecap', '~250,000'], ['Shoal', '~250,000'], ['Undertow', '~200,000']]],
+    ['Western Valleys', 'About 3.3 million people.',
+      [['Chinook', '~800,000'], ['Solstice', '~600,000'], ['Horizon', '~500,000'], ['Nimbus', '~400,000'], ['Equinox', '~300,000'], ['Stratus', '~250,000'], ['Westwind', '~250,000'], ['Starfall', '~200,000']]],
+    ['The Metro', 'Colorandoa City, its five boroughs, and the towns next door.',
+      [['Colorandoa City', '8.9 million', 'colorandoa-city'], ['Manhawen', 'borough'], ['Brecklyn', 'borough'], ['Crowns', 'borough'], ['The Branx', 'borough'], ['Staton Mesa', 'borough'], ['Nassara'], ['Manhasswet']]],
+    ['The Aleron Region', '',
+      [['Aleron'], ['Blackened Hills', '', 'blackened-hills'], ['Cliffton Mesa', '', 'cliffton-mesa'], ['Niskahentake'], ['Colonvale']]],
+    ['The Doorlands', 'Senweka country.',
+      [['Selvak', '', 'selvak'], ['Bataven']]],
+    ['Around the state', 'On the map, with the region not locked yet.',
+      [['Colorandoa Springs', '~450,000', 'colorandoa-springs'], ['Coalinga', '', 'coalinga'], ['Bouldren', '', 'bouldren'], ['Ospero', '', 'ospero'], ['Ohwensennaha', '', 'ohwensennaha'], ['Ohwenkara', '', 'ohwenkara'], ['Marston'], ['Utessa'], ['Auberon'], ['Drystone'], ['Canenwaigua'], ['Lucerne'], ['Ilium'], ['Skanwectady'], ['Onrenoa'], ['Portsham'], ['Planoboro'], ['Genweneo'], ['Broxondara'], ['Morrisdale'], ['Star Point'], ['Wheeler'], ['Akwensasne']]]
+  ];
+  function drawRoster() {
+    var unit = state.unit, html = '';
+    ROSTER.forEach(function (g) {
+      html += '<div class="group"><h3>' + esc(g[0]) + '</h3>' + (g[1] ? '<p>' + esc(PLANET === 'gaia' ? g[1].replace(/on Earth/g, 'on Gaia') : g[1]) + '</p>' : '<p></p>') + '<ul class="towns">';
+      g[2].forEach(function (t) {
+        var d = t[2] ? BYID[t[2]] : null;
+        if (d) {
+          html += '<li><button type="button" class="town" data-go="' + d.id + '"><b>' + esc(t[0]) + '</b><small>' + elevStr(d, unit) + ' ' + unit + (t[1] ? ', ' + esc(t[1]) : '') + '</small></button></li>';
+        } else {
+          html += '<li class="town"><b>' + esc(t[0]) + '</b>' + (t[1] ? '<small>' + esc(t[1]) + '</small>' : '') + '</li>';
+        }
+      });
+      html += '</ul></div>';
+    });
+    $('roster').innerHTML = html;
+  }
+  $('roster').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-go]');
+    if (b) goTo(b.getAttribute('data-go'));
+  });
+  function goTo(id) {
+    var el = $('r-' + id);
+    if (!el) {
+      state.scope = 'all'; state.q = ''; $('q').value = '';
+      syncButtons(); render(); drawPile();
+      el = $('r-' + id);
+    }
+    if (!el) return;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+  }
+
+  /* ---------- Ladder altimeter ---------- */
+  var hud = $('hud'), activeId = null, hudVal = 0, rowEls = [], ticking = false;
+  function observeRows() {
+    rowEls = Array.prototype.slice.call(document.querySelectorAll('#ladder .row, #theline'));
+    activeId = null;
+    pickActive();
+  }
+  function pickActive() {
+    var vh = window.innerHeight, mid = vh / 2, best = null, bd = 1e9;
+    var lr = $('ladder').getBoundingClientRect();
+    hud.classList.toggle('show', lr.top < vh * 0.62 && lr.bottom > vh * 0.38);
+    for (var i = 0; i < rowEls.length; i++) {
+      var r = rowEls[i].getBoundingClientRect();
+      if (r.bottom < 0 || r.top > vh) continue;
+      var dist = Math.abs((r.top + r.bottom) / 2 - mid);
+      if (dist < bd) { bd = dist; best = rowEls[i]; }
+    }
+    if (!best) return;
+    var id = best.getAttribute('data-id');
+    if (id === activeId) return;
+    for (var k = 0; k < rowEls.length; k++) rowEls[k].classList.remove('active');
+    best.classList.add('active');
+    activeId = id;
+    setHud(BYID[id]);
+  }
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () { ticking = false; pickActive(); });
+  }
+  function setHud(d) {
+    if (!d) return;
+    var unit = state.unit, to = val(d, unit), dec = DEC[unit];
+    $('hudName').textContent = d.n;
+    $('hudUnit').textContent = unit;
+    $('hudDelta').textContent = deltaStr(d, unit);
+    var col = d.band === 'above' ? 'var(--above)' : (d.band === 'on' ? 'var(--gold)' : 'var(--below)');
+    hud.style.setProperty('--hudband', col);
+    var alt = clamp01((d.exact - MIN_M) / (MAX_M - MIN_M));
+    $('needle').style.top = 'calc(' + ((1 - alt) * 100).toFixed(1) + '% - 2px)';
+    document.documentElement.style.setProperty('--hi', (0.15 + alt * 0.85).toFixed(2));
+    document.documentElement.style.setProperty('--lo', (1 - alt * 0.85).toFixed(2));
+    var from = hudVal, el = $('hudNum');
+    hudVal = to;
+    if (reduce) { el.textContent = num(to, dec); return; }
+    var t0 = null, token = (setHud._t = (setHud._t || 0) + 1);
+    function step(t) {
+      if (token !== setHud._t) return;
+      if (!t0) t0 = t;
+      var p = Math.min(1, (t - t0) / 280);
+      el.textContent = num(from + (to - from) * p, dec);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  $('jump').addEventListener('click', function () {
+    var el = $('theline');
+    if (!el) { state.q = ''; $('q').value = ''; render(); el = $('theline'); }
+    if (el) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+  });
+
+  /* ---------- Ladder controls ---------- */
+  function syncButtons() {
+    document.querySelectorAll('[data-scope]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-scope') === state.scope)); });
+    document.querySelectorAll('[data-unit]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-unit') === state.unit)); });
+    $('sort').textContent = state.desc ? 'Highest first' : 'Lowest first';
+    $('unitcycle').textContent = state.unit;
+    $('unitcycle').setAttribute('aria-label', 'Units: ' + state.unit + '. Tap to change.');
+  }
+  function setUnit(unit) {
+    state.unit = unit;
+    try { localStorage.setItem('line-unit', unit); } catch (err) {}
+    syncButtons(); render(); drawPile(); drawRoster();
+    if (PLANET === 'gaia') { drawRuler(); drawSpec(); }
+    if (activeId) setHud(BYID[activeId]);
+    refresh(true);
+  }
+  document.querySelectorAll('[data-scope]').forEach(function (b) {
+    b.addEventListener('click', function () { state.scope = b.getAttribute('data-scope'); syncButtons(); render(); drawPile(); });
+  });
+  document.querySelectorAll('[data-unit]').forEach(function (b) {
+    b.addEventListener('click', function () { setUnit(b.getAttribute('data-unit')); });
+  });
+  $('unitcycle').addEventListener('click', function () { setUnit(UNITS[(UNITS.indexOf(state.unit) + 1) % UNITS.length]); });
+  $('sort').addEventListener('click', function () { state.desc = !state.desc; syncButtons(); render(); });
+  $('q').addEventListener('input', function () { state.q = this.value.trim().toLowerCase(); render(); });
+
+  /* =====================================================================
+     The sandbox
+     ===================================================================== */
+  var ZONES_UP = [
+    [0, 'Thick air', 'Sea-level air, give or take. Thick, humid, and easy to breathe. Every other number on this page gets compared to this.'],
+    [3000, 'Low mountains', 'Standing still, you would barely notice. Sprint, and the burn shows up a step early. Airliner cabins are pumped up to feel like the top of this range.'],
+    [8000, 'High altitude', 'Visitors get headaches and lousy sleep for the first couple of nights. The sky is a deeper blue, the sun bites harder, and water boils cool enough that pasta takes longer.'],
+    [12467, 'Very high altitude', 'Above Colorandoa\u2019s oxygen line. A flight of stairs feels like a set of sprints until you have lived here a while. Hard sunlight, dry air, cold in the shade.'],
+    [18045, 'Extreme altitude', 'Nobody lives up here for good. Even acclimatized climbers slowly lose weight and sleep, and every job takes twice as long as it should.'],
+    [26247, 'The death zone', 'The body can\u2019t keep up at all. Without bottled oxygen, thinking gets slow and strange and the clock is running. Overhead, the sky is turning a darker blue.'],
+    [31400, 'Jet country', 'Higher than any mountain on Earth. The clouds are a floor far below you, and without a mask you have about a minute of clear thinking, or less.'],
+    [45000, 'Lower stratosphere', 'Above the weather. The sky is deep indigo straight up and the horizon has a visible bend to it. Only pressurized cockpits and pressure suits come up here.'],
+    [63000, 'Past the Armstrong limit', 'Pressure suit or nothing. The pressure is so low that water boils at body temperature, so spit and tears would bubble. The sky is black at noon and the Earth curves away below.'],
+    [164042, 'Mesosphere', 'Too high for balloons, too low for satellites. The air barely counts as air, but there is still enough of it to burn up meteors right about here.'],
+    [278871, 'The edge of space', 'The coldest part of the atmosphere is just below you. Stars don\u2019t twinkle, the sky is black, and the air is a thin blue line on the curve of the Earth. The 100 km K\u00E1rm\u00E1n line is only 724 ft above the top of this slider.']
+  ];
+  var ZONES_DOWN = [
+    [0, 'Sunlight zone', 'Warm, bright, blue-green water with the surface shimmering overhead. Nearly all the ocean life you have ever seen lives in this layer.'],
+    [656, 'Twilight zone', 'The last sunlight fades to a dim blue glow from above. The water is cold now, and animals start making their own light.'],
+    [3281, 'Midnight zone', 'No sunlight at all. Pitch black and just above freezing. The only light is the blue-green flash of living things.'],
+    [13123, 'The abyss', 'Flat, black, near-freezing plains of mud. The water presses down with hundreds of times the weight of the whole atmosphere.'],
+    [19685, 'Hadal zone', 'Only the deep trenches reach this far. Near the bottom the pressure passes 1,000 atmospheres, and things still live here.']
+  ];
+  var MARKS = [
+    [-35876, 'The bottom of the Challenger Deep'], [-27349, 'The deepest fish ever filmed'], [-19685, 'The start of the hadal zone'],
+    [-13123, 'The start of the abyss'], [-12500, 'The wreck of the Titanic'], [-12100, 'The average depth of the ocean'],
+    [-9816, 'The deepest whale dive on record'], [-3281, 'The end of the twilight zone'], [-1412, 'The Dead Sea shore, the lowest land on Earth'],
+    [-1090, 'The deepest scuba dive ever'], [-656, 'The end of the sunlight zone'], [-282, 'Badwater Basin in Death Valley'],
+    [0, 'Sea level'], [2717, 'The tip of the Burj Khalifa'], [5280, 'Denver, one mile up'], [10560, 'Selvak, Colorandoa\u2019s floor'],
+    [12467, 'Colorandoa\u2019s oxygen line'], [13764, 'Colorandoa City'], [14764, 'Summitbrook, the line'], [14877, 'Pyratech Arena'],
+    [16400, 'Colorandoa\u2019s treeline'], [16732, 'La Rinconada, Peru'], [17598, 'Summitcrest and Everest South Base Camp'],
+    [18045, 'The long-term limit for human life'], [19341, 'Kilimanjaro\u2019s summit'], [19629, 'Ohwentsarako'], [20310, 'Denali\u2019s summit'],
+    [20340, 'Rinconada Alta\u2019s highest mine shafts'], [22838, 'Aconcagua\u2019s summit'], [26247, 'The death zone, 8,000 meters'],
+    [28251, 'K2\u2019s summit'], [29032, 'Everest\u2019s summit'], [31332, 'Mount Ohwenroken\u2019s summit'], [36000, 'A typical airliner cruise'],
+    [60000, 'Concorde\u2019s cruise'], [63000, 'The Armstrong limit'], [70000, 'A U-2 spy plane'], [85000, 'An SR-71 Blackbird'],
+    [127852, 'Felix Baumgartner\u2019s jump'], [135890, 'Alan Eustace\u2019s jump, the highest ever'], [164042, 'The top of the stratosphere'],
+    [264000, '50 miles, where the US hands out astronaut wings'], [278871, 'The top of the mesosphere'], [327360, '62 miles up']
+  ];
+  var PRESETS = [
+    ['The line', 14764], ['Sea level', 0], ['Summitcrest', 17598], ['Everest', 29032], ['Mount Ohwenroken', 31332], ['Airliner cruise', 36000],
+    ['Armstrong limit', 63000], ['Baumgartner\u2019s jump', 127852], ['62 miles up', 327360], ['Dead Sea shore', -1412], ['Titanic', -12500], ['Challenger Deep', -35876]
+  ];
+  var SNAPS = MARKS.map(function (m) { return m[0]; });
+  var STEP = { ft: 100, m: 50, mi: 0.1, km: 0.1 }, ROUND = { ft: 10, m: 5, mi: 0.01, km: 0.01 };
+  var TRACK = {
+    above: 'linear-gradient(90deg, #17C9B8 0%, #FFD447 21%, #FF5FAE 30%, #7A3CFF 44%, #1B1464 66%, #03021A 100%)',
+    below: 'linear-gradient(90deg, #3CC8E4 0%, #1273B8 14%, #0A2F6E 32%, #050E33 60%, #01030C 100%)'
+  };
+
+  var SB = { alt: 0, mode: 'above', last: { above: 0, below: 0 }, token: 0, dragging: false };
+  var altIn = $('alt'), slider = $('slider'), saidTimer = null, typeTimer = null;
+
+  function sig(v) {
+    if (v === 0) return '0';
+    var a = Math.abs(v);
+    if (a >= 100) return v.toFixed(1);
+    if (a >= 10) return v.toFixed(2);
+    if (a >= 1) return v.toFixed(3);
+    if (a >= 0.001) return v.toFixed(a >= 0.1 ? 4 : 5);
+    var e = Math.floor(Math.log10(a)), m = (v / Math.pow(10, e)).toFixed(2);
+    if (m === '10.00') { m = '1.00'; e++; }
+    var SUP = { '-': '\u207B', '0': '\u2070', '1': '\u00B9', '2': '\u00B2', '3': '\u00B3', '4': '\u2074', '5': '\u2075', '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079' };
+    return m + ' \u00D7 10' + String(e).split('').map(function (c) { return SUP[c]; }).join('');
+  }
+  function share(r) { // ratio to sea level, as words
+    if (r >= 1.005) return r.toFixed(2) + ' times sea level';
+    var v = r * 100;
+    if (v >= 99.5) return 'the same as sea level';
+    if (v >= 10) return Math.round(v) + '% of sea level';
+    if (v >= 1) return v.toFixed(1) + '% of sea level';
+    if (v >= 0.01) return v.toFixed(2) + '% of sea level';
+    return 'less than 0.01% of sea level';
+  }
+  function pct(r) {
+    var v = r * 100;
+    if (v >= 10) return Math.round(v) + '%';
+    if (v >= 1) return v.toFixed(1) + '%';
+    if (v >= 0.01) return v.toFixed(2) + '%';
+    return 'less than 0.01%';
+  }
+  var minus = function (n) { return (n < 0 ? '\u2212' : '') + Math.abs(n); };
+  function secs(lo, hi) {
+    var one = function (s) {
+      if (lo >= 60) { var m = s / 60; return String(m >= 10 ? Math.round(m) : Math.round(m * 10) / 10); }
+      return String(Math.round(s));
+    };
+    var a = one(lo), b = one(hi);
+    return (a === b ? a : a + '\u2013' + b) + '<i>' + (lo >= 60 ? 'min' : 'sec') + '</i>';
+  }
+  function setG(id, html, sub, cls) {
+    var g = $(id), b = g.querySelector('b');
+    b.innerHTML = html;
+    b.className = b.textContent.length > 9 ? 'long' : '';
+    g.querySelector('small').textContent = sub;
+    g.className = g.className.replace(/ (good|warn|bad)/g, '') + (cls ? ' ' + cls : '');
+  }
+  function sizeInput() {
+    var mir = $('altMirror');
+    mir.textContent = altIn.value || '0';
+    altIn.style.width = (mir.offsetWidth + 6) + 'px';
+  }
+  function say(msg) {
+    $('said').textContent = msg;
+    clearTimeout(saidTimer);
+    if (msg) saidTimer = setTimeout(function () { $('said').textContent = ''; }, 4500);
+  }
+
+  function refresh(force) {
+    var ft = SB.alt, unit = state.unit, below = SB.mode === 'below';
+    if (force || document.activeElement !== altIn) { altIn.value = altStr(ft, unit); sizeInput(); }
+    $('altUnit').textContent = unit;
+    $('others').innerHTML = UNITS.filter(function (u) { return u !== unit; }).map(function (u) { return '<span>' + altStr(ft, u) + ' ' + u + '</span>'; }).join('');
+    if (!SB.dragging) slider.value = Math.round(Math.sqrt(Math.abs(ft) / (below ? -MAX_DOWN : MAX_UP)) * 2000);
+    slider.style.setProperty('--trackgrad', TRACK[SB.mode]);
+    document.querySelectorAll('[data-mode]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === SB.mode)); });
+    $('endB').textContent = altStr(below ? MAX_DOWN : MAX_UP, unit) + ' ' + unit;
+    document.querySelectorAll('#presets button').forEach(function (b) { b.setAttribute('aria-pressed', String(Math.abs(+b.getAttribute('data-ft') - ft) < 0.5)); });
+
+    // zone and feel
+    var zones = below ? ZONES_DOWN : ZONES_UP, a = Math.abs(ft), zi = 0;
+    for (var i = 0; i < zones.length; i++) if (a >= zones[i][0]) zi = i;
+    $('zone').textContent = zones[zi][1];
+    $('feelTitle').textContent = zones[zi][1];
+    $('feelText').textContent = zones[zi][2];
+
+    // numbers
+    if (PLANET === 'gaia') gaiaNumbers(ft, below); else earthNumbers(ft, below);
+
+    // what is nearby
+    var tol = Math.max(6, a * 0.0012), lv = null, up = null, dn = null;
+    MARKS.forEach(function (m) {
+      if (Math.abs(m[0] - ft) <= tol) { if (!lv || Math.abs(m[0] - ft) < Math.abs(lv[0] - ft)) lv = m; }
+      else if (m[0] > ft) { if (!up) up = m; }
+      else dn = m;
+    });
+    var li = '';
+    if (lv) li += '<li><span class="lv">Level with</span><b>' + esc(lv[1]) + '</b></li>';
+    if (up) li += '<li><span>Next up</span><div>' + esc(up[1]) + ', ' + altStr(up[0] - ft, unit) + ' ' + unit + ' higher</div></li>';
+    if (dn) li += '<li><span>Next down</span><div>' + esc(dn[1]) + ', ' + altStr(ft - dn[0], unit) + ' ' + unit + ' lower</div></li>';
+    $('near').innerHTML = li;
+    if (reduce || !sceneRunning) draw(SB.alt, 0);
+  }
+  function earthNumbers(ft, below) {
+    $('gSl').textContent = 'Simulated SpO2'; $('gFl').textContent = 'FAA performance time';
+    $('gE').hidden = true; $('gK').hidden = true;
+    var z = ft * 0.3048, A = PHYS.atm(z), B = PHYS.boil(A.P), s = PHYS.spo2(A.P), e = PHYS.ept(ft), o2 = 0.2095 * A.P / 1000;
+    var tC = Math.round(A.T - 273.15), tF = Math.round((A.T - 273.15) * 1.8 + 32);
+    var water = 101325 + 1025 * 9.80665 * Math.max(0, -z);
+    if (below) {
+      $('feelNow').textContent = 'In the water, about ' + num(water / 101325, water / 101325 < 100 ? 1 : 0) + ' atmospheres are pressing on you. If this were a dry shaft open to the sky instead, the air would be about ' + minus(tF) + '\u00B0F (' + minus(tC) + '\u00B0C) and ' + (A.rho / 1.225).toFixed(2) + ' times as thick as at the beach.';
+    } else {
+      $('feelNow').textContent = 'About ' + minus(tF) + '\u00B0F (' + minus(tC) + '\u00B0C) outside on an average day. ' +
+        (ft < 63000 ? 'Each breath carries ' + pct(A.P / 101325) + ' of the oxygen it would at sea level.' : 'The air pressure is ' + pct(A.P / 101325) + ' of what it is at sea level.');
+    }
+    $('gPl').textContent = below ? 'Pressure in open air' : 'Pressure';
+    setG('gP', sig(A.P / 1e6) + '<i>MPa</i>', share(A.P / 101325).replace(/^./, function (c) { return c.toUpperCase(); }) + '.');
+    setG('gD', sig(A.rho) + '<i>kg/m\u00B3</i>', share(A.rho / 1.225).replace(/^./, function (c) { return c.toUpperCase(); }) + '.');
+    setG('gS', Math.round(s) + '<i>%</i>',
+      (below && s >= 98.5) ? 'Maxed out. There is more oxygen here than your blood can carry.' : s >= 94 ? 'About what you would read at the beach.' : s >= 88 ? 'Normal for people who live this high.' : s >= 75 ? 'Low. Acclimatized people function here, slowly.' :
+      s >= 40 ? 'Dangerous without bottled oxygen.' : s > 0.5 ? 'You pass out fast without a mask.' : 'No usable oxygen. Pressure suit or nothing.',
+      s >= 94 ? 'good' : (s >= 80 ? 'warn' : 'bad'));
+    var bC = B.K - 273.15, bF = bC * 1.8 + 32;
+    setG('gB', (bF < 0 ? '\u2212' : '') + num(Math.abs(bF), 1) + '<i>\u00B0F</i>',
+      (bC < 0 ? '\u2212' : '') + num(Math.abs(bC), 1) + '\u00B0C, ' + num(B.K, 1) + ' K' +
+      (B.ice ? '. Liquid water can\u2019t exist here, so ice turns straight to vapor.' : (Math.abs(bC - 37) < 1 ? '. That is body temperature.' : (bC < 36 ? '. Cooler than your body.' : ''))));
+    setG('gO', sig(o2) + '<i>kPa</i>', share(o2 / 21.2276).replace(/^./, function (c) { return c.toUpperCase(); }) + '.');
+    if (e) setG('gF', secs(e[0], e[1]), 'How long you can think straight without extra oxygen.', e[1] < 150 ? 'bad' : 'warn');
+    else setG('gF', 'No limit', ft >= 14000 ? 'None listed, but FAA rules keep pilots on oxygen the whole time above 14,000 ft.' :
+      ft >= 12500 ? 'None listed, but FAA rules put pilots on oxygen after 30 minutes above 12,500 ft.' : 'The FAA table starts at 18,000 ft.', 'good');
+    $('gW').hidden = !below;
+    if (below) setG('gW', sig(water / 1e6) + '<i>MPa</i>', num(water / 101325, water / 101325 < 100 ? 1 : 0) + ' atmospheres, or about ' + num(water / 6894.757, 0) + ' pounds on every square inch.');
+    $('fine').textContent = below ? 'The six air tiles treat this depth as a dry shaft open to the sky. The ocean tile is the real water pressure.' : '';
+  }
+
+  function setAlt(ft, passing) {
+    ft = Math.max(MAX_DOWN, Math.min(MAX_UP, ft));
+    SB.alt = ft;
+    if (ft < 0) SB.mode = 'below'; else if (ft > 0) SB.mode = 'above';
+    if (!passing) SB.last[SB.mode] = ft;
+    refresh();
+  }
+  function flyTo(ft, name) {
+    var to = Math.max(MAX_DOWN, Math.min(MAX_UP, ft));
+    if (ft > MAX_UP) say('That is past the top of the sandbox, so you are at ' + altStr(MAX_UP, state.unit) + ' ' + state.unit + '.');
+    else if (ft < MAX_DOWN) say('Nothing on ' + (PLANET === 'gaia' ? 'Gaia' : 'Earth') + ' goes deeper than the Challenger Deep, so you are at the bottom.');
+    else if (name) say('Standing at ' + name + '.');
+    var from = SB.alt, token = ++SB.token;
+    if (reduce || Math.abs(to - from) < 1) { setAlt(to); return; }
+    var dur = 600 + 1100 * Math.min(1, Math.sqrt(Math.abs(to - from) / 120000)), t0 = null;
+    function step(t) {
+      if (token !== SB.token) return;
+      if (!t0) t0 = t;
+      var p = Math.min(1, (t - t0) / dur), ez = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+      if (p >= 1) setAlt(to); else setAlt(from + (to - from) * ez, true);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* typing */
+  function commit(blurAfter) {
+    clearTimeout(typeTimer);
+    if (altIn.value === altStr(SB.alt, state.unit)) { if (blurAfter) altIn.blur(); return; }
+    var raw = altIn.value.trim().toLowerCase().replace(/[,\s]/g, '').replace(/\u2212/g, '-');
+    var um = raw.match(/(feet|foot|ft|kilometers|kilometres|km|miles|mile|mi|meters|metres|m)$/);
+    if (um) {
+      raw = raw.slice(0, -um[0].length);
+      var nu = /^(feet|foot|ft)$/.test(um[0]) ? 'ft' : (/^k/.test(um[0]) ? 'km' : (/^mi/.test(um[0]) ? 'mi' : 'm'));
+      if (nu !== state.unit) setUnit(nu);
+    }
+    var v = parseFloat(raw);
+    if (isNaN(v)) { if (blurAfter) refresh(true); return; }
+    if (SB.mode === 'below' && v > 0 && raw.charAt(0) !== '+') v = -v;
+    flyTo(v / PER_FT[state.unit]);
+    if (blurAfter) { altIn.blur(); }
+  }
+  altIn.addEventListener('focus', function () { setTimeout(function () { try { altIn.select(); } catch (err) {} }, 0); });
+  altIn.addEventListener('input', function () { sizeInput(); clearTimeout(typeTimer); typeTimer = setTimeout(function () { commit(false); }, 800); });
+  altIn.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); commit(true); } });
+  altIn.addEventListener('blur', function () { commit(false); setTimeout(function () { refresh(true); }, 0); });
+
+  /* slider */
+  slider.addEventListener('input', function () {
+    SB.dragging = true; SB.token++;
+    var below = SB.mode === 'below', max = below ? -MAX_DOWN : MAX_UP, p = +slider.value / 2000, a = max * p * p, snapped = false;
+    for (var i = 0; i < SNAPS.length; i++) {
+      var sv = SNAPS[i];
+      if ((below && sv > 0) || (!below && sv < 0)) continue;
+      if (Math.abs(Math.sqrt(Math.abs(sv) / max) - p) < 0.0045) { a = Math.abs(sv); snapped = true; break; }
+    }
+    if (!snapped) { var r = ROUND[state.unit] / PER_FT[state.unit]; a = Math.min(max, Math.round(a / r) * r); }
+    SB.alt = below ? -a : a;
+    if (a > 0) SB.last[SB.mode] = SB.alt;
+    refresh(true);
+  });
+  var endDrag = function () { if (SB.dragging) { SB.dragging = false; refresh(true); } };
+  slider.addEventListener('change', endDrag);
+  slider.addEventListener('pointerup', endDrag);
+  slider.addEventListener('touchend', endDrag);
+
+  /* above / below, nudges, presets */
+  document.querySelectorAll('[data-mode]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var m = b.getAttribute('data-mode');
+      if (m === SB.mode) return;
+      var to = SB.last[m];
+      if (to === 0) { SB.token++; SB.alt = 0; SB.mode = m; refresh(true); } else flyTo(to);
+    });
+  });
+  function nudge(dir) {
+    var st = STEP[state.unit], v = SB.alt * PER_FT[state.unit];
+    v = (dir > 0 ? Math.floor(v / st + 1e-9) + 1 : Math.ceil(v / st - 1e-9) - 1) * st;
+    SB.token++;
+    setAlt(v / PER_FT[state.unit]);
+    refresh(true);
+  }
+  $('up').addEventListener('click', function () { nudge(1); });
+  $('down').addEventListener('click', function () { nudge(-1); });
+  function buildPresets() {
+    $('presets').innerHTML = PRESETS.map(function (p) { return '<button type="button" data-ft="' + p[1] + '" aria-pressed="false">' + esc(p[0]) + '</button>'; }).join('');
+  }
+  buildPresets();
+  $('presets').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-ft]');
+    if (b) flyTo(+b.getAttribute('data-ft'));
+  });
+
+  /* =====================================================================
+     The scene
+     ===================================================================== */
+  var cv = $('view'), ctx = cv.getContext('2d'), VW = 0, VH = 0, sceneRunning = false;
+  var seed = 29, rnd = function () { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  var mix = function (a, b, f) { return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f]; };
+  var rgb = function (c, al) { return 'rgba(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ',' + (al == null ? 1 : Math.max(0, Math.min(1, al)).toFixed(3)) + ')'; };
+  var win = function (v, a, b, fade) { return clamp01((v - a) / fade) * clamp01((b - v) / fade); };
+  var i0, STARS = [], CLOUDS = [], SNOW = [], BIO = [], FISH = [], RIDGES = [
+    { elev: 31332, k: 0.0072, col: [112, 124, 176], snow: 0.75, pts: [] },
+    { elev: 21000, k: 0.0086, col: [76, 88, 138], snow: 0.45, pts: [] },
+    { elev: 12500, k: 0.011, col: [42, 54, 88], snow: 0, pts: [] }
+  ];
+  for (i0 = 0; i0 < 150; i0++) STARS.push({ x: rnd(), y: rnd(), r: 0.4 + rnd() * 1.2, b: 0.45 + rnd() * 0.55, p: rnd() * 6.28, s: 0.6 + rnd() * 1.8 });
+  for (i0 = 0; i0 < 18; i0++) CLOUDS.push({ x: rnd() * 1.3, d: 0.08 + rnd() * 0.92, s: 0.6 + rnd() * 0.9 });
+  for (i0 = 0; i0 < 80; i0++) SNOW.push({ x: rnd(), y: rnd(), v: 0.5 + rnd(), r: 0.5 + rnd() * 1.3, a: 0.4 + rnd() * 0.6, p: rnd() * 6.28 });
+  for (i0 = 0; i0 < 30; i0++) BIO.push({ x: rnd(), y: rnd(), s: 0.4 + rnd() * 1.4, p: rnd() * 6.28, r: 2 + rnd() * 5, c: rnd() });
+  for (i0 = 0; i0 < 10; i0++) FISH.push({ o: rnd() * 1.4, y: rnd(), s: 0.7 + rnd() * 0.7 });
+  RIDGES.forEach(function (R, ri) {
+    var n = 30, a = 0.5 + rnd(), ph = rnd() * 6, mx = 0;
+    for (var i = 0; i < n; i++) {
+      var h = 0.18 + 0.5 * Math.abs(Math.sin(i * a * 0.55 + ph)) + 0.32 * rnd();
+      if (i % 2) h *= 0.72;
+      R.pts.push({ x: i / (n - 1), h: h }); mx = Math.max(mx, h);
+    }
+    R.pts.forEach(function (p) { p.h /= mx; });
+  });
+
+  function sizeCanvas() {
+    var r = cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    VW = r.width; VH = r.height;
+    cv.width = Math.round(VW * dpr); cv.height = Math.round(VH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw(SB.alt, 0);
+  }
+  function blob(x, y, rx, ry) { ctx.beginPath(); ctx.ellipse(x, y, Math.max(0.5, rx), Math.max(0.5, ry), 0, 0, 6.2832); ctx.fill(); }
+
+  function drawSky(ft, t, W, H) {
+    var z = ft * 0.3048, A = PHYS.atm(z), f = Math.pow(clamp01(A.P / 101325), 0.5);
+    var zen = mix([2, 2, 10], [24, 96, 210], f), mid = mix([5, 7, 26], [78, 152, 236], f), hor = mix([14, 26, 72], [206, 231, 255], Math.pow(f, 0.8));
+    var dip = Math.acos(6371000 / (6371000 + z)) * 57.2958, g = clamp01(dip / 10.2);
+    var hy = H * (0.54 + 0.13 * g), sag = H * 0.2 * Math.pow(g, 1.5);
+    var Rs = sag > 0.5 ? (W * W / 4 + sag * sag) / (2 * sag) : 0;
+    var limb = function (x) { if (!Rs) return hy; var dx = x - W / 2; return hy + Rs - Math.sqrt(Math.max(0, Rs * Rs - dx * dx)); };
+    var x, i;
+
+    var sg = ctx.createLinearGradient(0, 0, 0, hy + sag);
+    sg.addColorStop(0, rgb(zen)); sg.addColorStop(0.6, rgb(mid)); sg.addColorStop(1, rgb(hor)); window.__skyTop = rgb(zen);
+    ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H);
+
+    // stars come out as the air thins, and stop twinkling once there is no air left to shake them
+    var sa = Math.pow(clamp01((0.36 - f) / 0.36), 1.3);
+    if (sa > 0.01) {
+      for (i = 0; i < STARS.length; i++) {
+        var st = STARS[i], sy = st.y * (hy + sag);
+        var tw = 1 - Math.min(1, f * 5) * 0.5 * (0.5 + 0.5 * Math.sin(st.p + t / 1000 * st.s));
+        ctx.fillStyle = 'rgba(255,255,255,' + (sa * st.b * tw).toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(st.x * W, sy, st.r, 0, 6.2832); ctx.fill();
+      }
+    }
+    // sun: a big soft glare in thick air, a hard white disc in none
+    var sx = W * 0.8, sy2 = hy * 0.3, gr = W * (0.09 + 0.6 * f);
+    var sun = ctx.createRadialGradient(sx, sy2, 0, sx, sy2, gr);
+    sun.addColorStop(0, 'rgba(255,252,238,1)'); sun.addColorStop(0.07, 'rgba(255,246,214,' + (0.5 * f + 0.2).toFixed(3) + ')'); sun.addColorStop(1, 'rgba(255,240,200,0)');
+    ctx.fillStyle = sun; ctx.fillRect(0, 0, W, hy + sag);
+    ctx.fillStyle = '#FFFFFF'; ctx.beginPath(); ctx.arc(sx, sy2, W * 0.021, 0, 6.2832); ctx.fill();
+
+    // aurora curtains near the top of the range
+    var au = clamp01((ft - 250000) / 55000) * 0.5;
+    if (au > 0.01) {
+      ctx.globalCompositeOperation = 'lighter';
+      for (i = 0; i < 60; i++) {
+        x = W * (i / 59) + Math.sin(t / 1700 + i * 0.6) * 5;
+        var ah = H * (0.06 + 0.1 * (0.5 + 0.5 * Math.sin(i * 0.55 + t / 1500)) * (0.6 + 0.4 * Math.sin(i * 0.19 + 1))), by = limb(x) - 2;
+        var ag = ctx.createLinearGradient(0, by - ah, 0, by);
+        ag.addColorStop(0, 'rgba(150,90,255,0)'); ag.addColorStop(0.35, 'rgba(120,140,255,' + (au * 0.1).toFixed(3) + ')'); ag.addColorStop(0.7, 'rgba(70,255,170,' + (au * 0.26).toFixed(3) + ')'); ag.addColorStop(1, 'rgba(70,255,170,0)');
+        ctx.fillStyle = ag; ctx.fillRect(x - W / 22, by - ah, W / 11, ah);
+      }
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    // clouds overhead while you are still under them
+    var ua = clamp01(1 - ft / 9000) * 0.9;
+    if (ua > 0.01) {
+      ctx.fillStyle = 'rgba(255,255,255,' + ua.toFixed(3) + ')';
+      for (i = 0; i < 6; i++) {
+        var c = CLOUDS[i], cx0 = ((c.x + t * 0.000006) % 1.3 - 0.15) * W, cy0 = hy - hy * (0.14 + 0.5 * c.d) * (1 - ft / 9800), cr = W * 0.05 * (0.6 + c.s);
+        blob(cx0, cy0, cr * 1.5, cr * 0.5); blob(cx0 - cr * 0.7, cy0 + cr * 0.1, cr, cr * 0.42); blob(cx0 + cr * 0.6, cy0 - cr * 0.18, cr * 0.9, cr * 0.5);
+      }
+    }
+    // the thin blue line
+    if (f < 0.95) {
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(-10, limb(-10));
+      for (x = 0; x <= W + 10; x += 10) ctx.lineTo(x, limb(x));
+      ctx.strokeStyle = rgb([140, 200, 255], 0.9 * (1 - f)); ctx.lineWidth = 3; ctx.shadowColor = 'rgba(90,170,255,1)'; ctx.shadowBlur = 24;
+      ctx.stroke(); ctx.stroke();
+      ctx.restore();
+    }
+    // ground, then planet
+    var u = clamp01(ft / 60000), v = clamp01(ft / 1500);
+    var gTop = mix(mix([150, 188, 205], [168, 190, 200], v), [150, 202, 248], u), gBot = mix(mix([18, 96, 136], [50, 80, 62], v), [14, 58, 130], u);
+    ctx.beginPath(); ctx.moveTo(0, limb(0));
+    for (x = 0; x <= W; x += 10) ctx.lineTo(x, limb(x));
+    ctx.lineTo(W, limb(W)); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+    var gg = ctx.createLinearGradient(0, hy, 0, H);
+    gg.addColorStop(0, rgb(gTop)); gg.addColorStop(0.35, rgb(mix(gTop, gBot, 0.7))); gg.addColorStop(1, rgb(gBot));
+    ctx.fillStyle = gg; ctx.fill();
+
+    // mountains: they stand over your horizon until you climb past them
+    var ra = clamp01(1 - (ft - 40000) / 30000);
+    if (ra > 0.01) {
+      RIDGES.forEach(function (R, ri) {
+        var over = Math.max(0, ft - R.elev), under = Math.max(0, R.elev - ft);
+        var hh = under / 1000 * R.k * H + 0.035 * H / (1 + over / 12000);
+        var off = Math.min(over / 1000 * R.k * H * 0.9, (H - hy) * 0.7) + ri * 3;
+        var col = mix(hor, R.col, 0.5 + 0.22 * ri);
+        ctx.beginPath(); ctx.moveTo(0, limb(0) + off + 12);
+        R.pts.forEach(function (p) { ctx.lineTo(p.x * W, limb(p.x * W) + off - p.h * hh); });
+        ctx.lineTo(W, limb(W) + off + 12); ctx.closePath();
+        var rg = ctx.createLinearGradient(0, hy + off - hh, 0, hy + off + sag + 12);
+        rg.addColorStop(0, rgb(col, ra)); rg.addColorStop(0.72, rgb(col, ra * 0.92)); rg.addColorStop(1, rgb(col, 0));
+        ctx.fillStyle = rg; ctx.fill();
+        if (R.snow && hh > 8) {
+          ctx.beginPath();
+          R.pts.forEach(function (p, k) { var px = p.x * W, py = limb(px) + off - p.h * hh; if (k) ctx.lineTo(px, py); else ctx.moveTo(px, py); });
+          ctx.strokeStyle = 'rgba(255,255,255,' + (R.snow * ra * (0.35 + 0.65 * f)).toFixed(3) + ')'; ctx.lineWidth = 1.6; ctx.stroke();
+        }
+      });
+    }
+    // cloud floor once you are over it
+    var ca = clamp01((ft - 17000) / 12000) * clamp01(1 - (ft - 150000) / 170000) * 0.9;
+    if (ca > 0.01) {
+      var cs = 0.3 + 0.7 / (1 + ft / 45000);
+      CLOUDS.forEach(function (c) {
+        var px = ((c.x + t * 0.000004 * (0.4 + c.d)) % 1.3 - 0.15) * W, py = limb(px) + 6 + (H - hy) * Math.pow(c.d, 1.5) * 0.95;
+        var rx = W * c.s * (0.05 + 0.2 * c.d) * cs, ry = rx * 0.3;
+        ctx.fillStyle = 'rgba(255,255,255,' + (ca * (0.3 + 0.5 * c.d)).toFixed(3) + ')';
+        blob(px, py, rx, ry); blob(px - rx * 0.6, py + ry * 0.3, rx * 0.7, ry * 0.8); blob(px + rx * 0.55, py - ry * 0.25, rx * 0.65, ry * 0.9);
+      });
+    }
+    // an airliner at 36,000 ft, above you or below you
+    var jd = ft - 36000;
+    if (Math.abs(jd) < 24000) {
+      var ja = clamp01(1 - Math.abs(jd) / 24000), jx = ((t * 0.00003) % 1.5 - 0.25) * W;
+      var jy = Math.max(H * 0.07, Math.min(H * 0.86, hy + jd / 1000 * 0.011 * H));
+      var tr = ctx.createLinearGradient(jx - W * 0.32, 0, jx, 0);
+      tr.addColorStop(0, 'rgba(255,255,255,0)'); tr.addColorStop(1, 'rgba(255,255,255,' + (0.7 * ja).toFixed(3) + ')');
+      ctx.strokeStyle = tr; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(jx - W * 0.32, jy); ctx.lineTo(jx, jy); ctx.stroke();
+      ctx.fillStyle = 'rgba(245,248,255,' + ja.toFixed(3) + ')';
+      ctx.beginPath(); ctx.moveTo(jx + 11, jy); ctx.lineTo(jx - 3, jy - 2.2); ctx.lineTo(jx - 7, jy - 6); ctx.lineTo(jx - 9, jy - 6); ctx.lineTo(jx - 7, jy); ctx.lineTo(jx - 2, jy + 5.5); ctx.lineTo(jx + 1, jy + 5.5); ctx.lineTo(jx + 1, jy + 1.6); ctx.closePath(); ctx.fill();
+    }
+    // what it does to you: tunnel vision as the oxygen runs out, then a suit visor past the Armstrong limit
+    var visor = clamp01((ft - 58000) / 5000), vig = clamp01((92 - PHYS.spo2(A.P)) / 70) * (1 - visor);
+    if (vig > 0.01) {
+      var m = Math.max(W, H), vg = ctx.createRadialGradient(W / 2, H * 0.48, m * (0.42 - 0.24 * vig), W / 2, H * 0.48, m * 0.78);
+      vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,' + (0.92 * vig).toFixed(3) + ')');
+      ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+    }
+    if (visor > 0.01) {
+      var pad = 9, rad = 44;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, 0, W, H);
+      ctx.roundRect ? ctx.roundRect(pad, pad, W - pad * 2, H - pad * 2, rad) : ctx.rect(pad, pad, W - pad * 2, H - pad * 2);
+      ctx.fillStyle = 'rgba(9,10,20,' + (0.94 * visor).toFixed(3) + ')'; ctx.fill('evenodd');
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(pad, pad, W - pad * 2, H - pad * 2, rad) : ctx.rect(pad, pad, W - pad * 2, H - pad * 2);
+      ctx.strokeStyle = 'rgba(255,214,90,' + (0.75 * visor).toFixed(3) + ')'; ctx.lineWidth = 2; ctx.stroke();
+      var rf = ctx.createLinearGradient(0, 0, W, H * 0.6);
+      rf.addColorStop(0.1, 'rgba(255,255,255,0)'); rf.addColorStop(0.22, 'rgba(255,255,255,' + (0.07 * visor).toFixed(3) + ')'); rf.addColorStop(0.34, 'rgba(255,255,255,0)');
+      ctx.fillStyle = rf; ctx.fillRect(pad, pad, W - pad * 2, H - pad * 2);
+      ctx.restore();
+    }
+  }
+
+  /* Gaia's sky: Helios, Selene, the aurora, and the Great Stair standing over the coast */
+  var GSTARS = [], GRIDGES = [
+    { elev: 56135, k: 0.0062, col: [150, 172, 220], snow: 0.8, pts: [] },
+    { elev: 44500, k: 0.0074, col: [84, 112, 168], snow: 0.5, pts: [] }
+  ], STAIR = { elev: 24803, k: 0.0105, col: [26, 74, 98], bands: [] };
+  var GAUR = [
+    { col: '70,255,180', y: 0.18, amp: 0.10, len: 0.46, f: 0.0061, s: 0.00021, p: 0.0 },
+    { col: '127,233,255', y: 0.32, amp: 0.08, len: 0.38, f: 0.0083, s: 0.00016, p: 2.1 },
+    { col: '155,107,255', y: 0.04, amp: 0.07, len: 0.36, f: 0.0049, s: 0.00027, p: 4.0 },
+    { col: '255,92,203', y: 0.48, amp: 0.05, len: 0.24, f: 0.0102, s: 0.00013, p: 5.3 }
+  ];
+  for (i0 = 0; i0 < 170; i0++) GSTARS.push({ x: rnd(), y: rnd(), r: 0.4 + rnd() * 1.3, b: 0.45 + rnd() * 0.55, p: rnd() * 6.28, s: 0.6 + rnd() * 1.8, c: rnd() });
+  GRIDGES.forEach(function (R) {
+    var n = 30, a = 0.5 + rnd(), ph = rnd() * 6, mx = 0;
+    for (var i = 0; i < n; i++) {
+      var h = 0.18 + 0.5 * Math.abs(Math.sin(i * a * 0.55 + ph)) + 0.32 * rnd();
+      if (i % 2) h *= 0.72;
+      R.pts.push({ x: i / (n - 1), h: h }); mx = Math.max(mx, h);
+    }
+    R.pts.forEach(function (p) { p.h /= mx; });
+  });
+  for (i0 = 0; i0 < 6; i0++) {
+    (function () {
+      var pts = [], cuts = [rnd(), rnd(), rnd()];
+      for (var j = 0; j <= 26; j++) {
+        var bx = j / 26, bh = 0.93 + 0.07 * rnd();
+        cuts.forEach(function (c) { var dd = Math.abs(bx - c); if (dd < 0.05) bh -= (0.05 - dd) / 0.05 * 0.22; });
+        pts.push({ x: bx, h: bh });
+      }
+      STAIR.bands.push({ pts: pts, falls: [rnd(), rnd()] });
+    })();
+  }
+
+  function drawGaiaSky(ft, t, W, H) {
+    var z = ft * 0.3048, A = GAIA.atm(z), f = Math.pow(clamp01(A.P / GAIA.P0), 0.62), SBF = 0.488; // f is 1 at the coast and about .49 over Summitbrook
+    var lo = Math.min(1, f / SBF), hi = clamp01((f - SBF) / (1 - SBF));
+    var zen = mix(mix([1, 5, 12], [3, 27, 78], lo), [22, 118, 196], hi), mid = mix(mix([2, 9, 20], [7, 52, 124], lo), [74, 172, 216], hi), hor = mix(mix([6, 24, 44], [44, 124, 192], lo), [216, 246, 236], hi);
+    var dip = Math.acos(6371000 / (6371000 + z)) * 57.2958, g = clamp01(dip / 10.2);
+    var hy = H * (0.54 + 0.13 * g), sag = H * 0.2 * Math.pow(g, 1.5);
+    var Rs = sag > 0.5 ? (W * W / 4 + sag * sag) / (2 * sag) : 0;
+    var limb = function (x) { if (!Rs) return hy; var dx = x - W / 2; return hy + Rs - Math.sqrt(Math.max(0, Rs * Rs - dx * dx)); };
+    var x, i;
+
+    var sg = ctx.createLinearGradient(0, 0, 0, hy + sag);
+    sg.addColorStop(0, rgb(zen)); sg.addColorStop(0.6, rgb(mid)); sg.addColorStop(1, rgb(hor)); window.__skyTop = rgb(zen);
+    ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H);
+
+    // Gaia's own constellations come out as the sky darkens
+    var sa = Math.pow(clamp01((0.47 - f) / 0.47), 1.3);
+    if (sa > 0.01) {
+      for (i = 0; i < GSTARS.length; i++) {
+        var st = GSTARS[i], tw = 1 - Math.min(1, f * 5) * 0.5 * (0.5 + 0.5 * Math.sin(st.p + t / 1000 * st.s));
+        ctx.fillStyle = 'rgba(' + (st.c < 0.18 ? '170,255,222' : (st.c < 0.4 ? '190,240,255' : '255,255,255')) + ',' + (sa * st.b * tw).toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(st.x * W, st.y * (hy + sag), st.r, 0, 6.2832); ctx.fill();
+      }
+    }
+    // the aurora: faint over the ground floor, a regular thing over Summitbrook, bright above it
+    var au = clamp01((0.8 - f) / 0.42);
+    if (au > 0.01) {
+      var step = Math.max(5, Math.min(10, W / 130)), sw = step * 3.2;
+      ctx.globalCompositeOperation = 'lighter';
+      GAUR.forEach(function (b) {
+        var len = b.len * hy, ag = ctx.createLinearGradient(0, 0, 0, len);
+        ag.addColorStop(0, 'rgba(' + b.col + ',0)'); ag.addColorStop(0.7, 'rgba(' + b.col + ',.08)'); ag.addColorStop(0.93, 'rgba(' + b.col + ',.2)'); ag.addColorStop(1, 'rgba(' + b.col + ',0)');
+        ctx.fillStyle = ag;
+        for (var ax = -sw; ax < W + sw; ax += step) {
+          var ay = b.y * hy + Math.sin(ax * b.f + t * b.s + b.p) * b.amp * hy + Math.sin(ax * b.f * 2.7 - t * b.s * 1.9 + b.p) * b.amp * hy * 0.45;
+          ctx.globalAlpha = au * Math.max(0.12, 0.55 + 0.45 * Math.sin(ax * b.f * 5.3 + t * b.s * 3.1 + b.p * 2));
+          ctx.save(); ctx.translate(ax, ay); ctx.fillRect(0, 0, sw, len); ctx.restore();
+        }
+      });
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    }
+    // Selene, low on the left, lit from Helios's side
+    var mx = W * 0.16, my = hy * 0.64, mr = W * 0.0235, ma = 0.24 + 0.7 * (1 - f);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(mx, my, mr, 0, 6.2832); ctx.clip();
+    ctx.fillStyle = rgb([226, 240, 252], ma); ctx.fillRect(mx - mr, my - mr, mr * 2, mr * 2);
+    ctx.fillStyle = rgb(mix(mid, hor, 0.1), 0.86); ctx.beginPath(); ctx.arc(mx - mr * 0.62, my - mr * 0.08, mr * 1.02, 0, 6.2832); ctx.fill();
+    ctx.restore();
+    // Helios: about 7% bigger than the Sun and whiter. A wide hot glare at the coast, a hard disc in thin air
+    var sx = W * 0.8, sy2 = hy * 0.3, gr = W * (0.1 + 0.62 * f);
+    var sun = ctx.createRadialGradient(sx, sy2, 0, sx, sy2, gr);
+    sun.addColorStop(0, 'rgba(255,255,255,1)'); sun.addColorStop(0.07, 'rgba(214,244,255,' + (0.5 * f + 0.22).toFixed(3) + ')'); sun.addColorStop(1, 'rgba(190,236,255,0)');
+    ctx.fillStyle = sun; ctx.fillRect(0, 0, W, hy + sag);
+    ctx.fillStyle = '#FFFFFF'; ctx.beginPath(); ctx.arc(sx, sy2, W * 0.0225, 0, 6.2832); ctx.fill();
+
+    // wet clouds stacked against the Stair while you are still under its top
+    var ua = clamp01(1 - ft / 22000) * 0.88;
+    if (ua > 0.01) {
+      ctx.fillStyle = 'rgba(244,252,255,' + ua.toFixed(3) + ')';
+      for (i = 0; i < 7; i++) {
+        var c = CLOUDS[i], cx0 = ((c.x + t * 0.000006) % 1.3 - 0.15) * W, cy0 = hy - hy * (0.08 + 0.42 * c.d) * (1 - ft / 24000), cr = W * 0.055 * (0.6 + c.s);
+        blob(cx0, cy0, cr * 1.5, cr * 0.5); blob(cx0 - cr * 0.7, cy0 + cr * 0.1, cr, cr * 0.42); blob(cx0 + cr * 0.6, cy0 - cr * 0.18, cr * 0.9, cr * 0.5);
+      }
+    }
+    // the thin line of air on the limb
+    if (f < 0.95) {
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(-10, limb(-10));
+      for (x = 0; x <= W + 10; x += 10) ctx.lineTo(x, limb(x));
+      ctx.strokeStyle = rgb([140, 240, 232], 0.9 * (1 - f)); ctx.lineWidth = 3; ctx.shadowColor = 'rgba(70,255,190,1)'; ctx.shadowBlur = 24;
+      ctx.stroke(); ctx.stroke();
+      ctx.restore();
+    }
+    // sea at the coast, then the planet
+    var u = clamp01(ft / 90000), v = clamp01(ft / 3000);
+    var gTop = mix(mix([156, 218, 208], [148, 198, 206], v), [128, 216, 236], u), gBot = mix(mix([10, 104, 124], [24, 78, 88], v), [6, 50, 100], u);
+    ctx.beginPath(); ctx.moveTo(0, limb(0));
+    for (x = 0; x <= W; x += 10) ctx.lineTo(x, limb(x));
+    ctx.lineTo(W, limb(W)); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+    var gg = ctx.createLinearGradient(0, hy, 0, H);
+    gg.addColorStop(0, rgb(gTop)); gg.addColorStop(0.35, rgb(mix(gTop, gBot, 0.7))); gg.addColorStop(1, rgb(gBot));
+    ctx.fillStyle = gg; ctx.fill();
+
+    // the Rokens and the snow-line ranges: hidden behind the Stair from the coast, and gone once you are far above them
+    var ra = clamp01(1 - (ft - 66000) / 36000) * clamp01((ft - 6000) / 16000);
+    if (ra > 0.01) {
+      GRIDGES.forEach(function (R, ri) {
+        var over = Math.max(0, ft - R.elev), under = Math.max(0, R.elev - ft);
+        var hh = under / 1000 * R.k * H + 0.035 * H / (1 + over / 12000);
+        var off = Math.min(over / 1000 * R.k * H * 0.9, (H - hy) * 0.7) + ri * 3;
+        var col = mix(hor, R.col, 0.5 + 0.22 * ri);
+        ctx.beginPath(); ctx.moveTo(0, limb(0) + off + 12);
+        R.pts.forEach(function (p) { ctx.lineTo(p.x * W, limb(p.x * W) + off - p.h * hh); });
+        ctx.lineTo(W, limb(W) + off + 12); ctx.closePath();
+        var rg = ctx.createLinearGradient(0, hy + off - hh, 0, hy + off + sag + 12);
+        rg.addColorStop(0, rgb(col, ra)); rg.addColorStop(0.72, rgb(col, ra * 0.92)); rg.addColorStop(1, rgb(col, 0));
+        ctx.fillStyle = rg; ctx.fill();
+        if (hh > 8) {
+          ctx.beginPath();
+          R.pts.forEach(function (p, k) { var px = p.x * W, py = limb(px) + off - p.h * hh; if (k) ctx.lineTo(px, py); else ctx.moveTo(px, py); });
+          ctx.strokeStyle = 'rgba(255,255,255,' + (R.snow * ra * (0.35 + 0.65 * f)).toFixed(3) + ')'; ctx.lineWidth = 1.6; ctx.stroke();
+        }
+      });
+    }
+    // the Great Stair: six cliff bands, cut by canyons, with waterfalls coming off the terraces
+    var sAl = clamp01(1 - (ft - 46000) / 30000);
+    if (sAl > 0.01) {
+      var sOver = Math.max(0, ft - STAIR.elev), sUnder = Math.max(0, STAIR.elev - ft);
+      var sh = sUnder / 1000 * STAIR.k * H + 0.03 * H / (1 + sOver / 9000);
+      var sOff = Math.min(sOver / 1000 * STAIR.k * H * 0.9, (H - hy) * 0.7) + 8;
+      for (i = 5; i >= 0; i--) {
+        var Bd = STAIR.bands[i], top = sh * (i + 1) / 6;
+        ctx.beginPath(); ctx.moveTo(0, limb(0) + sOff + 12);
+        for (x = 0; x < Bd.pts.length; x++) ctx.lineTo(Bd.pts[x].x * W, limb(Bd.pts[x].x * W) + sOff - top * Bd.pts[x].h);
+        ctx.lineTo(W, limb(W) + sOff + 12); ctx.closePath();
+        ctx.fillStyle = rgb(mix(STAIR.col, hor, 0.1 + 0.115 * i), sAl); ctx.fill();
+        if (sh > 14) {
+          ctx.beginPath();
+          for (x = 0; x < Bd.pts.length; x++) { var lx = Bd.pts[x].x * W, ly = limb(lx) + sOff - top * Bd.pts[x].h; if (x) ctx.lineTo(lx, ly); else ctx.moveTo(lx, ly); }
+          ctx.strokeStyle = 'rgba(214,246,255,' + (0.3 * sAl * (0.4 + 0.6 * f)).toFixed(3) + ')'; ctx.lineWidth = 1; ctx.stroke();
+          for (x = 0; x < Bd.falls.length; x++) {
+            var wx = Bd.falls[x] * W, wy = limb(wx) + sOff - top * 0.92, wl = sh / 6 * 0.9;
+            var wg = ctx.createLinearGradient(0, wy, 0, wy + wl);
+            wg.addColorStop(0, 'rgba(236,252,255,' + (0.6 * sAl).toFixed(3) + ')'); wg.addColorStop(1, 'rgba(236,252,255,0)');
+            ctx.fillStyle = wg; ctx.fillRect(wx - 1, wy, 2, wl);
+          }
+        }
+      }
+    }
+    // heat haze over the coast
+    var ha = clamp01((A.T - 303) / 22) * 0.3;
+    if (ha > 0.01) {
+      var hg = ctx.createLinearGradient(0, hy - H * 0.26, 0, hy + H * 0.05);
+      hg.addColorStop(0, 'rgba(255,232,200,0)'); hg.addColorStop(0.8, 'rgba(255,232,200,' + ha.toFixed(3) + ')'); hg.addColorStop(1, 'rgba(255,232,200,0)');
+      ctx.fillStyle = hg; ctx.fillRect(0, hy - H * 0.26, W, H * 0.31);
+    }
+    // cloud floor once you are over the ground floor
+    var ca = clamp01((ft - 34000) / 16000) * clamp01(1 - (ft - 190000) / 137000) * 0.85;
+    if (ca > 0.01) {
+      var cs = 0.3 + 0.7 / (1 + ft / 70000);
+      CLOUDS.forEach(function (c) {
+        var px = ((c.x + t * 0.000004 * (0.4 + c.d)) % 1.3 - 0.15) * W, py = limb(px) + 6 + (H - hy) * Math.pow(c.d, 1.5) * 0.95;
+        var rx = W * c.s * (0.05 + 0.2 * c.d) * cs, ry = rx * 0.3;
+        ctx.fillStyle = 'rgba(236,250,255,' + (ca * (0.3 + 0.5 * c.d)).toFixed(3) + ')';
+        blob(px, py, rx, ry); blob(px - rx * 0.6, py + ry * 0.3, rx * 0.7, ry * 0.8); blob(px + rx * 0.55, py - ry * 0.25, rx * 0.65, ry * 0.9);
+      });
+    }
+    // a Gaian airliner at 70,000 ft, on huge wings
+    var jd = ft - 70000;
+    if (Math.abs(jd) < 28000) {
+      var ja = clamp01(1 - Math.abs(jd) / 28000), jx = ((t * 0.00003) % 1.5 - 0.25) * W;
+      var jy = Math.max(H * 0.07, Math.min(H * 0.86, hy + jd / 1000 * 0.009 * H));
+      var tr = ctx.createLinearGradient(jx - W * 0.32, 0, jx, 0);
+      tr.addColorStop(0, 'rgba(255,255,255,0)'); tr.addColorStop(1, 'rgba(236,252,255,' + (0.7 * ja).toFixed(3) + ')');
+      ctx.strokeStyle = tr; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(jx - W * 0.32, jy); ctx.lineTo(jx, jy); ctx.stroke();
+      ctx.fillStyle = 'rgba(240,250,255,' + ja.toFixed(3) + ')';
+      ctx.beginPath(); ctx.moveTo(jx + 12, jy); ctx.lineTo(jx - 2, jy - 2.2); ctx.lineTo(jx - 9, jy - 11); ctx.lineTo(jx - 12, jy - 11); ctx.lineTo(jx - 8, jy); ctx.lineTo(jx - 5, jy + 12); ctx.lineTo(jx - 1, jy + 12); ctx.lineTo(jx + 2, jy + 1.6); ctx.closePath(); ctx.fill();
+    }
+    // what it does to whoever is breathing: tunnel vision as the oxygen runs out, then a suit visor past the pressure suit line
+    var visor = clamp01((ft - 75000) / 5709), vig = clamp01((92 - GAIA.sat(WHO, z, A.P)) / 70) * (1 - visor);
+    if (vig > 0.01) {
+      var m = Math.max(W, H), vg = ctx.createRadialGradient(W / 2, H * 0.48, m * (0.42 - 0.24 * vig), W / 2, H * 0.48, m * 0.78);
+      vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,' + (0.92 * vig).toFixed(3) + ')');
+      ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+    }
+    if (visor > 0.01) {
+      var pad = 9, rad = 44;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, 0, W, H);
+      ctx.roundRect ? ctx.roundRect(pad, pad, W - pad * 2, H - pad * 2, rad) : ctx.rect(pad, pad, W - pad * 2, H - pad * 2);
+      ctx.fillStyle = 'rgba(2,11,20,' + (0.94 * visor).toFixed(3) + ')'; ctx.fill('evenodd');
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(pad, pad, W - pad * 2, H - pad * 2, rad) : ctx.rect(pad, pad, W - pad * 2, H - pad * 2);
+      ctx.strokeStyle = 'rgba(70,255,180,' + (0.75 * visor).toFixed(3) + ')'; ctx.lineWidth = 2; ctx.stroke();
+      var rf = ctx.createLinearGradient(0, 0, W, H * 0.6);
+      rf.addColorStop(0.1, 'rgba(255,255,255,0)'); rf.addColorStop(0.22, 'rgba(255,255,255,' + (0.07 * visor).toFixed(3) + ')'); rf.addColorStop(0.34, 'rgba(255,255,255,0)');
+      ctx.fillStyle = rf; ctx.fillRect(pad, pad, W - pad * 2, H - pad * 2);
+      ctx.restore();
+    }
+  }
+
+  function drawSea(d, t, W, H, gaia) {
+    var dm = d * 0.3048, L = 0.85 * Math.exp(-dm / 40) + 0.15 * Math.exp(-dm / 260), i, x, dk = gaia ? 1.25 : 1, floor0 = gaia ? 42770 : 33800;
+    var top = mix([0, 3, 10], gaia ? [58, 216, 206] : [64, 204, 230], Math.pow(L, 0.55)), bot = mix([0, 1, 6], gaia ? [6, 86, 112] : [8, 78, 132], Math.pow(L, 0.9));
+    var bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, rgb(top)); bg.addColorStop(1, rgb(bot));
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+    // sun shafts while there is still sun
+    var ray = 0.2 * Math.pow(L, 0.7);
+    if (ray > 0.004) {
+      ctx.globalCompositeOperation = 'lighter';
+      for (i = 0; i < 7; i++) {
+        var rx = W * (0.08 + i * 0.15) + Math.sin(t / 2300 + i * 1.3) * 14, rw = W * (0.05 + 0.03 * Math.sin(i * 2.1));
+        var rg = ctx.createLinearGradient(0, 0, 0, H * 0.95);
+        rg.addColorStop(0, 'rgba(200,250,255,' + ray.toFixed(3) + ')'); rg.addColorStop(1, 'rgba(200,250,255,0)');
+        ctx.fillStyle = rg;
+        ctx.beginPath(); ctx.moveTo(rx, 0); ctx.lineTo(rx + rw, 0); ctx.lineTo(rx + rw * 2.6 - W * 0.12, H * 0.95); ctx.lineTo(rx - rw * 1.2 - W * 0.12, H * 0.95); ctx.closePath(); ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    // the surface, seen from underneath
+    if (d < 70) {
+      var sy = H * 0.13 - d * (H * 0.004);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, sy);
+      for (x = 0; x <= W; x += 8) ctx.lineTo(x, sy + Math.sin(x / 26 + t / 600) * 4 + Math.sin(x / 11 - t / 420) * 2);
+      ctx.lineTo(W, 0); ctx.closePath();
+      ctx.fillStyle = 'rgba(214,246,255,' + (0.85 * clamp01(1 - d / 70)).toFixed(3) + ')'; ctx.fill();
+    }
+    // your own lamp, once the sun is gone
+    var lamp = clamp01((0.25 - L) / 0.25);
+    if (lamp > 0.01) {
+      var lg = ctx.createRadialGradient(W * 0.5, H * 1.08, 0, W * 0.5, H * 1.08, H * 0.95);
+      lg.addColorStop(0, 'rgba(170,215,255,' + (0.26 * lamp).toFixed(3) + ')'); lg.addColorStop(1, 'rgba(170,215,255,0)');
+      ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
+    }
+    // the floor of the Challenger Deep
+    if (d > floor0) {
+      var fy = H - clamp01((d - floor0) / 2076) * H * 0.3;
+      ctx.beginPath(); ctx.moveTo(0, H);
+      for (x = 0; x <= W; x += 10) ctx.lineTo(x, fy + Math.sin(x / 47) * 7 + Math.sin(x / 19 + 2) * 3);
+      ctx.lineTo(W, H); ctx.closePath();
+      var fg = ctx.createLinearGradient(0, fy, 0, H);
+      fg.addColorStop(0, 'rgba(120,112,98,.95)'); fg.addColorStop(1, 'rgba(38,34,30,1)');
+      ctx.fillStyle = fg; ctx.fill();
+    }
+    // marine snow
+    for (i = 0; i < SNOW.length; i++) {
+      var s = SNOW[i], py = ((s.y + t * s.v * 0.000018) % 1) * H, px = s.x * W + Math.sin(t / 2100 + s.p) * 7;
+      ctx.fillStyle = 'rgba(225,240,255,' + ((0.1 + 0.34 * Math.max(L, lamp * 0.8)) * s.a).toFixed(3) + ')';
+      ctx.beginPath(); ctx.arc(px, py, s.r, 0, 6.2832); ctx.fill();
+    }
+    // living light
+    var ba = clamp01((0.2 - L) / 0.2) * clamp01(1 - (dm - 7000 * dk) / 6000 * 0.6);
+    if (ba > 0.01) {
+      ctx.globalCompositeOperation = 'lighter';
+      for (i = 0; i < BIO.length; i++) {
+        var b = BIO[i], pu = Math.max(0, Math.sin(t / 900 * b.s + b.p));
+        if (pu < 0.05) continue;
+        var bx = b.x * W + Math.sin(t / 3100 + b.p) * 12, by = b.y * H, bc = b.c < 0.5 ? '80,240,255' : (b.c < 0.8 ? '90,255,170' : '120,150,255');
+        var bgd = ctx.createRadialGradient(bx, by, 0, bx, by, b.r * 3.2);
+        bgd.addColorStop(0, 'rgba(' + bc + ',' + (0.95 * ba * pu).toFixed(3) + ')'); bgd.addColorStop(1, 'rgba(' + bc + ',0)');
+        ctx.fillStyle = bgd; ctx.beginPath(); ctx.arc(bx, by, b.r * 3.2, 0, 6.2832); ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    // who lives here
+    var fa = clamp01(L * 4) * 0.8;
+    if (fa > 0.02) {
+      ctx.fillStyle = 'rgba(6,44,74,' + fa.toFixed(3) + ')';
+      for (i = 0; i < FISH.length; i++) {
+        var fi = FISH[i], fx = ((t * 0.00004 * fi.s + fi.o) % 1.4 - 0.2) * W, fyy = H * (0.3 + 0.36 * fi.y) + Math.sin(t / 700 + i) * 4, fs = 9 * fi.s;
+        blob(fx, fyy, fs, fs * 0.36);
+        ctx.beginPath(); ctx.moveTo(fx - fs * 0.8, fyy); ctx.lineTo(fx - fs * 1.6, fyy - fs * 0.45); ctx.lineTo(fx - fs * 1.6, fyy + fs * 0.45); ctx.closePath(); ctx.fill();
+      }
+    }
+    var je = win(dm, 150, 1600, 200);
+    if (je > 0.02) {
+      var jx = W * 0.72 + Math.sin(t / 4000) * 18, jy = H * 0.36 + Math.sin(t / 1500) * 12, jr = W * 0.07;
+      ctx.fillStyle = 'rgba(190,150,255,' + (0.42 * je).toFixed(3) + ')';
+      ctx.beginPath(); ctx.ellipse(jx, jy, jr, jr * 0.75, 0, Math.PI, 0); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(205,175,255,' + (0.4 * je).toFixed(3) + ')'; ctx.lineWidth = 1.2;
+      for (i = -3; i <= 3; i++) {
+        ctx.beginPath(); ctx.moveTo(jx + i * jr * 0.25, jy);
+        ctx.quadraticCurveTo(jx + i * jr * 0.25 + Math.sin(t / 600 + i) * 7, jy + jr * 0.9, jx + i * jr * 0.3 + Math.sin(t / 800 + i * 2) * 5, jy + jr * 1.8);
+        ctx.stroke();
+      }
+    }
+    var an = win(dm, 900 * dk, 5200 * dk, 300);
+    if (an > 0.02) {
+      var ax = W * 0.3 + Math.sin(t / 5200) * 22, ay = H * 0.4 + Math.sin(t / 2600) * 9, ar = W * 0.085;
+      ctx.fillStyle = 'rgba(26,34,56,' + (0.95 * an).toFixed(3) + ')';
+      blob(ax, ay, ar, ar * 0.72);
+      ctx.beginPath(); ctx.moveTo(ax - ar * 0.8, ay); ctx.lineTo(ax - ar * 1.6, ay - ar * 0.5); ctx.lineTo(ax - ar * 1.6, ay + ar * 0.5); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(60,76,110,' + an.toFixed(3) + ')'; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(ax + ar * 0.3, ay - ar * 0.6); ctx.quadraticCurveTo(ax + ar * 0.9, ay - ar * 1.7, ax + ar * 1.35, ay - ar * 0.75); ctx.stroke();
+      var lx = ax + ar * 1.35, ly = ay - ar * 0.75, lp = 0.7 + 0.3 * Math.sin(t / 380);
+      var lgd = ctx.createRadialGradient(lx, ly, 0, lx, ly, ar * 1.1);
+      lgd.addColorStop(0, 'rgba(210,255,170,' + (an * lp).toFixed(3) + ')'); lgd.addColorStop(0.2, 'rgba(150,255,150,' + (0.5 * an * lp).toFixed(3) + ')'); lgd.addColorStop(1, 'rgba(120,255,150,0)');
+      ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = lgd; ctx.beginPath(); ctx.arc(lx, ly, ar * 1.1, 0, 6.2832); ctx.fill(); ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = 'rgba(235,245,255,' + (0.8 * an).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(ax + ar * 0.55, ay - ar * 0.15, 1.6, 0, 6.2832); ctx.fill();
+    }
+    var sn = clamp01((dm - 5600 * dk) / 500) * clamp01((8500 * dk - dm) / 400);
+    if (sn > 0.02) {
+      var gx = W * 0.62 + Math.sin(t / 4300) * 26, gy = H * 0.5 + Math.sin(t / 1900) * 8, gl = W * 0.13;
+      ctx.fillStyle = 'rgba(236,224,238,' + (0.5 * sn).toFixed(3) + ')';
+      ctx.beginPath(); ctx.moveTo(gx + gl * 0.5, gy);
+      ctx.quadraticCurveTo(gx + gl * 0.35, gy - gl * 0.24, gx, gy - gl * 0.14);
+      ctx.quadraticCurveTo(gx - gl * 0.5, gy - gl * 0.04 + Math.sin(t / 300) * 3, gx - gl * 0.95, gy + Math.sin(t / 300 + 1) * 6);
+      ctx.quadraticCurveTo(gx - gl * 0.5, gy + gl * 0.08 + Math.sin(t / 300) * 3, gx, gy + gl * 0.14);
+      ctx.quadraticCurveTo(gx + gl * 0.35, gy + gl * 0.22, gx + gl * 0.5, gy); ctx.closePath(); ctx.fill();
+    }
+  }
+
+  function draw(ft, t) {
+    var W = VW, H = VH;
+    if (!W || !H) return;
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.shadowBlur = 0;
+    if (ft >= 0 && SB.mode !== 'below' || ft > 0) (PLANET === 'gaia' ? drawGaiaSky : drawSky)(ft, t, W, H); else drawSea(-ft, t, W, H, PLANET === 'gaia');
+    var sc = ctx.createLinearGradient(0, H * 0.5, 0, H);
+    sc.addColorStop(0, 'rgba(0,0,0,0)'); sc.addColorStop(1, 'rgba(0,0,0,.45)');
+    ctx.fillStyle = sc; ctx.fillRect(0, H * 0.5, W, H * 0.5);
+  }
+  function frame(t) { if (!sceneRunning) return; draw(SB.alt, t); requestAnimationFrame(frame); }
+  function startScene() {
+    sizeCanvas();
+    window.addEventListener('resize', function () { sizeCanvas(); sizeInput(); });
+    if (reduce) return;
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        var on = es[0].isIntersecting;
+        if (on && !sceneRunning) { sceneRunning = true; requestAnimationFrame(frame); }
+        if (!on) sceneRunning = false;
+      }).observe(cv);
+    } else { sceneRunning = true; requestAnimationFrame(frame); }
+  }
+
+  /* =====================================================================
+     Gaia: Earth's mirror planet. Every height on Earth sits 7,560 m higher, dry land below the sea
+     is 10 times deeper, and the oceans are 1.25 times deeper.
+     ===================================================================== */
+  var UP_M = 7560;
+  var GNOTE = {
+    'ohwentsarako': 'Gateway town for Roken climbers. It sits above the Gaians’ living ceiling, so nobody stays year-round.',
+    'summitcrest': 'The highest permanent settlement on Gaia, level with Everest Base Camp. About 75,000 people with its four districts. The athletic training capital of the US.',
+    'skawenta': 'Tsiʼkaroñwaheh, “where the clouds sleep,” towers over town at 15,710 m.',
+    'rinconada-alta': 'Old gold-mining town near the New Moxelo border. Its shafts climb to about 45,143 ft, the highest mines on Gaia. Home of the Mineros.',
+    'bouldren': 'Home of the University of Colorandoa Yaks. Folston Field sits at 40,163 ft.',
+    'summitbrook': 'Capital of Colorandoa, the biggest city in the US with 24 million in the metro, and the highest major city on Gaia. Pyratech Arena sits a little higher, at 39,680 ft. Water boils at 167°F here, so every kitchen has a pressure cooker.',
+    'aspenwood': 'Summitbrook’s biggest suburb. SOVRN Arena, home of the Pallor Wraith and the Hoarfrost, sits at 38,649 ft.',
+    'blackened-hills': 'Home of the BH-BL Hoplites.',
+    'cliffton-mesa': 'Home of the Shen Highlanders, next door to Blackened Hills.',
+    'e0': 'Gold-mining town. The highest town on Gaia outside Colorandoa.'
+  };
+  var DATA_G = DATA.map(function (d) {
+    var e = {}, k;
+    for (k in d) e[k] = d[k];
+    e.exact = d.exact + UP_M; e.m = Math.round(e.exact); e.ft = Math.round(e.exact / 0.3048);
+    e.dFt = e.ft - 39567; e.dM = e.m - 12060;
+    e.note = GNOTE.hasOwnProperty(d.id) ? GNOTE[d.id] : d.note.replace(/on Earth/g, 'on Gaia');
+    return e;
+  });
+  var BYID_G = {};
+  DATA_G.forEach(function (d) { BYID_G[d.id] = d; });
+  BYID_G.__line = { id: '__line', n: 'The line', ft: 39567, m: 12060, exact: 12060, band: 'on' };
+  var MARKERS_G = [
+    { m: 13060, show: 13060, ft: 42848, text: 'The Gaians’ living ceiling. Nobody on Gaia lives higher than this for good. Anything above is a seasonal stop for climbers.', scope: 'any' },
+    { m: 11060, show: 11060, ft: 36286, text: 'The world list stops here. Below this, only Colorandoa is on the board.', scope: 'all' },
+    { m: 10778.7, show: 10779, ft: 35363, text: 'Colorandoa’s floor. Nothing in the state sits lower.', scope: 'cl' }
+  ];
+  var ZONES_UP_G = [
+    [0, 'The coast', 'A thin strip of land at sea level. The air is thicker than anything on Earth and it averages 130°F. Hypercanes spin offshore. The only people down here are the dock crews at the ports.'],
+    [500, 'The Great Stair', 'Cliff bands and terraces climbing 7,560 meters from the sea to where the land really starts. It is the wettest place on the planet and nobody lives on it. Rivers drop down it through canyons and waterfalls, and the Lifts carry people past it.'],
+    [24803, 'Gaia’s ground floor', 'The top of the Great Stair, where Earth’s coastlines sit. Gaia’s New York, London and Tokyo are all up here, and it is about 59°F on an average day. Average ground on the whole planet is only 840 meters higher.'],
+    [33415, 'High country', 'Tree lines and snow lines start showing up, depending on where you are. Summitbrook sits in this band at 12,060 meters, under a deep, dark blue sky where auroras are a regular thing.'],
+    [42848, 'Above the living ceiling', 'No Gaian lives up here for good. This is climbing country. The camps on Gaia’s Everest are all in this band, and a climber from Earth has been in their own death zone since Base Camp.'],
+    [52493, 'The Gaian death zone', 'Even Gaians can’t keep up here. Gaia’s Everest and all of the Roken 14 top out in this zone, and Mount Ohwenroken pokes 1,110 meters into it.'],
+    [64304, 'Past the mask line', 'Higher than any mountain on Gaia. From here up, everybody needs a sealed oxygen mask, Gaian or not. Gaian airliners cruise in this band on huge wings.'],
+    [80709, 'Past the pressure suit line', 'A mask is not enough anymore. From here up it is a full pressure suit for everyone. The sky is close to black and Helios is a hard white disc.'],
+    [101706, 'Past the Armstrong limit', 'The pressure is so low that water boils at body temperature. Gaia’s thick air pushes this line up to about 31,000 meters. On Earth it sits near 19,000.'],
+    [164042, 'Upper air', 'Far above anything that flies. Gaia’s air thins out slowly, so there is still more of it up here than Earth has at this height. The sky is black, the stars are out, and they are not Earth’s constellations.']
+  ];
+  var ZONES_DOWN_G = [
+    [0, 'Sunlight zone', 'Warm, bright water with the surface shimmering overhead. Helios is whiter and stronger than the Sun, and nearly all the sea life you know lives in this layer.'],
+    [656, 'Twilight zone', 'The last light fades to a dim blue glow from above. The water is cold now, and animals start making their own light.'],
+    [3281, 'Midnight zone', 'No sunlight at all. Pitch black and just above freezing. Gaia’s oceans are a quarter deeper than Earth’s, so this zone runs a lot farther down.'],
+    [16404, 'The abyss', 'Flat, black, near-freezing plains of mud. The average ocean floor on Gaia sits just above this, 4,610 meters down.'],
+    [24606, 'Hadal zone', 'Only the deep trenches reach this far. Gaia’s Challenger Deep bottoms out 13,669 meters down, a quarter deeper than Earth’s, and things still live there.']
+  ];
+  var MARKS_G = [
+    [-44846, 'The bottom of the Challenger Deep'], [-24606, 'The start of the hadal zone'], [-16404, 'The start of the abyss'],
+    [-15625, 'The wreck of the Titanic'], [-15125, 'The average depth of the ocean'], [-14108, 'The Dead Sea shore, the lowest land on Gaia'],
+    [-3281, 'The end of the twilight zone'], [-2820, 'Badwater Basin in Death Valley'], [-656, 'The end of the sunlight zone'],
+    [0, 'Sea level'], [24803, 'The top of the Great Stair'], [27559, 'Average ground on Gaia'], [30083, 'Denver'],
+    [35363, 'Selvak, Colorandoa’s floor'], [38567, 'Colorandoa City'], [39567, 'Summitbrook, the line'], [39680, 'Pyratech Arena'],
+    [41535, 'La Rinconada, Peru'], [42401, 'Summitcrest and Everest Base Camp'], [42848, 'The Gaians’ living ceiling'],
+    [44144, 'Kilimanjaro’s summit'], [44432, 'Ohwentsarako'], [44701, 'Camp I on Everest'], [45113, 'Denali’s summit'],
+    [45143, 'Rinconada Alta’s highest mine shafts'], [45801, 'Camp II on Everest'], [47641, 'Aconcagua’s summit'],
+    [48425, 'Camp III on Everest'], [50787, 'Camp IV on Everest'], [52493, 'The Gaian death zone, 16,000 meters'],
+    [53054, 'K2’s summit'], [53835, 'Everest’s summit'], [56135, 'Mount Ohwenroken’s summit'], [64304, 'The mask line'],
+    [70000, 'A Gaian airliner at cruise'], [80709, 'The pressure suit line'], [101706, 'The Armstrong limit'], [327360, '62 miles up']
+  ];
+  var PRESETS_G = [
+    ['The line', 39567], ['Sea level', 0], ['Top of the Great Stair', 24803], ['Average ground', 27559], ['Summitcrest', 42401], ['Living ceiling', 42848],
+    ['Death zone', 52493], ['Everest', 53835], ['Mount Ohwenroken', 56135], ['Airliner cruise', 70000], ['Pressure suit line', 80709], ['Armstrong limit', 101706],
+    ['62 miles up', 327360], ['Dead Sea shore', -14108], ['Titanic', -15625], ['Challenger Deep', -44846]
+  ];
+  var WORLDS = {
+    earth: {
+      LINE_M: LINE_M, LINE_FT: LINE_FT, MIN_M: MIN_M, MAX_M: MAX_M, MAX_UP: MAX_UP, MAX_DOWN: MAX_DOWN, LINE_IN: LINE_IN, LINE_WORDS: LINE_WORDS,
+      DATA: DATA, BYID: BYID, MARKERS: MARKERS, ZONES_UP: ZONES_UP, ZONES_DOWN: ZONES_DOWN, MARKS: MARKS, PRESETS: PRESETS, TRACK: TRACK,
+      PILE_T: PILE_T, PILE_MARKS: PILE_MARKS, sb: { alt: 0, mode: 'above', last: { above: 0, below: 0 } }
+    },
+    gaia: {
+      LINE_M: 12060, LINE_FT: 39567, MIN_M: MIN_M + UP_M, MAX_M: MAX_M + UP_M, MAX_UP: 327360, MAX_DOWN: -44846,
+      LINE_IN: { ft: '39,567 ft', m: '12,060 m', mi: '7.494 mi', km: '12.060 km' },
+      LINE_WORDS: { ft: '12,060 meters', m: '39,567 feet', mi: '12.06 kilometers', km: '7.494 miles' },
+      DATA: DATA_G, BYID: BYID_G, MARKERS: MARKERS_G, ZONES_UP: ZONES_UP_G, ZONES_DOWN: ZONES_DOWN_G, MARKS: MARKS_G, PRESETS: PRESETS_G,
+      TRACK: {
+        above: 'linear-gradient(90deg, #7FE9FF 0%, #1B8FB0 14%, #46FFB4 27%, #7FE9FF 35%, #FF5CCB 40%, #9B6BFF 50%, #0B1D4A 68%, #020B14 100%)',
+        below: 'linear-gradient(90deg, #7FE9FF 0%, #1B8FB0 12%, #0A4460 30%, #04182B 58%, #010509 100%)'
+      },
+      PILE_T: { ft: [[36000, 38000, 42000, 44000], 0.3048, 0], m: [[11000, 11500, 12500, 13500], 1, 0], mi: [[6.75, 7, 8, 8.25], 1609.344, 2], km: [[11, 11.5, 12.5, 13.5], 1000, 1] },
+      PILE_MARKS: [[13060, 'living ceiling']],
+      sb: { alt: 39567, mode: 'above', last: { above: 39567, below: 0 } }
+    }
+  };
+  function useWorld(w) {
+    LINE_M = w.LINE_M; LINE_FT = w.LINE_FT; MIN_M = w.MIN_M; MAX_M = w.MAX_M; MAX_UP = w.MAX_UP; MAX_DOWN = w.MAX_DOWN; LINE_IN = w.LINE_IN; LINE_WORDS = w.LINE_WORDS;
+    DATA = w.DATA; BYID = w.BYID; MARKERS = w.MARKERS; ZONES_UP = w.ZONES_UP; ZONES_DOWN = w.ZONES_DOWN; MARKS = w.MARKS; PRESETS = w.PRESETS; TRACK = w.TRACK;
+    PILE_T = w.PILE_T; PILE_MARKS = w.PILE_MARKS;
+    SNAPS = MARKS.map(function (m) { return m[0]; });
+  }
+
+  /* What the air is doing on Gaia, for a Gaian or for a visitor from Earth */
+  function capFirst(s) { return s.replace(/^./, function (c) { return c.toUpperCase(); }); }
+  function gear(z, tF, gaian, unit) {
+    z = Math.round(z);
+    var suit = ['Pressure suit', 'Past the pressure suit line, a mask is not enough for anyone.', 'bad'];
+    if (gaian) {
+      if (z < 7560) return ['Nothing', tF >= 90 ? 'Plenty of air for a Gaian. It is the heat that keeps people away.' : 'Plenty of air for a Gaian. Nobody lives on the Great Stair, though.', 'good'];
+      if (z < 13060) return ['Nothing', 'This is home. Gaians live for good all the way up to ' + altStr(42848, unit) + ' ' + unit + '.', 'good'];
+      if (z < 16000) return ['Nothing, for a visit', 'Above the living ceiling. A Gaian can climb here, but nobody stays.', 'warn'];
+      if (z < 19600) return ['Bottled oxygen', 'The Gaian death zone. Even Gaians can’t last up here without it.', 'bad'];
+      if (z < 24600) return ['Sealed oxygen mask', 'Past the mask line, Gaian lungs are no help.', 'bad'];
+      return suit;
+    }
+    if (z < 7560) return tF >= 90 ? ['Cooling suit', z < 150 ? 'For the heat. Gaia’s coast averages 130°F.' : 'It is about ' + tF + '°F here on an average day. The coast averages 130.', 'warn'] :
+      ['No gear yet', 'Thick enough for someone from Earth. The oxygen tube goes on at the top of the Great Stair.', 'good'];
+    if (z < 9290) return ['Oxygen tube, altitude meds', 'A tube under the nose is enough across Gaia’s low ground.', 'warn'];
+    if (z < 12900) return ['Full oxygen mask, 24/7', 'Plus a pressurized room to sleep in. This is the rule in Summitbrook.', 'bad'];
+    if (z < 24600) return ['Sealed pure-oxygen mask', 'A visitor from Earth is in their own death zone from here up.', 'bad'];
+    return suit;
+  }
+  function gaiaNumbers(ft, below) {
+    var unit = state.unit, z = ft * 0.3048, A = GAIA.atm(z), B = PHYS.boil(A.P), o2 = 0.2095 * A.P / 1000;
+    var same = PHYS.alt(A.P), gaian = WHO === 'gaian', feels = gaian ? GAIA.lungs(z, same) : same;
+    var s = gaian ? PHYS.spo2(PHYS.atm(feels).P) : PHYS.spo2(A.P), e = PHYS.ept(feels / 0.3048);
+    var tC = Math.round(A.T - 273.15), tF = Math.round((A.T - 273.15) * 1.8 + 32);
+    var water = 123262 + 1025 * 7.84532 * Math.max(0, -z), wr = water / 123262;
+    var at = function (m) { return altStr(m / 0.3048, unit) + ' ' + unit; };
+    if (below) {
+      $('feelNow').textContent = 'In the water, about ' + num(wr, wr < 100 ? 1 : 0) + ' times the air at Gaia’s sea level is pressing on you. If this were a dry shaft open to the sky instead, the air would be about ' + minus(tF) + '°F (' + minus(tC) + '°C) and ' + (A.rho / GAIA.RHO0).toFixed(2) + ' times as thick as at Gaia’s coast.';
+    } else {
+      var who;
+      if (gaian) who = z > 19600 ? 'Gaian lungs are no help this high. The air is as thin as Earth’s at ' + at(same) + '.' :
+        (feels < 1 ? 'For a Gaian, this is thicker than sea-level air is for you.' : 'For a Gaian, breathing here is like you breathing at ' + at(feels) + ' on Earth.');
+      else who = same < 1 ? 'The air is thicker than Earth’s at sea level, so a visitor has plenty to breathe.' : 'For someone from Earth, the air is as thin as it is at ' + at(same) + ' back home.';
+      $('feelNow').textContent = 'About ' + minus(tF) + '°F (' + minus(tC) + '°C) outside on an average day. ' + who;
+    }
+    $('gPl').textContent = below ? 'Pressure in open air' : 'Pressure';
+    $('gSl').textContent = 'Simulated SpO2, ' + (gaian ? 'Gaian' : 'Earth visitor');
+    $('gFl').textContent = 'FAA performance time, ' + (gaian ? 'Gaian' : 'Earth visitor');
+    setG('gP', sig(A.P / 1e6) + '<i>MPa</i>', capFirst(share(A.P / 123262).replace('sea level', 'Gaia’s sea level')) + '.');
+    setG('gD', sig(A.rho) + '<i>kg/m³</i>', capFirst(share(A.rho / 1.225).replace('sea level', 'Earth’s sea level')) + '.');
+    setG('gS', Math.round(s) + '<i>%</i>', gaian ?
+      (s >= 94 ? 'Easy breathing for a Gaian.' : s >= 88 ? 'Normal for Gaians who live this high.' : s >= 75 ? 'Low. Acclimatized Gaians function here, slowly.' :
+        s >= 40 ? 'Dangerous without bottled oxygen, even for a Gaian.' : s > 0.5 ? 'A Gaian passes out fast without a mask.' : 'No usable oxygen. Pressure suit or nothing.') :
+      (s >= 94 ? 'Plenty of oxygen for someone from Earth.' : s >= 88 ? 'About what a visitor reads high in the Andes.' : s >= 75 ? 'Low. A visitor from Earth feels every step.' :
+        s >= 40 ? 'Dangerous for a visitor without a mask.' : s > 0.5 ? 'A visitor passes out fast without a sealed mask.' : 'No usable oxygen. Pressure suit or nothing.'),
+      s >= 94 ? 'good' : (s >= 80 ? 'warn' : 'bad'));
+    var bC = B.K - 273.15, bF = bC * 1.8 + 32;
+    setG('gB', (bF < 0 ? '−' : '') + num(Math.abs(bF), 1) + '<i>°F</i>',
+      (bC < 0 ? '−' : '') + num(Math.abs(bC), 1) + '°C, ' + num(B.K, 1) + ' K' +
+      (B.ice ? '. Liquid water can’t exist here, so ice turns straight to vapor.' : (Math.abs(bC - 37) < 1 ? '. That is body temperature.' : (bC < 36 ? '. Cooler than your body.' : (bC > 100.5 ? '. Hotter than a rolling boil at Earth’s sea level.' : '')))));
+    setG('gO', sig(o2) + '<i>kPa</i>', capFirst(share(o2 / 21.2276).replace('sea level', 'Earth’s sea level')) + '.');
+    if (e) setG('gF', secs(e[0], e[1]), gaian ? 'How long a Gaian can think straight without extra oxygen.' : 'How long a visitor from Earth can think straight without a mask.', e[1] < 150 ? 'bad' : 'warn');
+    else setG('gF', 'No limit', gaian ? 'For a Gaian, the clock does not start until about the living ceiling.' : 'The clock starts where the air is as thin as Earth’s at 18,000 ft.', 'good');
+    $('gE').hidden = false;
+    setG('gE', altStr(same / 0.3048, unit) + '<i>' + unit + '</i>', same < -431 ? 'Thicker than open air gets anywhere on Earth.' : (same < 1 ? 'Thicker than Earth’s air at sea level.' : 'Earth’s air is this thin at that height.'));
+    $('gK').hidden = below;
+    if (!below) {
+      var k = gear(z, tF, gaian, unit);
+      $('gKl').textContent = gaian ? 'What a Gaian needs here' : 'What an Earth visitor needs here';
+      setG('gK', k[0], k[1], k[2]);
+    }
+    $('gW').hidden = !below;
+    if (below) setG('gW', sig(water / 1e6) + '<i>MPa</i>', num(wr, wr < 100 ? 1 : 0) + ' times the air at Gaia’s sea level, or about ' + num(water / 6894.757, 0) + ' pounds on every square inch.' +
+      (z <= -13000 ? ' Gravity is lighter here, so this is about the same crush as the bottom of Earth’s Challenger Deep.' : ''));
+    $('fine').textContent = below ? 'The air tiles treat this depth as a dry shaft open to the sky. The ocean tile is the real water pressure under Gaia’s lighter gravity.' : '';
+    var you = $('rulerYou');
+    if (you) {
+      var on = ft >= 0 && ft <= RULER_TOP;
+      you.setAttribute('visibility', on ? 'visible' : 'hidden');
+      if (on) you.setAttribute('cy', rulerY(ft).toFixed(1));
+    }
+  }
+
+  /* Two rulers: [Earth name, Earth ft, Gaia name, Gaia ft, the line] */
+  var RULER_TOP = 105000, RULER = [
+    ['Coastlines', 0, 'Top of the Stair', 24803],
+    ['Average land', 2756, 'Average land', 27559],
+    ['Summitbrook', 14764, 'Summitbrook', 39567, 1],
+    ['Living limit', 18045, 'Living ceiling', 42848],
+    ['Death zone', 26247, 'Death zone', 52493],
+    ['Everest', 29032, 'Everest', 53835],
+    ['Mount Ohwenroken', 31332, 'Mount Ohwenroken', 56135],
+    ['Armstrong limit', 63000, 'Armstrong limit', 101706]
+  ];
+  var RUL = { W: 360, top: 44, plot: 446, pad: 34, xE: 134, xG: 226 };
+  function rulerY(ft) { return RUL.top + RUL.plot - ft / RULER_TOP * RUL.plot; }
+  function drawRuler() {
+    var unit = state.unit, H = RUL.top + RUL.plot + RUL.pad, xE = RUL.xE, xG = RUL.xG, y0 = rulerY(0), yTop = rulerY(RULER_TOP);
+    var spread = function (ys) { // two-line labels can't sit closer than 26 or on the sea line; walk up from the bottom
+      var out = [], prev = Infinity;
+      ys.forEach(function (y) { var v = Math.min(y, prev - 26, y0 - 13); out.push(v); prev = v; });
+      return out;
+    };
+    var yE = RULER.map(function (r) { return rulerY(r[1]); }), yG = RULER.map(function (r) { return rulerY(r[3]); });
+    var lE = spread(yE), lG = spread(yG), f1 = function (v) { return v.toFixed(1); };
+    var s = '<svg viewBox="0 0 ' + RUL.W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' +
+      '<defs><linearGradient id="stairgrad" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#7FE9FF"/><stop offset=".55" stop-color="#9B6BFF"/><stop offset="1" stop-color="#46FFB4"/></linearGradient></defs>' +
+      '<text class="hd" x="' + xE + '" y="24" text-anchor="middle">Earth</text><text class="hd ga" x="' + xG + '" y="24" text-anchor="middle">Gaia</text>' +
+      '<line class="trk" x1="' + xE + '" x2="' + xE + '" y1="' + f1(yTop) + '" y2="' + f1(y0) + '"/>' +
+      '<line class="trk" x1="' + xG + '" x2="' + xG + '" y1="' + f1(yTop) + '" y2="' + f1(y0) + '"/>' +
+      '<rect class="stair" x="' + (xG - 5) + '" y="' + f1(yG[0]) + '" width="10" height="' + f1(y0 - yG[0]) + '" rx="5"/>' +
+      '<line class="sea" x1="16" x2="' + (RUL.W - 16) + '" y1="' + f1(y0) + '" y2="' + f1(y0) + '"/>' +
+      '<text x="' + (RUL.W / 2) + '" y="' + f1(y0 + 26) + '" text-anchor="middle">Sea level, the one line that never moved</text>' +
+      '<text class="nm" x="' + (xG + 22) + '" y="' + f1((y0 + yG[0]) / 2 - 2) + '">The Great Stair</text>' +
+      '<text x="' + (xG + 22) + '" y="' + f1((y0 + yG[0]) / 2 + 10) + '">' + altStr(24803, unit) + ' ' + unit + ' of cliffs</text>';
+    RULER.forEach(function (r, i) {
+      var hot = r[4] ? ' hot' : '';
+      s += '<line class="lnk' + hot + '" x1="' + (xE + 6) + '" y1="' + f1(yE[i]) + '" x2="' + (xG - 6) + '" y2="' + f1(yG[i]) + '"/>' +
+        '<circle class="dotE' + hot + '" cx="' + xE + '" cy="' + f1(yE[i]) + '" r="4.5"/><circle class="dotG' + hot + '" cx="' + xG + '" cy="' + f1(yG[i]) + '" r="4.5"/>' +
+        '<polyline class="lead" points="' + (xE - 7) + ',' + f1(yE[i]) + ' ' + (xE - 14) + ',' + f1(lE[i]) + ' ' + (xE - 18) + ',' + f1(lE[i]) + '"/>' +
+        '<polyline class="lead" points="' + (xG + 7) + ',' + f1(yG[i]) + ' ' + (xG + 14) + ',' + f1(lG[i]) + ' ' + (xG + 18) + ',' + f1(lG[i]) + '"/>' +
+        '<text class="nm" x="' + (xE - 22) + '" y="' + f1(lE[i] - 2) + '" text-anchor="end">' + esc(r[0]) + '</text>' +
+        '<text x="' + (xE - 22) + '" y="' + f1(lE[i] + 10) + '" text-anchor="end">' + altStr(r[1], unit) + ' ' + unit + '</text>' +
+        '<text class="nm" x="' + (xG + 22) + '" y="' + f1(lG[i] - 2) + '">' + esc(r[2]) + '</text>' +
+        '<text x="' + (xG + 22) + '" y="' + f1(lG[i] + 10) + '">' + altStr(r[3], unit) + ' ' + unit + '</text>';
+    });
+    s += '<circle id="rulerYou" class="you" cx="' + xG + '" cy="' + f1(y0) + '" r="6"/></svg>';
+    $('ruler').innerHTML = s;
+  }
+  $('ruler').addEventListener('click', function (ev) {
+    var svg = this.querySelector('svg');
+    if (!svg) return;
+    var r = svg.getBoundingClientRect(), py = (ev.clientY - r.top) / r.height * (RUL.top + RUL.plot + RUL.pad);
+    var ft = Math.round(Math.max(0, Math.min(RULER_TOP, (RUL.top + RUL.plot - py) / RUL.plot * RULER_TOP)) / 10) * 10, best = 1400;
+    RULER.forEach(function (row) { var d = Math.abs(row[3] - ft); if (d < best) { best = d; ft = row[3]; } });
+    $('sandbox').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    flyTo(ft);
+  });
+
+  /* How Gaia is built: [label, kind, value, note, sign, unit] */
+  var SPEC = [
+    ['The formula', 'alt', 24803, 'Every place on Earth sits this much higher on Gaia.', '+'],
+    ['Average land', 'alt', 27559, 'Ten times Earth’s average.'],
+    ['Gravity', 'raw', '0.80', 'Jumps go 25% higher and hang 25% longer.', '', 'g'],
+    ['Air at sea level', 'raw', '123.262', 'About 22% more than Earth’s, with the same 21% oxygen.', '', 'kPa'],
+    ['Living ceiling', 'alt', 42848, 'The highest a Gaian can live for good.'],
+    ['Death zone starts', 'alt', 52493, 'Twice as high as Earth’s.'],
+    ['Armstrong limit', 'alt', 101706, 'Where water boils at body temperature.'],
+    ['Deepest ocean', 'alt', 44846, 'The Challenger Deep, a quarter deeper than Earth’s.']
+  ];
+  function drawSpec() {
+    var unit = state.unit;
+    $('spec').innerHTML = SPEC.map(function (t) {
+      var v = t[1] === 'alt' ? (t[4] || '') + altStr(t[2], unit) : t[2], u = t[1] === 'alt' ? unit : t[5];
+      return '<div class="g"><span>' + esc(t[0]) + '</span><b' + ((v + u).length > 9 ? ' class="long"' : '') + '>' + v + '<i>' + u + '</i></b><small>' + esc(t[3]) + '</small></div>';
+    }).join('');
+  }
+
+  /* Switching planets */
+  function setPlanet(which, scroll) {
+    if (!WORLDS[which]) which = 'earth';
+    var gaia = which === 'gaia';
+    WORLDS[PLANET].sb = { alt: SB.alt, mode: SB.mode, last: SB.last };
+    PLANET = which;
+    useWorld(WORLDS[which]);
+    SB.token++; SB.dragging = false;
+    SB.alt = WORLDS[which].sb.alt; SB.mode = WORLDS[which].sb.mode; SB.last = WORLDS[which].sb.last;
+    document.body.classList.toggle('is-gaia', gaia);
+    document.querySelectorAll('[data-planet]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-planet') === which)); });
+    document.querySelectorAll('[data-gaia]').forEach(function (el) {
+      if (!el.hasAttribute('data-earth')) el.setAttribute('data-earth', el.textContent);
+      el.textContent = el.getAttribute(gaia ? 'data-gaia' : 'data-earth');
+    });
+    document.querySelectorAll('.only-earth').forEach(function (el) { el.hidden = gaia; });
+    document.querySelectorAll('.only-gaia').forEach(function (el) { el.hidden = !gaia; });
+    try { localStorage.setItem('thinair-planet', which); } catch (err) {}
+    buildPresets(); syncButtons(); scoreboard(); drawPile(); drawRoster();
+    if (gaia) { drawRuler(); drawSpec(); }
+    render();
+    refresh(true);
+    if (scroll) window.scrollTo(0, 0);
+  }
+  document.querySelectorAll('[data-planet]').forEach(function (b) {
+    b.addEventListener('click', function () { if (b.getAttribute('data-planet') !== PLANET) setPlanet(b.getAttribute('data-planet'), true); });
+  });
+  document.querySelectorAll('[data-who]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      WHO = b.getAttribute('data-who');
+      document.querySelectorAll('[data-who]').forEach(function (o) { o.setAttribute('aria-pressed', String(o.getAttribute('data-who') === WHO)); });
+      refresh(true);
+    });
+  });
+
+  /* ---------- Go ---------- */
+  syncButtons();
+  scoreboard();
+  drawPile();
+  render();
+  drawRoster();
+  startScene();
+  refresh(true);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { sizeInput(); });
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  var startPlanet = 'earth';
+  try { if (localStorage.getItem('thinair-planet') === 'gaia') startPlanet = 'gaia'; } catch (err) {}
+  if (startPlanet === 'gaia') setPlanet('gaia', false);
+})();
+</script>
+<script>
+/* App shell: offline support and a status bar that matches the page. */
+(function () {
+  'use strict';
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js').catch(function () { /* the page still works online */ });
+    });
+  }
+  // The bar takes the color of whatever sits at the top edge of the page: the sky, a card, or the page itself.
+  var meta = document.getElementById('themeColor'), last = '', queued = false;
+  function solid(str) {
+    var m = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)(?:\s*[,\/]\s*([\d.]+))?\s*\)/.exec(str || '');
+    if (!m || (m[4] !== undefined && parseFloat(m[4]) < 0.5)) { return ''; }
+    return 'rgb(' + m[1] + ', ' + m[2] + ', ' + m[3] + ')';
+  }
+  function topColor() {
+    var inset = parseFloat(window.getComputedStyle(document.documentElement).paddingTop) || 0;
+    var els = document.elementsFromPoint(window.innerWidth / 2, inset + 2), i, cs, c;
+    for (i = 0; i < els.length; i++) {
+      if (els[i].id === 'view' && window.__skyTop) { return solid(window.__skyTop) || window.__skyTop; }
+      if (els[i].tagName === 'CANVAS') { continue; }
+      cs = window.getComputedStyle(els[i]);
+      c = cs.backgroundImage.indexOf('gradient') !== -1 ? solid(cs.backgroundImage) : '';
+      if (!c) { c = solid(cs.backgroundColor); }
+      if (c) { return c; }
+    }
+    return solid(window.getComputedStyle(document.body).backgroundColor);
+  }
+  function tint() {
+    queued = false;
+    var c = '';
+    try { c = topColor(); } catch (err) { c = ''; }
+    if (c && c !== last) { last = c; meta.setAttribute('content', c); }
+  }
+  function soon() { if (!queued) { queued = true; window.requestAnimationFrame(tint); } }
+  tint();
+  window.addEventListener('scroll', soon, { passive: true });
+  window.addEventListener('resize', soon);
+  window.setInterval(function () { if (!document.hidden) { tint(); } }, 1000);
+})();
+</script>
+</body>
+</html>

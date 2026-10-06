@@ -1,5 +1,5 @@
-/* ALT 327K 2.0: offline support. The page and everything it needs are saved on first visit. */
-const CACHE = 'thin-air-2df69b7b48';
+/* Parallax 2.0: offline support. The page and everything it needs are saved on first visit. */
+const CACHE = 'high-noon-8c97af1172';
 const CORE = [
   "./",
   "./index.html",
@@ -19,9 +19,7 @@ const CORE = [
   "./fonts/barlow-latin-ext-500-normal.woff2",
   "./fonts/barlow-latin-500-normal.woff2",
   "./fonts/barlow-latin-ext-600-normal.woff2",
-  "./fonts/barlow-latin-600-normal.woff2",
-  "./fonts/barlow-latin-ext-700-normal.woff2",
-  "./fonts/barlow-latin-700-normal.woff2"
+  "./fonts/barlow-latin-600-normal.woff2"
 ];
 
 self.addEventListener('install', function (event) {
@@ -30,7 +28,7 @@ self.addEventListener('install', function (event) {
 
 self.addEventListener('activate', function (event) {
   event.waitUntil(caches.keys().then(function (keys) {
-    return Promise.all(keys.filter(function (k) { return k.indexOf('thin-air-') === 0 && k !== CACHE; }).map(function (k) { return caches.delete(k); }));
+    return Promise.all(keys.filter(function (k) { return k.indexOf('high-noon-') === 0 && k !== CACHE; }).map(function (k) { return caches.delete(k); }));
   }).then(function () { return self.clients.claim(); }));
 });
 
