@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>High Noon and Thin Air</title>
+<meta name="description" content="Two apps for Earth and Gaia: a live world clock and an altitude sandbox.">
+<meta name="theme-color" content="#EDF1FF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#060819" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" sizes="32x32" href="./high-noon/icons/favicon-32.png">
+<link rel="stylesheet" href="./high-noon/fonts/fonts.css">
+<style>
+  /* Layout: one narrow column. Two app tiles side by side, stacked on a phone, then the install steps. */
+  :root {
+    --bg: #EDF1FF; --ink: #0B1033; --muted: #4A5482; --card: #FFFFFF; --edge: rgba(24, 32, 96, .14);
+    --gold: #9A6400; --above: #CF0F68; --below: #00767F; --shadow: 0 8px 24px rgba(30, 40, 120, .10);
+    --display: "Big Shoulders Display", "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+    --body: "Barlow", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #060819; --ink: #F1F5FF; --muted: #A6B0DA; --card: #0E1231; --edge: rgba(255, 255, 255, .12);
+      --gold: #FFD447; --above: #FF5FAE; --below: #3FD0D8; --shadow: 0 8px 28px rgba(0, 0, 0, .5);
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 1rem; line-height: 1.5; -webkit-text-size-adjust: 100%; }
+  main { max-width: 46rem; margin: 0 auto; padding-inline: 1.25rem; padding-block: 2.5rem 3.5rem; display: grid; gap: 2.5rem; }
+  h1 { font-family: var(--display); font-weight: 900; font-size: clamp(2.4rem, 9vw, 3.6rem); line-height: .95; letter-spacing: .01em; text-transform: uppercase; margin: 0; text-wrap: balance; }
+  h1 span { color: var(--above); }
+  .lede { margin: .8rem 0 0; color: var(--muted); max-width: 34rem; }
+  .apps { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; }
+  .app { display: grid; grid-template-columns: auto 1fr; gap: .9rem 1rem; align-items: center; padding: 1.1rem; background: var(--card); border: 1px solid var(--edge); border-radius: 22px; box-shadow: var(--shadow); color: inherit; text-decoration: none; min-width: 0; }
+  .app img { width: 4.5rem; height: 4.5rem; display: block; }
+  .app h2 { font-family: var(--display); font-weight: 900; font-size: 1.7rem; line-height: 1; text-transform: uppercase; letter-spacing: .02em; margin: 0 0 .3rem; }
+  .app p { margin: 0; color: var(--muted); font-size: .95rem; }
+  .app b { grid-column: 1 / -1; display: block; text-align: center; font-weight: 600; padding: .6rem 1rem; border-radius: 999px; background: var(--ink); color: var(--bg); }
+  .app:hover b { background: var(--above); color: #FFFFFF; }
+  .app:focus-visible { outline: 3px solid var(--above); outline-offset: 3px; }
+  h3 { font-family: var(--display); font-weight: 700; font-size: 1.5rem; text-transform: uppercase; letter-spacing: .03em; margin: 0 0 .2rem; }
+  .how > p { margin: 0 0 1rem; color: var(--muted); max-width: 34rem; }
+  .ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 1.4rem 2rem; }
+  .ways h4 { margin: 0 0 .35rem; font-size: .8rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+  .ways ol { margin: 0; padding-left: 1.2rem; display: grid; gap: .3rem; }
+  .fine { margin: 0; color: var(--muted); font-size: .9rem; max-width: 34rem; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>High Noon <span>&amp;</span> Thin Air</h1>
+    <p class="lede">Two apps for Earth and Gaia. Each one installs on its own and keeps working with no connection.</p>
+  </header>
+
+  <div class="apps">
+    <a class="app" href="./high-noon/">
+      <img src="./high-noon/icons/icon-192.png" alt="" width="192" height="192">
+      <div>
+        <h2>High Noon</h2>
+        <p>A live world clock, with a sandbox for any offset, saved clocks and custom zones.</p>
+      </div>
+      <b>Open High Noon</b>
+    </a>
+    <a class="app" href="./thin-air/">
+      <img src="./thin-air/icons/icon-192.png" alt="" width="192" height="192">
+      <div>
+        <h2>Thin Air</h2>
+        <p>An altitude sandbox: what the air does to you at any height, and who lives up there.</p>
+      </div>
+      <b>Open Thin Air</b>
+    </a>
+  </div>
+
+  <section class="how" aria-labelledby="how-h">
+    <h3 id="how-h">Put one on your home screen</h3>
+    <p>Open the app you want first, then install it from there. Do it once for each app.</p>
+    <div class="ways">
+      <div>
+        <h4>iPhone or iPad</h4>
+        <ol>
+          <li>Open the app in Safari.</li>
+          <li>Tap Share.</li>
+          <li>Tap Add to Home Screen.</li>
+        </ol>
+      </div>
+      <div>
+        <h4>Android</h4>
+        <ol>
+          <li>Open the app in Chrome.</li>
+          <li>Tap the three-dot menu.</li>
+          <li>Tap Add to Home screen, then Install.</li>
+        </ol>
+      </div>
+      <div>
+        <h4>Computer</h4>
+        <ol>
+          <li>Open the app in Chrome or Edge.</li>
+          <li>Click the install icon at the right end of the address bar.</li>
+          <li>Click Install.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <p class="fine">Clocks and zones you save in High Noon stay on the device you saved them on.</p>
+</main>
+</body>
+</html>

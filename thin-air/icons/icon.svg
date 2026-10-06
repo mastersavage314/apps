@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#060819"/>
+      <stop offset=".42" stop-color="#241A7A"/>
+      <stop offset=".78" stop-color="#0786B5"/>
+      <stop offset="1" stop-color="#3FD0D8"/>
+    </linearGradient>
+    <linearGradient id="capL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF9CCB"/>
+      <stop offset="1" stop-color="#FF5FAE"/>
+    </linearGradient>
+    <clipPath id="above"><rect x="0" y="0" width="512" height="236"/></clipPath>
+    <clipPath id="below"><rect x="0" y="236" width="512" height="276"/></clipPath>
+  </defs>
+  <rect width="512" height="512" fill="url(#sky)"/>
+  <g fill="#F1F5FF">
+    <circle cx="118" cy="96" r="4"/><circle cx="386" cy="84" r="5"/><circle cx="170" cy="150" r="3"/>
+    <circle cx="412" cy="168" r="3.5"/><circle cx="330" cy="128" r="2.5"/>
+  </g>
+  <!-- far ridge -->
+  <path d="M-10 512 L96 330 L150 392 L214 300 L300 512 Z" fill="#0B1033" fill-opacity=".45"/>
+  <path d="M250 512 L372 318 L430 392 L470 346 L530 512 Z" fill="#0B1033" fill-opacity=".45"/>
+  <!-- the peak, below the line -->
+  <g clip-path="url(#below)">
+    <path d="M256 128 L62 512 L450 512 Z" fill="#F1F5FF"/>
+    <path d="M256 128 L450 512 L300 512 L236 330 L282 262 Z" fill="#A6B0DA"/>
+  </g>
+  <!-- the summit, above the line -->
+  <g clip-path="url(#above)">
+    <path d="M256 128 L62 512 L450 512 Z" fill="url(#capL)"/>
+    <path d="M256 128 L450 512 L300 512 L236 330 L282 262 Z" fill="#CF0F68"/>
+  </g>
+  <!-- the line -->
+  <line x1="-10" y1="236" x2="522" y2="236" stroke="#FFC21A" stroke-width="13" stroke-dasharray="34 22" stroke-dashoffset="12"/>
+</svg>
