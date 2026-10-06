@@ -1,5 +1,5 @@
 /* High Noon: offline support. The page and everything it needs are saved on first visit. */
-const CACHE = 'high-noon-e5c3fc9a06';
+const CACHE = 'high-noon-f16a09024f';
 const CORE = [
   "./",
   "./index.html",
@@ -53,7 +53,15 @@ self.addEventListener('fetch', function (event) {
     }));
     return;
   }
-  // Fonts, icons and the manifest: saved copy first, then the network.
+  if (req.url.indexOf('manifest.webmanifest') !== -1) {
+    // The app's own settings: always ask the network first, so a change reaches copies that are already installed.
+    event.respondWith(fetch(req.url, { cache: 'no-cache' }).then(function (res) {
+      if (res && res.ok) { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(req.url, copy); }); }
+      return res;
+    }).catch(function () { return caches.match(req.url); }));
+    return;
+  }
+  // Fonts and icons: saved copy first, then the network.
   event.respondWith(caches.match(req).then(function (hit) {
     return hit || fetch(req).then(function (res) {
       if (res && res.ok) { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); }); }
