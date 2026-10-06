@@ -3,20 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>High Noon</title>
+<title>Parallax 2.0</title>
 <meta name="description" content="A live world clock for Earth and Gaia, with a sandbox for any offset, saved clocks and custom zones.">
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" id="themeColor" content="#EDF1FF">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="High Noon">
+<meta name="apple-mobile-web-app-title" content="Parallax 2.0">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
 <link rel="stylesheet" href="./fonts/fonts.css">
 <style>
-  /* A sibling of Thin Air (formerly The 14,764 Line): same colors, type and card style, with its own layout and its own time sandbox. */
+  /* A sibling of ALT 327K 2.0: same colors, type and card style, with its own layout and its own time sandbox. */
   :root {
     --bg: #EDF1FF;
     --ink: #0B1033;
@@ -339,6 +339,32 @@
   .others { display: flex; flex-wrap: wrap; gap: .1rem 1rem; margin: 2.4rem 0 0; font-weight: 600; font-size: 1rem; font-variant-numeric: tabular-nums; color: #EEF2FF; text-shadow: 0 1px 12px rgba(3, 2, 26, .55); }
   .said { min-height: 1.3em; margin: .3rem 0 0; font-size: .9rem; font-weight: 600; color: #FFE27A; text-shadow: 0 1px 10px rgba(3, 2, 26, .6); }
 
+  /* The dial: 12 numbers, and around it one lap of the 24-hour day with the Sun riding it. Noon is at the top.
+     The ring uses the same night, twilight, pink edge and daylight colors as the day strip on every card. */
+  .e-dialwrap { position: relative; width: min(100%, 21rem); aspect-ratio: 1; margin: 1.7rem auto 0; }
+  .e-ring { position: absolute; inset: 0; border-radius: 50%;
+    background: conic-gradient(from 180deg, #140B40 0deg, #140B40 62deg, #34167A 72deg, #F0577F 93.6deg, #7DD9FF 118.8deg, #D6F4FF 180deg, #7DD9FF 241.2deg, #F0577F 266.4deg, #34167A 288deg, #140B40 298deg, #140B40 360deg);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 15px), #000 calc(100% - 14px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 15px), #000 calc(100% - 14px));
+  }
+  .e-halo { position: absolute; inset: -6%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 212, 71, 0) 78%, rgba(255, 212, 71, .2) 90%, rgba(255, 150, 60, 0) 100%); pointer-events: none; }
+  .e-orbit { position: absolute; inset: 0; transform: rotate(var(--sun, 0deg)); pointer-events: none; }
+  .e-orbit i { position: absolute; left: 50%; top: -4px; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #FFFFFF, #FFE27A 45%, #FFB300); box-shadow: 0 0 0 3px rgba(255, 212, 71, .35), 0 0 24px 8px rgba(255, 190, 60, .9), 0 0 60px 18px rgba(255, 150, 60, .45); }
+  .e-dial { position: absolute; inset: 24px; width: calc(100% - 48px); height: calc(100% - 48px); overflow: visible; }
+  .e-dial .face { fill: rgba(6, 8, 25, .7); stroke: rgba(191, 243, 255, .5); stroke-width: 1.5; }
+  .e-dial .tk { stroke: rgba(244, 247, 255, .85); stroke-width: 3; stroke-linecap: round; }
+  .e-dial .tk.half { stroke: rgba(191, 243, 255, .5); stroke-width: 1.5; }
+  .e-dial .mk { fill: rgba(191, 243, 255, .45); }
+  .e-dial .mk.five { fill: #FFD447; }
+  .e-dial text { font-family: var(--display); font-weight: 900; font-size: 42px; fill: #F4F7FF; text-anchor: middle; dominant-baseline: central; }
+  .e-dial text.top { fill: #FFD447; font-size: 50px; }
+  .e-dial text.lap { font-size: 24px; font-weight: 700; fill: #BFF3FF; opacity: .9; letter-spacing: .02em; }
+  .e-dial .hh { stroke: #FFFFFF; stroke-width: 10; stroke-linecap: round; }
+  .e-dial .mh { stroke: #BFF3FF; stroke-width: 5.5; stroke-linecap: round; }
+  .e-dial .sh { stroke: #FFD447; stroke-width: 2.2; stroke-linecap: round; filter: drop-shadow(0 0 5px #FFD447); }
+  .e-dial .cap { fill: #060819; stroke: #FFD447; stroke-width: 3; }
+  .e-dial .hands { animation: gsweep 1.3s cubic-bezier(.2, .8, .2, 1) both; transform-origin: 200px 200px; }
+
   .deck { position: relative; z-index: 1; max-width: 46rem; margin: 0 auto; padding: 1rem 1rem 0; }
   .slide { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .6rem; align-items: center; margin: .2rem 0 0; }
   .nudge { width: 2.75rem; height: 2.75rem; border-radius: 50%; border: 1px solid var(--edge); background: var(--card); font-size: 1.5rem; font-weight: 600; line-height: 1; cursor: pointer; box-shadow: var(--shadow); padding: 0; }
@@ -626,7 +652,7 @@
     .g-who h3 { font-size: 1.8rem; }
     .g-elev b { font-size: 2.3rem; }
   }
-  @media (prefers-reduced-motion: reduce) { .g-dial .hands, .g-beam { animation: none; } .g-top::before, .g-top::after, #aurora { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .g-dial .hands, .e-dial .hands, .g-beam { animation: none; } .g-top::before, .g-top::after, #aurora { transition: none; } }
 </style>
 </head>
 <body>
@@ -639,7 +665,7 @@
       <button type="button" data-planet="gaia" aria-pressed="false">Gaia</button>
     </div>
     <div class="scene-top">
-      <p class="wordmark">High Noon</p>
+      <p class="wordmark">Parallax 2.0</p>
       <div class="phase" id="phase">Morning</div>
     </div>
     <div class="pick">
@@ -647,10 +673,26 @@
       <input id="zin" type="text" list="zlist" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="Summitbrook, CL">
       <datalist id="zlist"></datalist>
     </div>
-    <h1><span class="sr">High Noon, a world clock. The time there is </span><span class="big" id="heroNum">0:00</span><span class="big-side"><span class="big-sec" id="heroSec">00</span><span class="big-unit" id="heroUnit">AM</span></span></h1>
+    <h1><span class="sr">Parallax 2.0, a world clock. The time there is </span><span class="big" id="heroNum">0:00</span><span class="big-side"><span class="big-sec" id="heroSec">00</span><span class="big-unit" id="heroUnit">AM</span></span></h1>
     <div class="beam" aria-hidden="true"><i id="heroOrb" class="sun"></i><span id="heroAlt"></span></div>
     <div class="others" id="others"></div>
     <p class="said" id="said" role="status"></p>
+    <div class="e-dialwrap">
+      <div class="e-halo" aria-hidden="true"></div>
+      <div class="e-ring" aria-hidden="true"></div>
+      <div class="e-orbit" id="eOrbit" aria-hidden="true"><i></i></div>
+      <svg class="e-dial" id="eDial" viewBox="0 0 400 400" role="img" aria-label="A 12-hour clock dial">
+        <circle class="face" cx="200" cy="200" r="198"/>
+        <g id="eMarks"></g>
+        <text class="lap" id="eLap" x="200" y="272">AM</text>
+        <g class="hands">
+          <line class="hh" id="eHh" x1="200" y1="216" x2="200" y2="104"/>
+          <line class="mh" id="eMh" x1="200" y1="220" x2="200" y2="58"/>
+          <line class="sh" id="eSh" x1="200" y1="232" x2="200" y2="44"/>
+          <circle class="cap" cx="200" cy="200" r="9"/>
+        </g>
+      </svg>
+    </div>
   </div>
 </header>
 
@@ -780,7 +822,7 @@
         <button type="button" data-planet="gaia" aria-pressed="true">Gaia</button>
       </div>
       <div class="g-bar">
-        <h2 class="g-word" id="g-h">High Noon on Gaia</h2>
+        <h2 class="g-word" id="g-h">Parallax 2.0 on Gaia</h2>
         <div class="g-phase" id="gPhase">Morning</div>
       </div>
       <div class="g-pick">
@@ -1482,6 +1524,39 @@
     setSel(r.ref, r.label);
   }
 
+  /* ---------- The dial: 12 numbers, with the Sun riding one lap of the 24-hour day around it ---------- */
+  (function marks() {
+    var html = '', i, a, r1, s, c;
+    for (i = 0; i < 24; i++) {
+      a = i / 24 * 2 * Math.PI; s = Math.sin(a); c = -Math.cos(a);
+      r1 = i % 2 === 0 ? 180 : 187;
+      html += '<line class="tk' + (i % 2 ? ' half' : '') + '" x1="' + (200 + s * r1).toFixed(1) + '" y1="' + (200 + c * r1).toFixed(1) + '" x2="' + (200 + s * 195).toFixed(1) + '" y2="' + (200 + c * 195).toFixed(1) + '"/>';
+    }
+    for (i = 1; i <= 12; i++) {
+      a = i / 12 * 2 * Math.PI;
+      html += '<text' + (i === 12 ? ' class="top"' : '') + ' x="' + (200 + Math.sin(a) * 150).toFixed(1) + '" y="' + (200 - Math.cos(a) * 150).toFixed(1) + '">' + i + '</text>';
+    }
+    for (i = 0; i < 60; i++) {
+      a = i / 60 * 2 * Math.PI;
+      html += '<circle class="mk' + (i % 5 === 0 ? ' five' : '') + '" cx="' + (200 + Math.sin(a) * 114).toFixed(1) + '" cy="' + (200 - Math.cos(a) * 114).toFixed(1) + '" r="' + (i % 5 === 0 ? 2.6 : 1.3) + '"/>';
+    }
+    $('eMarks').innerHTML = html;
+  })();
+  function turn(el, deg) { el.setAttribute('transform', 'rotate(' + deg.toFixed(2) + ' 200 200)'); }
+  var lastDial = '';
+  function paintDial() {
+    turn($('eHh'), ((S.h % 12) + S.m / 60 + S.s / 3600) / 12 * 360);
+    turn($('eMh'), (S.m + S.s / 60) / 60 * 360);
+    turn($('eSh'), S.s / 60 * 360);
+    var key = S.h + ':' + S.m + '|' + sel.label;
+    if (key === lastDial) { return; }
+    lastDial = key;
+    $('eLap').textContent = S.h < 12 ? 'AM lap' : 'PM lap';
+    $('eDial').setAttribute('aria-label', 'A 12-hour dial showing ' + ((S.h % 12) || 12) + ':' + pad(S.m) + (S.h < 12 ? ' AM' : ' PM') + ' in ' + sel.label);
+    // The Sun goes around once a day: straight up at noon, straight down at midnight.
+    $('eOrbit').style.setProperty('--sun', ((S.h + S.m / 60 - 12) / 24 * 360).toFixed(2) + 'deg');
+  }
+
   function paintScene() {
     var p = clockParts(S.h, S.m, S.s);
     if ($('heroNum').textContent !== p.hm) { $('heroNum').textContent = p.hm; }
@@ -1493,6 +1568,7 @@
     if ($('phase').textContent !== ph) { $('phase').textContent = ph; }
     var others = '<span>' + DAYS[S.dow] + ', ' + MONTHS[S.mon] + ' ' + S.date + '</span><span>' + esc(deltaStr(S.rel)) + '</span>';
     if ($('others').innerHTML !== others) { $('others').innerHTML = others; }
+    paintDial();
   }
 
   // Sky colors through the day: [hour, top, upper, lower, bottom].

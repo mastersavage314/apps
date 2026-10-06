@@ -1,6 +1,6 @@
 {
-  "name": "High Noon",
-  "short_name": "High Noon",
+  "name": "Parallax 2.0",
+  "short_name": "Parallax 2.0",
   "description": "A live world clock for Earth and Gaia, with a sandbox for any offset, saved clocks and custom zones.",
   "id": "./",
   "start_url": "./",

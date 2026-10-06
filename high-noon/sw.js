@@ -1,5 +1,5 @@
-/* High Noon: offline support. The page and everything it needs are saved on first visit. */
-const CACHE = 'high-noon-f16a09024f';
+/* Parallax 2.0: offline support. The page and everything it needs are saved on first visit. */
+const CACHE = 'high-noon-f27e95547c';
 const CORE = [
   "./",
   "./index.html",

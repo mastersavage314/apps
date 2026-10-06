@@ -1,5 +1,5 @@
-/* Thin Air: offline support. The page and everything it needs are saved on first visit. */
-const CACHE = 'thin-air-dd979ed4b8';
+/* ALT 327K 2.0: offline support. The page and everything it needs are saved on first visit. */
+const CACHE = 'thin-air-2df69b7b48';
 const CORE = [
   "./",
   "./index.html",
