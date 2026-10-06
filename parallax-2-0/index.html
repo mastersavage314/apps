@@ -2476,6 +2476,11 @@
   function dateText(p) { return WEEK[p.dow] + ', ' + MONTHS[p.mon] + ' ' + p.date; }
   // Gaia's five days, and the Earth day each one feels like: three workdays (they feel like Monday, Wednesday and Friday) and the same two-day weekend.
   var FEEL = { Sunday: 'Sunday', Monday: 'Monday', Thursday: 'Wednesday', Friday: 'Friday', Saturday: 'Saturday' };
+  // The Earth clock time a Gaian time of day feels like: the same share of the day (36 Gaian hours stretch over 24 Earth ones), noon on top of noon.
+  function feelTime(p) {
+    var e = Math.floor((p.h * 60 + p.m) * 2 / 3), eh = Math.floor(e / 60), em = e % 60;
+    return 'feels like an Earth ' + ((eh % 12) || 12) + ':' + pad(em) + ' ' + (eh < 12 ? 'AM' : 'PM');
+  }
   function feelText(p) { return 'feels like an Earth ' + FEEL[WEEK[p.dow]]; }
   function isDay(p) { var x = p.h + p.m / 60; return x >= 9 && x < 27; }
   function relDayLabel(diff) {
@@ -2728,7 +2733,7 @@
     $('gLap').textContent = p.h < 18 ? 'AM lap' : 'PM lap';
     $('gAlt').textContent = ztc(S.off);
     $('gOthers').innerHTML = '<span>' + dateText(p) + ', ' + p.y + '<em>' + feelText(p) + '</em></span><span>' +
-      pad(p.h) + ':' + pad(p.m) + ' on the 36-hour clock</span><span>' + esc(deltaStr(S.rel)) + '</span>';
+      pad(p.h) + ':' + pad(p.m) + ' on the 36-hour clock<em>' + feelTime(p) + '</em></span><span>' + esc(deltaStr(S.rel)) + '</span>';
     $('gDial').setAttribute('aria-label', 'An 18-hour dial showing ' + ((p.h % 18) || 18) + ':' + pad(p.m) + ' ' + (p.h < 18 ? 'AM' : 'PM') + ' in ' + sel.label);
     $('gOrbit').style.setProperty('--hel', ((hrs - 18) / 36 * 360).toFixed(2) + 'deg');
     var orb = $('gOrb'), ocls = isDay(p) ? 'sun' : 'moon';
@@ -2832,7 +2837,7 @@
     $('gFeelText').textContent = ph[2];
     var dayLine = S.relDay === 0 ? 'It is ' + WEEK[p.dow] + ' there, the same day as you.' :
       (S.relDay > 0 ? 'It is already ' + WEEK[p.dow] + ' there, ' + relDayLabel(S.relDay) + ' for you.' : 'It is still ' + WEEK[p.dow] + ' there, ' + relDayLabel(S.relDay) + ' for you.');
-    $('gFeelNow').textContent = dayLine + ' It ' + feelText(p) + '. Your own clock on Gaia reads ' + youShort() + ' (' + ztc(V.off) + ').';
+    $('gFeelNow').textContent = dayLine + ' It ' + feelText(p) + ', and the time ' + feelTime(p) + '. Your own clock on Gaia reads ' + youShort() + ' (' + ztc(V.off) + ').';
     var same = [], ahead = null, behind = null;
     ALL.forEach(function (z) {
       if (z.off === S.off) { same.push(z.name); }
