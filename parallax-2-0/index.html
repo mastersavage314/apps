@@ -655,6 +655,14 @@
     .g-elev b { font-size: 2.3rem; }
   }
   @media (prefers-reduced-motion: reduce) { .g-dial .hands, .e-dial .hands, .g-beam { animation: none; } .g-top::before, .g-top::after, #aurora { transition: none; } }
+
+  /* HANA, the Helian Assigned Numbers Authority's zone database (the Olson database): the release badge, the zone ID card and the ID chips */
+  .g-hana { display: inline-block; vertical-align: top; margin: .18rem 0 0 .55rem; padding: .28rem .75rem .32rem; border-radius: 999px; font-family: var(--display); font-weight: 900; font-size: 1.02rem; line-height: 1.15; letter-spacing: .05em; color: #46FFB4; background: rgba(2, 11, 20, .55); border: 1px solid rgba(70, 255, 180, .5); box-shadow: 0 0 14px rgba(70, 255, 180, .25); white-space: nowrap; }
+  #gaia .g.wide { grid-column: 1 / -1; }
+  .g-chip.hana { border: 1px solid rgba(70, 255, 180, .45); background: transparent; color: #46FFB4; font-weight: 600; }
+  .g-band span { white-space: normal; }
+  #gaia .g.wide b { font-size: clamp(1.45rem, 7.4vw, 2.3rem); }
+  @media (max-width: 22.5rem) { #gaia .gauges .g b { font-size: 1.65rem; } #gaia .gauges .g.wide b { font-size: 1.45rem; } }
 </style>
 </head>
 <body>
@@ -823,6 +831,7 @@
         <button type="button" data-planet="earth" aria-pressed="false">Earth</button>
         <button type="button" data-planet="gaia" aria-pressed="true">Gaia</button>
       </div>
+      <span class="g-hana" id="gHanaBadge" title="Release 2026a of the HANA Time Zone Database, the Olson database">HANA 2026a</span>
       <div class="g-bar">
         <h2 class="g-word" id="g-h">Parallax 2.0 on Gaia</h2>
         <div class="g-phase" id="gPhase">Morning</div>
@@ -908,6 +917,7 @@
     </section>
 
     <section class="gauges" aria-label="Readouts for this Gaian clock and the whole board">
+      <div class="g wide" id="ggH"><span>HANA zone</span><b></b><small></small></div>
       <div class="g" id="ggE"><span>Earth twin</span><b></b><small></small></div>
       <div class="g" id="ggU"><span>ZTC offset</span><b></b><small></small></div>
       <div class="g" id="ggS"><span>Saved clocks</span><b></b><small></small></div>
@@ -995,6 +1005,8 @@
         <div class="g-g"><span>Last clock to first</span><b>44<i>hours</i></b><small>From Baker Island to Hitirā.</small></div>
         <div class="g-g"><span>Daylight saving jump</span><b>1<i>hour</i></b><small>The same as on Earth.</small></div>
         <div class="g-g"><span>The standard</span><b>ZTC</b><small>Coordinated Zenith Time, set from Summitbrook.</small></div>
+        <div class="g-g"><span>Zone database</span><b>HANA<i>2026a</i></b><small>The Helian Assigned Numbers Authority's database. Everyone calls it the Olson database.</small></div>
+        <div class="g-g"><span>Zone IDs</span><b>Area/City</b><small>The same IDs as on Earth, plus America/Summitbrook for Colorandoa and Etc/ZTC for the base clock.</small></div>
       </div>
     </section>
 
@@ -1003,6 +1015,7 @@
       <p id="gFine">Gaian clocks run in real time with the same hours, minutes and seconds as Earth's. Gaia's year 2026 began at the same moment Summitbrook's did on Earth, and every Gaian day since has lasted 36 hours, so the dates on the two planets do not line up.</p>
       <p>Gaia's week has five days: Monday, Thursday and Friday for work, then Saturday and Sunday off. Monday feels like an Earth Monday, Thursday like a Wednesday, Friday like a Friday, and the weekend is the same Saturday and Sunday.</p>
       <p>Every Gaian offset comes from its Earth one: add 9 hours, multiply by 1.5, and settle on a whole hour, with any odd minutes carried over. Places with clock changes follow the US or European dates. Parinacota is shown on Chile's standard time all year, since Gaia's clock-change dates for the southern half of the planet are not locked yet.</p>
+      <p>Every zone on Gaia has a HANA ID in the same Area/City form as on Earth, from release 2026a of the HANA Time Zone Database, which everyone on Gaia calls the Olson database. A place that exists on Earth keeps its Earth ID, so Asia/Tokyo is Asia/Tokyo on both planets and only the clock rules behind it are Gaia's. America/Summitbrook is the city clock for all of Colorandoa, and every other town there is an alias that points to it. Etc/ZTC is the fixed base clock, and its Etc/ZTC+4 style cousins flip the sign like Earth's do, so Etc/ZTC+4 is four hours behind. IDs use plain letters only, which is why Apōpō's clocks read Pacific/Toara, Pacific/Fatahi and so on. Summitbrook prints as SMT, or SMDT in summer. Every other zone prints as its offset, like ZTC+06.</p>
     </footer>
   </div>
 
@@ -2357,6 +2370,67 @@
      zone = 'custom:<id>' for a rule set above, 'real:<std>:<rule>' for the Gaian twin of a real-world zone, 'ztc:<minutes>' for a fixed offset.
      zc = this clock is the zone itself. glow = a place in the Cordilleran Region that never changes its clocks. */
   var CORD = 'custom:cordilleran', PERU = 'real:360:none', CHINA = 'real:1560:none', NEPAL = 'real:1305:none', INDIA = 'real:1290:none', BOLIVIA = 'real:480:none';
+
+  /* ---------- HANA zone IDs ----------
+     Places that exist on Earth keep their Earth ID. The rest are named in plain letters (no macrons or okina), like every ID.
+     One zone per set of clock rules: every other Colorandoa town is an alias that points to America/Summitbrook. */
+  var HANA_RELEASE = '2026a';
+  var HANA_CUSTOM = { cordilleran: 'America/Summitbrook', coastal: 'America/Calivornia', toara: 'Pacific/Toara', aratoa: 'Pacific/Aratoa', utaroa: 'Pacific/Utaroa',
+    fatahi: 'Pacific/Fatahi', rainui: 'Pacific/Rainui', arahiti: 'Pacific/Arahiti', hitira: 'Pacific/Hitira' };
+  // Typed or picked by ID: [ID, zone reference, label]
+  var HANA_TYPED = [['Etc/ZTC', 'ztc:0', 'Etc/ZTC'], ['Etc/ZTC+4', 'real:-240:none', 'Etc/ZTC+4'], ['America/Summitbrook', CORD, 'America/Summitbrook'],
+    ['America/Calivornia', 'custom:coastal', 'America/Calivornia'], ['America/Aridona', 'ztc:0', 'America/Aridona'], ['America/Britannic_Columbia', 'ztc:0', 'America/Britannic_Columbia'],
+    ['Pacific/Toara', 'custom:toara', 'Pacific/Toara'], ['Pacific/Aratoa', 'custom:aratoa', 'Pacific/Aratoa'], ['Pacific/Utaroa', 'custom:utaroa', 'Pacific/Utaroa'],
+    ['Pacific/Fatahi', 'custom:fatahi', 'Pacific/Fatahi'], ['Pacific/Rainui', 'custom:rainui', 'Pacific/Rainui'], ['Pacific/Arahiti', 'custom:arahiti', 'Pacific/Arahiti'],
+    ['Pacific/Hitira', 'custom:hitira', 'Pacific/Hitira']];
+  var HANA_ONLY = {};
+  HANA_TYPED.forEach(function (t) { HANA_ONLY[t[0]] = true; });
+  var HANA_BY_ID = { burnthills: 'America/New_York', summitbrook: 'America/Summitbrook', cord: 'America/Summitbrook', coast: 'America/Calivornia', aridona: 'America/Aridona',
+    bc: 'America/Britannic_Columbia', baker: 'Etc/ZTC+4', denver: 'America/Denver', nyc: 'America/New_York', london: 'Europe/London', mumbai: 'Asia/Kolkata',
+    kathmandu: 'Asia/Kathmandu', tokyo: 'Asia/Tokyo', kiritimati: 'Pacific/Kiritimati', parinacota: 'America/Santiago', santabarbara: 'America/La_Paz',
+    pirquitas: 'America/Argentina/Jujuy', toara: 'Pacific/Toara', aratoa: 'Pacific/Aratoa', utaroa: 'Pacific/Utaroa', fatahi: 'Pacific/Fatahi', rainui: 'Pacific/Rainui',
+    arahiti: 'Pacific/Arahiti', hitira: 'Pacific/Hitira' };
+  var HANA_ALIAS = {};
+  (function () {
+    var put = function (id, list, alias) { list.forEach(function (k) { HANA_BY_ID[k] = id; if (alias) { HANA_ALIAS[k] = true; } }); };
+    put('America/Summitbrook', ['summitcrest', 'axspororidge', 'luxora', 'teyakenroken', 'bressler', 'skawenta', 'rinconada'], true);
+    put('America/Lima', ['larinconada', 'phinaya', 'condoroma', 'ananea', 'cojata', 'cerrodepasco', 'macusani']);
+    put('Asia/Shanghai', ['tuiwa', 'chasangcun', 'rongbuk', 'shuanghu', 'wenquan', 'lungring', 'yanshiping', 'amdo', 'domar', 'nagqu', 'quzong', 'pagri']);
+    put('Asia/Kathmandu', ['lobuche', 'dingboche', 'chharka']);
+    put('Asia/Kolkata', ['karzok', 'komic', 'hanle', 'achirik', 'hankar']);
+    HANA_BY_ID.half1530 = 'Pacific/Aratoa'; HANA_BY_ID.half1730 = 'Pacific/Arahiti';
+  })();
+  // The ID for a zone reference, when exactly one built-in ID fits it.
+  function hanaOfRef(ref) {
+    var a = ref.split(':'), found = null, i, id;
+    if (a[0] === 'custom') { return HANA_CUSTOM[a[1]] || null; }
+    if (ref === 'ztc:0') { return 'Etc/ZTC'; }
+    for (i = 0; i < CLOCKS.length; i++) {
+      id = HANA_BY_ID[CLOCKS[i].id];
+      if (CLOCKS[i].zone !== ref || !id || HANA_ALIAS[CLOCKS[i].id]) { continue; }
+      if (found && found !== id) { return null; }
+      found = id;
+    }
+    return found;
+  }
+  // {id, alias} for whatever the sandbox is showing, or null when no HANA zone covers it.
+  function hanaFor(ref, label) {
+    var i, z, id;
+    for (i = 0; i < ALL.length; i++) {
+      z = ALL[i];
+      if (z.zone === ref && z.name === label && z.hana) { return { id: z.hana, alias: z.alias }; }
+    }
+    if (HANA_ONLY[label] || IANA.indexOf(label) !== -1) { return { id: label }; }
+    id = hanaOfRef(ref);
+    return id ? { id: id } : null;
+  }
+  // What a zone prints as: Summitbrook has letters of its own, the base clock is ZTC, everything else prints its offset.
+  function abbrOf(ref, off) {
+    if (ref === CORD && (off === 0 || off === 60)) { return off === 0 ? 'SMT' : 'SMDT'; }
+    if (ref === 'ztc:0' && off === 0) { return 'ZTC'; }
+    var a = Math.abs(off), m = a % 60;
+    return 'ZTC' + (off < 0 ? '−' : '+') + pad(Math.floor(a / 60)) + (m ? ':' + pad(m) : '');
+  }
   var CLOCKS = [
     { id: 'burnthills', group: 'home', name: 'Burnt Hills, NY', where: 'Saratoga County, on Eastern Time', zone: 'real:360:us' },
     { id: 'summitbrook', group: 'cord', name: 'Summitbrook, CL', where: 'The zero line. Zenith Time is set here', zone: CORD },
@@ -2540,7 +2614,9 @@
       z.i = i;
       z.isGlow = !!z.glow || refKind(z.zone) === 'custom';
       z.badge = /, CL$/.test(z.name);
-      z.search = (z.name + ' ' + z.where + ' ' + GROUPS[z.group] + ' ' + refLabel(z.zone)).toLowerCase();
+      z.hana = HANA_BY_ID[z.id] || hanaOfRef(z.zone) || null;
+      z.alias = !!HANA_ALIAS[z.id];
+      z.search = (z.name + ' ' + z.where + ' ' + GROUPS[z.group] + ' ' + refLabel(z.zone) + ' ' + (z.hana || '')).toLowerCase();
       BYID[z.id] = z;
     });
     lookups = null;
@@ -2599,6 +2675,7 @@
     RULESETS.concat(store.zones).forEach(function (rs) { add(rs.name, 'custom:' + rs.id, rs.name); });
     ALL.forEach(function (z) { add(z.name, z.zone, z.name); });
     ALL.forEach(function (z) { var c = z.name.indexOf(','); if (c > 0) { add(z.name.slice(0, c), z.zone, z.name); } });
+    HANA_TYPED.forEach(function (t) { add(t[0], t[1], t[2]); });
     // Real Earth zones are looked up by name and turned into their Gaian twin when picked.
     IANA.forEach(function (id) { add(id, 'iana:' + id, id); });
     IANA.forEach(function (id) { add(id.slice(id.lastIndexOf('/') + 1), 'iana:' + id, id); });
@@ -2630,6 +2707,7 @@
     var add = function (v) { if (!seen[v]) { seen[v] = 1; html += '<option value="' + esc(v) + '"></option>'; } };
     ALL.forEach(function (z) { add(z.name); });
     RULESETS.concat(store.zones).forEach(function (rs) { add(rs.name); });
+    HANA_TYPED.forEach(function (t) { add(t[0]); });
     IANA.forEach(add);
     $('gList').innerHTML = html;
   }
@@ -2791,6 +2869,21 @@
   }
   function paintGauges(now) {
     var kind = refKind(sel.ref), parts = refParts(sel.ref) || { std: 0, rule: 'none' };
+    // 0. HANA zone: the ID in the Olson database, and what the zone prints as
+    var hz = hanaFor(sel.ref, sel.label), ab = abbrOf(sel.ref, S.off);
+    if (!hz) {
+      setG('ggH', 'None', '', 'No HANA zone covers this one. A fixed offset like this prints as ' + ab + '.', 'wide', false);
+    } else {
+      var hid = hz.id, htext;
+      if (hz.alias) { htext = sel.label + ' is an alias. It points to ' + hid + ', the one zone every town on these clock rules shares. It prints as ' + ab + ' right now.'; }
+      else if (hid === 'Etc/ZTC') { htext = 'The fixed base clock. It never changes its clocks and it always prints as ZTC.'; }
+      else if (/^Etc\/ZTC[+-]/.test(hid)) { htext = 'A fixed zone named for its offset. The sign is flipped, like Earth’s Etc zones, so this one is four hours behind ZTC.'; }
+      else if (hid === 'America/Summitbrook') { htext = 'The city clock at the zero line, and the one zone for all of Colorandoa. It prints as ' + ab + ' right now.'; }
+      else if (/^Pacific\/(Toara|Aratoa|Utaroa|Fatahi|Rainui|Arahiti|Hitira)$/.test(hid)) { htext = 'One of Apōpō’s clocks, written in plain letters like every ID. It prints as ' + ab + '.'; }
+      else if (/^America\/(Calivornia|Aridona|Britannic_Columbia)$/.test(hid)) { htext = 'Named for its jurisdiction, since no city is locked for it yet. It prints as ' + ab + ' right now.'; }
+      else { htext = 'The same ID as on Earth, with Gaia’s clock rules behind it. It prints as ' + ab + ' right now.'; }
+      setG('ggH', hid, '', htext, 'wide', hid.length > 22);
+    }
     // 1. Earth twin: the Earth offset this Gaian clock comes from
     var e = TWIN[parts.std];
     if (e === undefined) {
@@ -2936,7 +3029,8 @@
   /* ---------- Paint: the board ---------- */
   function rowHTML(z, now) {
     var rel = z.p.dc - SB.p.dc, cls = 'rd-' + Math.max(0, Math.min(3, rel + 1)), day = isDay(z.p), parts = refParts(z.zone);
-    var chips = '<span class="g-chip">' + esc(deltaStr(z.rel)) + '</span><span class="g-chip">' + relDayLabel(z.relDay) + '</span><span class="g-chip off">' + ztc(z.off) + '</span>';
+    var chips = '<span class="g-chip">' + esc(deltaStr(z.rel)) + '</span><span class="g-chip">' + relDayLabel(z.relDay) + '</span><span class="g-chip off">' + ztc(z.off) + (z.zone === CORD ? ' \u00B7 ' + abbrOf(CORD, z.off) : '') + '</span>';
+    if (z.hana) { chips += '<span class="g-chip hana">' + (z.alias ? 'alias of ' : '') + esc(z.hana) + '</span>'; }
     if (parts && parts.rule !== 'none') { chips += '<span class="g-chip tag">' + (z.off !== parts.std ? (parts.rule === 'eu' ? 'summer time' : 'daylight time') : 'standard time') + '</span>'; }
     chips += '<button type="button" class="g-chip go" data-gsand="' + esc(z.id) + '">Show up top</button>';
     if (z.own) { chips += '<button type="button" class="g-chip rm" data-grm="' + esc(z.id) + '">Remove</button>'; }
