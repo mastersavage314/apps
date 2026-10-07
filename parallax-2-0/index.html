@@ -2375,18 +2375,18 @@
      Places that exist on Earth keep their Earth ID. The rest are named in plain letters (no macrons or okina), like every ID.
      One zone per set of clock rules: every other Colorandoa town is an alias that points to America/Summitbrook. */
   var HANA_RELEASE = '2026a';
-  var HANA_CUSTOM = { cordilleran: 'America/Summitbrook', coastal: 'America/Calivornia', toara: 'Pacific/Toara', aratoa: 'Pacific/Aratoa', utaroa: 'Pacific/Utaroa',
+  var HANA_CUSTOM = { cordilleran: 'America/Summitbrook', coastal: 'America/Johnston', toara: 'Pacific/Toara', aratoa: 'Pacific/Aratoa', utaroa: 'Pacific/Utaroa',
     fatahi: 'Pacific/Fatahi', rainui: 'Pacific/Rainui', arahiti: 'Pacific/Arahiti', hitira: 'Pacific/Hitira' };
   // Typed or picked by ID: [ID, zone reference, label]
   var HANA_TYPED = [['Etc/ZTC', 'ztc:0', 'Etc/ZTC'], ['Etc/ZTC+4', 'real:-240:none', 'Etc/ZTC+4'], ['America/Summitbrook', CORD, 'America/Summitbrook'],
-    ['America/Calivornia', 'custom:coastal', 'America/Calivornia'], ['America/Aridona', 'ztc:0', 'America/Aridona'], ['America/Britannic_Columbia', 'ztc:0', 'America/Britannic_Columbia'],
+    ['America/Johnston', 'custom:coastal', 'America/Johnston'], ['America/Ashenix', 'ztc:0', 'America/Ashenix'], ['America/Portkane', 'ztc:0', 'America/Portkane'], ['America/Saskwatoon', 'ztc:0', 'America/Saskwatoon'], ['America/Northgate', 'ztc:60', 'America/Northgate'], ['America/Glacierpoint', 'ztc:0', 'America/Glacierpoint'],
     ['Pacific/Toara', 'custom:toara', 'Pacific/Toara'], ['Pacific/Aratoa', 'custom:aratoa', 'Pacific/Aratoa'], ['Pacific/Utaroa', 'custom:utaroa', 'Pacific/Utaroa'],
     ['Pacific/Fatahi', 'custom:fatahi', 'Pacific/Fatahi'], ['Pacific/Rainui', 'custom:rainui', 'Pacific/Rainui'], ['Pacific/Arahiti', 'custom:arahiti', 'Pacific/Arahiti'],
     ['Pacific/Hitira', 'custom:hitira', 'Pacific/Hitira']];
   var HANA_ONLY = {};
   HANA_TYPED.forEach(function (t) { HANA_ONLY[t[0]] = true; });
-  var HANA_BY_ID = { burnthills: 'America/New_York', summitbrook: 'America/Summitbrook', cord: 'America/Summitbrook', coast: 'America/Calivornia', aridona: 'America/Aridona',
-    bc: 'America/Britannic_Columbia', baker: 'Etc/ZTC+4', denver: 'America/Denver', nyc: 'America/New_York', london: 'Europe/London', mumbai: 'Asia/Kolkata',
+  var HANA_BY_ID = { burnthills: 'America/New_York', summitbrook: 'America/Summitbrook', cord: 'America/Summitbrook', coast: 'America/Johnston', aridona: 'America/Ashenix',
+    bc: 'America/Portkane', baker: 'Etc/ZTC+4', denver: 'America/Denver', nyc: 'America/New_York', london: 'Europe/London', mumbai: 'Asia/Kolkata',
     kathmandu: 'Asia/Kathmandu', tokyo: 'Asia/Tokyo', kiritimati: 'Pacific/Kiritimati', parinacota: 'America/Santiago', santabarbara: 'America/La_Paz',
     pirquitas: 'America/Argentina/Jujuy', toara: 'Pacific/Toara', aratoa: 'Pacific/Aratoa', utaroa: 'Pacific/Utaroa', fatahi: 'Pacific/Fatahi', rainui: 'Pacific/Rainui',
     arahiti: 'Pacific/Arahiti', hitira: 'Pacific/Hitira' };
@@ -2880,7 +2880,12 @@
       else if (/^Etc\/ZTC[+-]/.test(hid)) { htext = 'A fixed zone named for its offset. The sign is flipped, like Earth’s Etc zones, so this one is four hours behind ZTC.'; }
       else if (hid === 'America/Summitbrook') { htext = 'The city clock at the zero line, and the one zone for all of Colorandoa. It prints as ' + ab + ' right now.'; }
       else if (/^Pacific\/(Toara|Aratoa|Utaroa|Fatahi|Rainui|Arahiti|Hitira)$/.test(hid)) { htext = 'One of Apōpō’s clocks, written in plain letters like every ID. It prints as ' + ab + '.'; }
-      else if (/^America\/(Calivornia|Aridona|Britannic_Columbia)$/.test(hid)) { htext = 'Named for its jurisdiction, since no city is locked for it yet. It prints as ' + ab + ' right now.'; }
+      else if (hid === 'America/Johnston') { htext = 'The city clock for Coastal-Cordilleran Time, one zone for the whole west coast. It prints as ' + ab + ' right now.'; }
+      else if (hid === 'America/Ashenix') { htext = 'The one zone for Aridona, which never changes its clocks. It prints as ' + ab + ' all year.'; }
+      else if (hid === 'America/Saskwatoon') { htext = 'The one zone for Saskatchelwyn, which never changes its clocks. It prints as ' + ab + ' all year.'; }
+      else if (hid === 'America/Northgate') { htext = 'The zone for eastern Yukona, which is on Cordilleran Time and stays on its summer clock all year. It prints as ' + ab + ' all year.'; }
+      else if (hid === 'America/Glacierpoint') { htext = 'The zone for western Yukona, which is on Coastal-Cordilleran Time and stays on its summer clock all year. It prints as ' + ab + ' all year.'; }
+      else if (hid === 'America/Portkane') { htext = 'The one zone for Britannic Columbia, which stopped changing its clocks in 2026. It prints as ' + ab + ' all year.'; }
       else { htext = 'The same ID as on Earth, with Gaia’s clock rules behind it. It prints as ' + ab + ' right now.'; }
       setG('ggH', hid, '', htext, 'wide', hid.length > 22);
     }
