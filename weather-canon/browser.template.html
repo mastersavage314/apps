@@ -1,0 +1,532 @@
+<title>Earth Weather Canon</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Sibling of Parallax 2.0 and ALT 327K 2.0: same colors, type and card style.
+     Layout: dark sky hero with this month's high, a tally strip, a year chart, then one card per month. */
+  :root {
+    --bg: #EDF1FF;
+    --ink: #0B1033;
+    --muted: #4A5482;
+    --card: #FFFFFF;
+    --edge: rgba(24, 32, 96, .14);
+    --track: rgba(24, 32, 96, .10);
+    --above: #CF0F68;
+    --gold: #9A6400;
+    --beam: #FFC21A;
+    --below: #00767F;
+    --cl-a: #0786B5;
+    --cl-b: #6431E8;
+    --cl-wash: rgba(100, 49, 232, .07);
+    --hi-glow: rgba(226, 40, 130, .22);
+    --lo-glow: rgba(0, 170, 180, .22);
+    --shadow: 0 8px 24px rgba(30, 40, 120, .10);
+    --warn-bg: #FFF4D6;
+    --display: "Big Shoulders Display", "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+    --body: "Barlow", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #060819; --ink: #F1F5FF; --muted: #A6B0DA; --card: #0E1231;
+      --edge: rgba(255, 255, 255, .12); --track: rgba(255, 255, 255, .10);
+      --above: #FF5FAE; --gold: #FFD447; --beam: #FFD447; --below: #3EEBD6;
+      --cl-a: #38D6FF; --cl-b: #A77BFF; --cl-wash: rgba(120, 100, 255, .10);
+      --hi-glow: rgba(255, 60, 160, .26); --lo-glow: rgba(40, 230, 210, .18);
+      --shadow: 0 8px 28px rgba(0, 0, 0, .45); --warn-bg: #2A2410; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #060819; --ink: #F1F5FF; --muted: #A6B0DA; --card: #0E1231;
+    --edge: rgba(255, 255, 255, .12); --track: rgba(255, 255, 255, .10);
+    --above: #FF5FAE; --gold: #FFD447; --beam: #FFD447; --below: #3EEBD6;
+    --cl-a: #38D6FF; --cl-b: #A77BFF; --cl-wash: rgba(120, 100, 255, .10);
+    --hi-glow: rgba(255, 60, 160, .26); --lo-glow: rgba(40, 230, 210, .18);
+    --shadow: 0 8px 28px rgba(0, 0, 0, .45); --warn-bg: #2A2410; color-scheme: dark;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: var(--body); font-size: 1rem; line-height: 1.45;
+    -webkit-text-size-adjust: 100%; overflow-x: hidden;
+  }
+  body::before, body::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .5; }
+  body::before { background: radial-gradient(120% 60% at 90% 0%, var(--hi-glow), transparent 62%), radial-gradient(80% 50% at 0% 30%, var(--hi-glow), transparent 60%); }
+  body::after { background: radial-gradient(120% 60% at 10% 100%, var(--lo-glow), transparent 62%), radial-gradient(80% 50% at 100% 70%, var(--lo-glow), transparent 60%); }
+  :focus-visible { outline: 3px solid var(--cl-a); outline-offset: 2px; border-radius: 6px; }
+
+  /* ---------- Hero: the sky over La Rinconada ---------- */
+  .hero {
+    position: relative; z-index: 1; overflow: hidden; color: #F4F7FF;
+    background: linear-gradient(180deg, #03021A 0%, #0D0A45 34%, #34167A 62%, #8A2590 100%);
+    padding: 1rem 1.25rem 3rem; border-radius: 0 0 30px 30px;
+    box-shadow: 0 16px 40px rgba(12, 10, 70, .30);
+  }
+  #stars { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .hero-in { position: relative; max-width: 46rem; margin: 0 auto; }
+  .scene-top { display: flex; align-items: center; justify-content: space-between; gap: .8rem; margin-bottom: 1.1rem; }
+  .wordmark { margin: 0; white-space: nowrap; font-family: var(--display); font-weight: 900; font-size: 1.3rem; line-height: 1; letter-spacing: .01em; text-shadow: 0 1px 10px rgba(0, 0, 0, .5); }
+  .phase { font-weight: 600; font-size: .9rem; line-height: 1.2; padding: .34rem .8rem; border-radius: 999px; background: rgba(6, 8, 25, .5); border: 1px solid rgba(255, 255, 255, .24); text-align: right; }
+  .where { margin: 0 0 .5rem; font-size: .95rem; color: #DCE6FF; max-width: 30rem; }
+  h1 { margin: 0; line-height: .8; display: flex; align-items: flex-end; gap: .12em; font-family: var(--display); font-weight: 900; }
+  .big {
+    font-size: clamp(6rem, 31vw, 14rem); letter-spacing: -.02em;
+    background: linear-gradient(180deg, #FFFFFF 8%, #BFF3FF 48%, #FFD447 96%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 22px rgba(120, 220, 255, .45)); font-variant-numeric: tabular-nums;
+  }
+  .big-side { display: flex; flex-direction: column; align-items: flex-start; padding-bottom: .16em; line-height: .86; }
+  .big-low { font-size: clamp(2rem, 9vw, 4rem); color: #BFF3FF; font-variant-numeric: tabular-nums; }
+  .big-unit { font-size: clamp(2rem, 9vw, 4rem); color: #FFD447; }
+  .beam {
+    position: relative; height: 5px; margin: .55rem -1.25rem 0;
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, #FFFFFF 50%, rgba(255,255,255,0) 100%) 0 0 / 200% 100% repeat-x, #FFD447;
+    box-shadow: 0 0 18px 4px rgba(255, 212, 71, .75), 0 0 60px 12px rgba(255, 150, 60, .45);
+    transform-origin: left center;
+    animation: sweep 1.1s cubic-bezier(.2, .8, .2, 1) both, shimmer 3.4s linear 1.1s infinite;
+  }
+  .beam span { position: absolute; right: 1.25rem; top: .7rem; font-family: var(--display); font-weight: 700; font-size: 1.45rem; color: #FFD447; letter-spacing: .01em; }
+  @keyframes sweep { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes shimmer { from { background-position: 0 0; } to { background-position: -200% 0; } }
+  @media (prefers-reduced-motion: reduce) { .beam { animation: none; } }
+
+  /* ---------- Page ---------- */
+  main { position: relative; z-index: 1; max-width: 46rem; margin: 0 auto; padding: 1.4rem 1rem 5rem; }
+  h2 { font-family: var(--display); font-weight: 900; font-size: clamp(2rem, 8.5vw, 2.9rem); line-height: .95; margin: 0 0 .5rem; letter-spacing: .005em; }
+  .sub { margin: 0 0 1rem; color: var(--muted); max-width: 34rem; }
+  section { margin-top: 2.2rem; }
+  section:first-child { margin-top: 0; }
+
+  .standin { background: var(--warn-bg); border: 1px solid var(--gold); border-radius: 18px; padding: .9rem 1rem; box-shadow: var(--shadow); }
+  .standin b { font-family: var(--display); font-weight: 900; font-size: 1.35rem; color: var(--gold); letter-spacing: .01em; }
+  .standin p { margin: .15rem 0 0; }
+
+  .tally { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; margin: .9rem 0 0; padding: 0; }
+  .tally li { border-top: 4px solid currentColor; padding-top: .35rem; min-width: 0; }
+  .tally b { display: block; font-family: var(--display); font-weight: 900; font-size: clamp(2.2rem, 10vw, 3.2rem); line-height: .9; font-variant-numeric: tabular-nums; }
+  .tally span { display: block; color: var(--ink); font-weight: 600; font-size: .95rem; line-height: 1.15; margin-top: .2rem; }
+  .t-above { color: var(--above); } .t-rain { color: var(--cl-b); } .t-below { color: var(--below); }
+
+  #chart { background: var(--card); border: 1px solid var(--edge); border-radius: 22px; box-shadow: var(--shadow); padding: .5rem .25rem .25rem; }
+  #chart svg { display: block; width: 100%; height: auto; }
+  #chart text { font-family: var(--body); font-size: 10.5px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  #chart .gline { stroke: var(--track); stroke-width: 1; }
+  #chart .hi { fill: none; stroke: var(--above); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  #chart .lo { fill: none; stroke: var(--below); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  #chart .rec { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 4; opacity: .7; }
+  #chart .nodot { display: none; }
+  #chart .dot-hi { fill: var(--above); } #chart .dot-lo { fill: var(--below); }
+  #chart .zero { stroke: var(--beam); stroke-width: 1.5; stroke-dasharray: 4 4; }
+  #chart .zerotext { fill: var(--gold); font-weight: 600; }
+  .legend { list-style: none; display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; margin: .7rem 0 0; padding: 0; color: var(--muted); font-size: .9rem; }
+  .legend li { display: flex; align-items: center; gap: .4rem; }
+  .legend i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  .lg-hi { background: var(--above); } .lg-lo { background: var(--below); }
+  .lg-rain { background: linear-gradient(135deg, var(--cl-a), var(--cl-b)); box-shadow: 0 0 8px var(--cl-a); }
+
+  .row {
+    position: relative; display: grid; grid-template-columns: 1fr auto; column-gap: .8rem; row-gap: .1rem;
+    background: var(--card); border: 1px solid var(--edge); border-radius: 18px;
+    padding: .8rem .9rem 1.1rem; margin: 0 0 .55rem; box-shadow: var(--shadow); overflow: hidden;
+  }
+  .row.now { background: linear-gradient(var(--card), var(--card)) padding-box, linear-gradient(135deg, var(--cl-a), var(--cl-b)) border-box; border: 2px solid transparent; }
+  .row.now::before { content: ""; position: absolute; inset: 0; background: var(--cl-wash); pointer-events: none; }
+  .row h3 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 1.55rem; line-height: 1.02; letter-spacing: .01em; position: relative; }
+  .row .tag { font-size: .8rem; color: var(--muted); font-weight: 600; position: relative; }
+  .temps { grid-row: 1 / span 2; grid-column: 2; display: flex; gap: .9rem; align-items: baseline; position: relative; }
+  .temps b { font-family: var(--display); font-weight: 900; font-size: 1.95rem; line-height: 1; font-variant-numeric: tabular-nums; }
+  .temps b i { font-style: normal; font-weight: 700; font-size: 1rem; margin-left: .1rem; }
+  .temps .h { color: var(--above); } .temps .l { color: var(--below); }
+  .rainline { grid-column: 1 / -1; display: flex; align-items: center; gap: .6rem; margin-top: .55rem; position: relative; font-variant-numeric: tabular-nums; font-size: .92rem; color: var(--muted); font-weight: 600; }
+  .rainline .track { flex: 1; height: 8px; border-radius: 999px; background: var(--track); overflow: hidden; }
+  .rainline .bar { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--cl-a), var(--cl-b)); min-width: 3px; }
+  .rainline span:last-child { min-width: 4.8rem; text-align: right; color: var(--ink); }
+
+
+  /* ---------- Parallax-style hero extras ---------- */
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .planets { display: inline-flex; gap: 3px; padding: 3px; margin: 0 0 .9rem; border-radius: 999px; background: rgba(6, 8, 25, .5); border: 1px solid rgba(255, 255, 255, .24); }
+  .planets button { border: 0; background: transparent; color: #DCE6FF; font: inherit; font-weight: 600; font-size: .95rem; padding: .4rem 1.05rem; min-height: 2.4rem; border-radius: 999px; cursor: pointer; }
+  .planets button[aria-pressed="true"] { background: linear-gradient(135deg, #FFB300, #FFE27A); color: #1B1200; box-shadow: 0 0 16px rgba(255, 196, 40, .6); }
+  .planets button[aria-disabled="true"] { opacity: .55; cursor: default; }
+  .pick { margin: 0 0 .8rem; }
+  .pick label { display: block; font-size: .85rem; color: #DCE6FF; margin-bottom: .25rem; }
+  .pick input { width: 100%; min-width: 0; font: inherit; font-family: var(--display); font-weight: 900; font-size: 1.7rem; line-height: 1.1; color: #fff; background: rgba(6, 8, 25, .45); border: 1px solid rgba(255, 255, 255, .26); border-radius: 14px; padding: .35rem .7rem; }
+  .pick input::placeholder { color: #A9B6E6; }
+  .also-hero { margin: .7rem 0 0; font-size: .92rem; color: #DCE6FF; font-variant-numeric: tabular-nums; }
+  .also { grid-column: 1 / -1; font-size: .88rem; color: var(--muted); position: relative; font-variant-numeric: tabular-nums; }
+  .said { min-height: 1.3rem; margin: -.3rem 0 .7rem; font-size: .92rem; color: #FFE9A8; }
+  .dialwrap { position: relative; width: min(74vw, 17.5rem); aspect-ratio: 1; margin: 1.4rem auto .2rem; max-width: 100%; }
+  .halo { position: absolute; inset: -8%; border-radius: 50%; background: radial-gradient(circle, rgba(120, 220, 255, .28), transparent 66%); }
+  .dial { position: relative; display: block; width: 100%; height: 100%; }
+  .dial .face { fill: rgba(6, 8, 25, .55); stroke: rgba(255, 255, 255, .28); stroke-width: 2; }
+  .dial text { font-family: var(--body); font-size: 17px; fill: #DCE6FF; text-anchor: middle; dominant-baseline: central; font-weight: 600; }
+  .dial text.now { fill: #FFD447; }
+  .dial .c-month { font-family: var(--display); font-weight: 900; font-size: 34px; fill: #fff; }
+  .dial .c-sub { font-size: 15px; fill: #BFF3FF; }
+  .dial .hand { stroke: #FFD447; stroke-width: 4; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(255, 212, 71, .9)); }
+  .dial .cap { fill: #FFD447; }
+
+  /* ---------- Sticky controls and bands ---------- */
+  .controls {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    margin: 0 -1rem 1rem; padding: .55rem 1rem;
+    background: rgba(237, 241, 255, .86);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4);
+    border-bottom: 1px solid var(--edge); display: grid; gap: .5rem;
+  }
+  :root[data-theme="dark"] .controls { background: rgba(6, 8, 25, .82); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .controls { background: rgba(6, 8, 25, .82); } }
+  .seg { display: inline-flex; background: var(--track); border-radius: 999px; padding: 3px; justify-self: start; }
+  .seg button { border: 0; background: transparent; padding: .42rem .8rem; border-radius: 999px; font: inherit; font-weight: 600; font-size: .92rem; cursor: pointer; color: var(--muted); white-space: nowrap; min-height: 2.3rem; }
+  .seg button[aria-pressed="true"] { background: linear-gradient(135deg, var(--cl-a), var(--cl-b)); color: #fff; box-shadow: 0 2px 10px rgba(100, 60, 240, .35); }
+  .controls .row1 { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .controls .row2 { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; align-items: center; }
+  #q { width: 100%; min-width: 0; min-height: 2.5rem; border-radius: 999px; border: 1px solid var(--edge); background: var(--card); color: var(--ink); padding: .4rem 1rem; font: inherit; font-size: 1rem; }
+  #q::placeholder { color: var(--muted); }
+  #sort { border: 1px solid var(--edge); background: var(--card); color: var(--ink); border-radius: 999px; padding: .4rem .9rem; font: inherit; font-weight: 600; font-size: .92rem; cursor: pointer; white-space: nowrap; min-height: 2.5rem; }
+  .band-h { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin: 1.6rem 0 .7rem; }
+  .band-h h2 { margin: 0; }
+  .band-h span { color: var(--muted); font-weight: 500; font-size: .95rem; white-space: nowrap; }
+  .band-h.wet h2 { background: linear-gradient(135deg, var(--cl-a), var(--cl-b)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .band-h.dry h2 { color: var(--gold); }
+  .empty { color: var(--muted); padding: 1rem 0; }
+
+  .airline { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .2rem 1.1rem; margin-top: .45rem; position: relative; font-size: .92rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .airline b { color: var(--ink); font-weight: 600; }
+  .tally2 { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; margin: .9rem 0 0; padding: 0; }
+  .tally2 li { border-top: 4px solid currentColor; padding-top: .35rem; min-width: 0; }
+  .tally2 b { display: block; font-family: var(--display); font-weight: 900; font-size: clamp(2.2rem, 10vw, 3.2rem); line-height: .9; font-variant-numeric: tabular-nums; }
+  .tally2 span { display: block; color: var(--ink); font-weight: 600; font-size: .95rem; line-height: 1.15; margin-top: .2rem; }
+  .t-wind { color: var(--cl-a); } .t-hum { color: var(--gold); } .t-frost { color: var(--below); }
+  .source { margin: 1.6rem 0 0; color: var(--muted); font-size: .88rem; }
+  ul.missing { margin: 0; padding: 0; list-style: none; display: grid; gap: .5rem; }
+  ul.missing li { display: flex; gap: .7rem; align-items: baseline; }
+  ul.missing li::before { content: ""; width: 9px; height: 9px; border-radius: 50%; flex: none; background: linear-gradient(135deg, var(--cl-a), var(--cl-b)); transform: translateY(1px); }
+</style>
+<style>
+  .banner-low { background: var(--warn-bg); border: 1px solid var(--gold); border-radius: 18px; padding: .9rem 1rem; box-shadow: var(--shadow); margin-top: .6rem; }
+  .facts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: .7rem 1rem; }
+  .facts li { display: flex; flex-direction: column; min-width: 0; }
+  .facts span { font-size: .78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .facts b { font-family: var(--display); font-weight: 900; font-size: 1.5rem; line-height: 1.05; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+  .browse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .5rem; }
+  .pbtn { text-align: left; font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--edge); border-radius: 14px; padding: .55rem .75rem; cursor: pointer; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: .05rem; min-width: 0; }
+  .pbtn b { font-family: var(--display); font-weight: 700; font-size: 1.2rem; line-height: 1.05; overflow-wrap: anywhere; }
+  .pbtn span { color: var(--muted); font-size: .85rem; }
+  .pbtn[aria-current="true"] { border: 2px solid var(--cl-b); }
+  #pq { width: 100%; min-width: 0; min-height: 2.5rem; border-radius: 999px; border: 1px solid var(--edge); background: var(--card); color: var(--ink); padding: .4rem 1rem; font: inherit; font-size: 1rem; margin-bottom: .8rem; }
+  .pending-note { color: var(--muted); font-size: .9rem; margin-top: .5rem; }
+</style>
+<header class="hero">
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <div class="hero-in">
+    <div class="planets" role="group" aria-label="Which planet">
+      <button type="button" data-planet="earth" aria-pressed="true">Earth</button>
+      <button type="button" data-planet="gaia" aria-pressed="false" aria-disabled="true" id="gaiaBtn">Gaia</button>
+    </div>
+    <div class="scene-top">
+      <p class="wordmark">Weather Canon</p>
+      <div class="phase" id="phase">Climate</div>
+    </div>
+    <div class="pick">
+      <label for="place">Showing the weather in. Tap the name to type a place.</label>
+      <input id="place" type="text" list="places" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="La Rinconada, Peru">
+      <datalist id="places"></datalist>
+    </div>
+    <p class="said" id="said" role="status"></p>
+    <h1><span class="sr">The average high this month is </span><span class="big" id="heroHigh">0</span><span class="big-side"><span class="big-low" id="heroLow">low 0</span><span class="big-unit" id="heroUnit">°C</span></span></h1>
+    <p class="also-hero" id="heroAlso"></p>
+    <div class="beam" aria-hidden="true"><span id="beamText">Modeled</span></div>
+    <div class="dialwrap">
+      <div class="halo" aria-hidden="true"></div>
+      <svg class="dial" id="dial" viewBox="0 0 400 400" role="img" aria-label="A dial of the twelve months, with a hand on the current month"></svg>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section>
+    <div class="standin" role="note" id="note"></div>
+    <div class="banner-low" id="lowconf" role="note" hidden><b style="font-family:var(--display);font-weight:900;font-size:1.25rem;color:var(--gold)">Temperatures may be off</b><p style="margin:.15rem 0 0">This place sits on steep ground, so adjusting NASA's grid temperatures to its real elevation is rough. Expect a few degrees of error.</p></div>
+  </section>
+
+  <section aria-labelledby="glance-h">
+    <h2 id="glance-h">This month</h2>
+    <p class="sub" id="glanceSub">The averages for the current month.</p>
+    <ul class="tally">
+      <li class="t-above"><b id="tHigh">—</b><span id="tHighS">average high</span></li>
+      <li class="t-below"><b id="tLow">—</b><span id="tLowS">average low</span></li>
+      <li class="t-rain"><b id="tRain">—</b><span>mm of rain</span></li>
+    </ul>
+    <ul class="tally2">
+      <li class="t-wind"><b id="tWind">—</b><span id="tWindS">km/h wind</span></li>
+      <li class="t-hum"><b id="tHum">—</b><span>% humidity</span></li>
+      <li class="t-frost"><b id="tFrost">—</b><span>frost nights</span></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="year-h">
+    <h2 id="year-h">The whole year</h2>
+    <p class="sub">Average highs and lows in the unit you pick on top, monthly rain in mm underneath. Every month is a 20-year average, 2001 to 2020.</p>
+    <div id="chart"></div>
+    <ul class="legend">
+      <li><i class="lg-hi"></i>Average high</li>
+      <li><i class="lg-lo"></i>Average low</li>
+      <li><i class="lg-rain"></i>Rain</li>
+      <li>Dashed lines are the record high and low.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="months-h">
+    <h2 id="months-h">Month by month</h2>
+    <p class="sub">Each card shows the average high and low in the unit you pick (°C, °F or K), with the other two underneath, and the rain total. Every number is rounded to a whole number.</p>
+    <div class="controls">
+      <div class="row1">
+        <div class="seg" id="units" role="group" aria-label="Temperature unit">
+          <button type="button" data-unit="C" aria-pressed="true">°C</button>
+          <button type="button" data-unit="F" aria-pressed="false">°F</button>
+          <button type="button" data-unit="K" aria-pressed="false">K</button>
+        </div>
+        <div class="seg" role="group" aria-label="Which months">
+          <button type="button" data-scope="all" aria-pressed="true">All</button>
+          <button type="button" data-scope="a" aria-pressed="false" id="scopeA">Wet</button>
+          <button type="button" data-scope="b" aria-pressed="false" id="scopeB">Dry</button>
+        </div>
+      </div>
+      <div class="row2">
+        <input id="q" type="search" placeholder="Find a month" autocomplete="off" aria-label="Find a month">
+        <select id="sort" aria-label="Sort months">
+          <option value="cal">Calendar</option>
+          <option value="warm">Warmest</option>
+          <option value="cold">Coldest</option>
+          <option value="wet">Wettest</option>
+        </select>
+      </div>
+    </div>
+    <div id="rows"></div>
+  </section>
+
+  <section aria-labelledby="about-h">
+    <h2 id="about-h">About this place</h2>
+    <p class="sub" id="aboutSub"></p>
+    <ul class="facts" id="facts"></ul>
+    <p class="pending-note" id="pendingNote"></p>
+  </section>
+
+  <section aria-labelledby="browse-h">
+    <h2 id="browse-h">All places</h2>
+    <p class="sub">The capital and largest city of every country. Tap one to see its weather.</p>
+    <input id="pq" type="search" placeholder="Find a place or country" autocomplete="off" aria-label="Find a place or country">
+    <div class="browse-grid" id="browse"></div>
+    <p class="source" id="sourceLine"></p>
+  </section>
+</main>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+(function () {
+  var DB = JSON.parse(document.getElementById('data').textContent), META = DB.meta, PLACES = DB.places;
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var fmt = function (v) { return v === null || v === undefined ? '—' : String(v); };
+  var unit = 'C', idx = 0, now = new Date().getMonth() + 1;
+  var state = { scope: 'all', q: '', sort: 'cal' };
+  var label = function (p) { return p.place === p.country ? p.place : p.place + ', ' + p.country; };
+  var tk = function (t) { return unit === 'F' ? t.f : unit === 'K' ? t.k : t.c; };
+  var tt = function (t) { return t ? String(tk(t)) : '—'; };
+  var ds = function () { return unit === 'K' ? '' : '°'; };
+  var us = function () { return unit === 'C' ? '°C' : unit === 'F' ? '°F' : 'K'; };
+  var also = function (t) {
+    if (!t) { return '—'; }
+    var o = [];
+    if (unit !== 'C') { o.push(t.c + '°C'); }
+    if (unit !== 'F') { o.push(t.f + '°F'); }
+    if (unit !== 'K') { o.push(t.k + ' K'); }
+    return o.join(' · ');
+  };
+  var P = function () { return PLACES[idx]; };
+  var M = function (k) { return P().months[k - 1]; };
+  var seasonNames = function () { return P().seasonMode === 'wet-dry' ? ['wet', 'dry'] : ['warm', 'cold']; };
+
+  // datalist
+  $('places').innerHTML = PLACES.map(function (p) { return '<option value="' + esc(label(p)) + '"></option>'; }).join('');
+
+  // stars
+  (function () {
+    var c = $('stars'), x = c.getContext('2d'), w, h, pts = [];
+    function size() { w = c.width = c.offsetWidth; h = c.height = c.offsetHeight; pts = []; for (var i = 0; i < 70; i++) { pts.push([Math.random() * w, Math.random() * h * .7, Math.random() * 1.3 + .3, Math.random() * .6 + .3]); } x.clearRect(0, 0, w, h); pts.forEach(function (p) { x.fillStyle = 'rgba(255,255,255,' + p[3] + ')'; x.beginPath(); x.arc(p[0], p[1], p[2], 0, 6.283); x.fill(); }); }
+    size(); window.addEventListener('resize', size);
+  })();
+
+  function paintTop() {
+    var p = P(), m = M(now), pr = p.months.map(function (x) { return x.rainMm; });
+    $('place').value = label(p);
+    $('heroHigh').textContent = tt(m.avgHigh);
+    $('heroLow').textContent = 'low ' + tt(m.avgLow) + ds();
+    $('heroUnit').textContent = us();
+    $('heroAlso').textContent = 'High ' + also(m.avgHigh) + ' · Low ' + also(m.avgLow);
+    $('phase').textContent = p.climateName;
+    $('beamText').textContent = p.full ? 'Modeled · full detail' : 'Modeled · NASA record';
+    $('tHigh').textContent = tt(m.avgHigh) + ds();
+    $('tLow').textContent = tt(m.avgLow) + ds();
+    $('tHighS').textContent = 'average high · ' + also(m.avgHigh);
+    $('tLowS').textContent = 'average low · ' + also(m.avgLow);
+    $('tRain').textContent = fmt(m.rainMm);
+    var wind = m.peakWindKmh !== null ? m.peakWindKmh : m.avgWindKmh;
+    $('tWind').textContent = fmt(wind);
+    $('tWindS').textContent = m.peakWindKmh !== null ? 'km/h peak wind' : 'km/h average wind';
+    $('tHum').textContent = fmt(m.humidityPct);
+    $('tFrost').textContent = fmt(m.frostNights);
+    $('glanceSub').textContent = 'The averages for ' + MONTHS[now - 1] + ' in ' + label(p) + '.';
+    $('note').innerHTML = '<b>Modeled, not measured</b><p>' + (p.full
+      ? 'No weather station sits in La Rinconada, so these numbers come from 20 years (2001 to 2020) of modeled weather for its coordinates, adjusted to the town\u2019s elevation of about 5,100 m. They are estimates until a station record can check them.'
+      : 'These numbers come from NASA\u2019s POWER climate record (2001 to 2020) for the coordinates of ' + esc(p.place) + ', adjusted to its elevation of ' + p.elevationM.toLocaleString('en-US') + ' m. They are estimates, not station readings.') + '</p>';
+    $('lowconf').hidden = !p.lowConfidenceTemps;
+    var sn = seasonNames();
+    $('scopeA').textContent = sn[0].charAt(0).toUpperCase() + sn[0].slice(1);
+    $('scopeB').textContent = sn[1].charAt(0).toUpperCase() + sn[1].slice(1);
+    // dial
+    var maxR = Math.max.apply(null, pr) || 1;
+    var pt = function (deg, r) { var a = (deg - 90) * Math.PI / 180; return [200 + Math.cos(a) * r, 200 + Math.sin(a) * r]; };
+    var d = '<circle class="face" cx="200" cy="200" r="196"/>';
+    for (var i = 0; i < 12; i++) {
+      var a0 = i * 30 + 2, a1 = i * 30 + 28, r1 = 118, r2 = 160, p1 = pt(a0, r2), p2 = pt(a1, r2), p3 = pt(a1, r1), p4 = pt(a0, r1);
+      var op = (.14 + pr[i] / maxR * .7).toFixed(2);
+      d += '<path d="M' + p1[0].toFixed(1) + ' ' + p1[1].toFixed(1) + ' A' + r2 + ' ' + r2 + ' 0 0 1 ' + p2[0].toFixed(1) + ' ' + p2[1].toFixed(1) + ' L' + p3[0].toFixed(1) + ' ' + p3[1].toFixed(1) + ' A' + r1 + ' ' + r1 + ' 0 0 0 ' + p4[0].toFixed(1) + ' ' + p4[1].toFixed(1) + ' Z" fill="rgba(90,205,255,' + op + ')"/>';
+      var tp = pt(i * 30 + 15, 180);
+      d += '<text class="' + (i + 1 === now ? 'now' : '') + '" x="' + tp[0].toFixed(1) + '" y="' + tp[1].toFixed(1) + '">' + MONTHS[i].slice(0, 1) + '</text>';
+    }
+    var t = new Date(), dim = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
+    var hp = pt((now - 1) * 30 + (t.getDate() - 1) / dim * 30 + 1, 150);
+    d += '<line class="hand" x1="200" y1="200" x2="' + hp[0].toFixed(1) + '" y2="' + hp[1].toFixed(1) + '"/><circle class="cap" cx="200" cy="200" r="8"/>';
+    d += '<text class="c-month" x="200" y="150">' + MONTHS[now - 1].slice(0, 3) + '</text><text class="c-sub" x="200" y="250">avg high ' + tt(m.avgHigh) + ds() + '</text><text class="c-sub" x="200" y="272">rain ' + fmt(m.rainMm) + ' mm</text>';
+    $('dial').innerHTML = d;
+  }
+
+  function drawChart() {
+    var p = P(), W = 400, L = 34, R = 10, step = (W - L - R) / 12, tTop = 14, tH = 120, rTop = 168, rH = 80;
+    var lows = [], highs = [];
+    p.months.forEach(function (m) { lows.push(m.recordLow ? m.recordLow.c : m.avgLow.c); highs.push(m.recordHigh ? m.recordHigh.c : m.avgHigh.c); });
+    var lo = Math.min.apply(null, lows), hi = Math.max.apply(null, highs), span = hi - lo, ts = span > 60 ? 20 : span > 30 ? 10 : 5;
+    var tMin = Math.floor((lo - 1) / ts) * ts, tMax = Math.ceil((hi + 1) / ts) * ts;
+    var rain = p.months.map(function (m) { return m.rainMm; }), rm = Math.max.apply(null, rain);
+    var rs = rm > 600 ? 400 : rm > 300 ? 200 : rm > 120 ? 100 : rm > 50 ? 50 : 20, rMax = Math.max(rs, Math.ceil(rm / rs) * rs);
+    var tY = function (t) { return tTop + (tMax - t) / (tMax - tMin) * tH; }, xAt = function (i) { return L + step * (i + .5); };
+    var s = '<svg viewBox="0 0 ' + W + ' ' + (rTop + rH + 22) + '" role="img" aria-label="Average monthly highs, lows and rain">';
+    s += '<defs><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--cl-b)"/><stop offset="1" stop-color="var(--cl-a)"/></linearGradient></defs>';
+    for (var t = tMin; t <= tMax; t += ts) {
+      s += '<line class="gline" x1="' + L + '" x2="' + (W - R) + '" y1="' + tY(t) + '" y2="' + tY(t) + '"/><text x="' + (L - 6) + '" y="' + (tY(t) + 3.5) + '" text-anchor="end">' + (unit === 'F' ? Math.round(t * 9 / 5 + 32) : unit === 'K' ? Math.round(t + 273.15) : t) + ds() + '</text>';
+    }
+    if (tMin < 0 && tMax > 0) {
+      s += '<line class="zero" x1="' + L + '" x2="' + (W - R) + '" y1="' + tY(0) + '" y2="' + tY(0) + '"/><text class="zerotext" x="' + (W - R) + '" y="' + (tY(0) - 4) + '" text-anchor="end">freezing</text>';
+    }
+    function line(get, cls, dot) {
+      var dd = '', dots = '', i, v;
+      for (i = 0; i < 12; i++) { v = get(p.months[i]); if (v === null) { continue; } dd += (dd ? 'L' : 'M') + xAt(i).toFixed(1) + ' ' + tY(v).toFixed(1) + ' '; dots += '<circle class="' + dot + '" cx="' + xAt(i).toFixed(1) + '" cy="' + tY(v).toFixed(1) + '" r="3"/>'; }
+      return '<path class="' + cls + '" d="' + dd + '"/>' + dots;
+    }
+    s += line(function (m) { return m.recordHigh ? m.recordHigh.c : null; }, 'rec', 'nodot') + line(function (m) { return m.recordLow ? m.recordLow.c : null; }, 'rec', 'nodot');
+    s += line(function (m) { return m.avgHigh.c; }, 'hi', 'dot-hi') + line(function (m) { return m.avgLow.c; }, 'lo', 'dot-lo');
+    [0, rMax / 2, rMax].forEach(function (r) { var y = rTop + rH - r / rMax * rH; s += '<line class="gline" x1="' + L + '" x2="' + (W - R) + '" y1="' + y + '" y2="' + y + '"/><text x="' + (L - 6) + '" y="' + (y + 3.5) + '" text-anchor="end">' + r + '</text>'; });
+    for (var i = 0; i < 12; i++) {
+      var bh = Math.max(1.5, rain[i] / rMax * rH);
+      s += '<rect x="' + (xAt(i) - step * .3).toFixed(1) + '" y="' + (rTop + rH - bh).toFixed(1) + '" width="' + (step * .6).toFixed(1) + '" height="' + bh.toFixed(1) + '" rx="3" fill="url(#rg)"/>';
+      s += '<text x="' + xAt(i).toFixed(1) + '" y="' + (rTop + rH + 14) + '" text-anchor="middle">' + MONTHS[i].slice(0, 1) + '</text>';
+    }
+    s += '<text x="' + L + '" y="' + (rTop - 8) + '">mm of rain</text></svg>';
+    $('chart').innerHTML = s;
+  }
+
+  function card(k, maxRain) {
+    var m = M(k), w = Math.max(1, Math.round(m.rainMm / maxRain * 100)), items1 = [], items2 = [], items3 = [];
+    items1.push('<span>Average <b>' + tt(m.avgMean) + '</b>' + ds() + '</span>', '<span>Humidity <b>' + fmt(m.humidityPct) + '</b>%</span>');
+    if (m.peakWindKmh !== null) { items1.push('<span>Peak wind <b>' + m.peakWindKmh + '</b> km/h</span>'); } else if (m.avgWindKmh !== null) { items1.push('<span>Average wind <b>' + m.avgWindKmh + '</b> km/h</span>'); }
+    if (m.gustRecordKmh !== null) { items1.push('<span>Gust record <b>' + m.gustRecordKmh + '</b> km/h</span>'); }
+    if (m.snowCm !== null) { items2.push('<span>Snow <b>' + m.snowCm + '</b> cm</span>'); }
+    if (m.rainDays !== null) { items2.push('<span>Rain days <b>' + m.rainDays + '</b></span>'); }
+    if (m.frostNights !== null) { items2.push('<span>Frost nights <b>' + m.frostNights + '</b></span>'); }
+    if (m.heaviestRainDayMm !== null) { items2.push('<span>Heaviest day <b>' + m.heaviestRainDayMm + '</b> mm</span>'); }
+    if (m.recordHigh) { items3.push('<span>Record high <b>' + tt(m.recordHigh) + '</b>' + ds() + '</span>'); }
+    if (m.recordLow) { items3.push('<span>Record low <b>' + tt(m.recordLow) + '</b>' + ds() + '</span>'); }
+    return '<article class="row' + (k === now ? ' now' : '') + '"><h3>' + MONTHS[k - 1] + '</h3>' +
+      '<div class="tag">' + m.season.charAt(0).toUpperCase() + m.season.slice(1) + ' month' + (k === now ? ' · this month' : '') + '</div>' +
+      '<div class="temps"><b class="h">' + tt(m.avgHigh) + '<i>' + ds() + '</i></b><b class="l">' + tt(m.avgLow) + '<i>' + ds() + '</i></b></div>' +
+      '<div class="also">High ' + also(m.avgHigh) + ' · Low ' + also(m.avgLow) + '</div>' +
+      '<div class="rainline"><span>Rain</span><span class="track"><span class="bar" style="width:' + w + '%"></span></span><span>' + m.rainMm + ' mm</span></div>' +
+      [items1, items2, items3].map(function (it) { return it.length ? '<div class="airline">' + it.join('') + '</div>' : ''; }).join('') + '</article>';
+  }
+  function render() {
+    var p = P(), sn = seasonNames(), maxRain = Math.max.apply(null, p.months.map(function (m) { return m.rainMm; })) || 1;
+    var keys = [1,2,3,4,5,6,7,8,9,10,11,12].filter(function (k) {
+      var m = M(k);
+      if (state.scope === 'a' && m.season !== sn[0]) { return false; }
+      if (state.scope === 'b' && m.season !== sn[1]) { return false; }
+      var q = state.q.trim().toLowerCase();
+      return !q || MONTHS[k - 1].toLowerCase().indexOf(q) !== -1 || m.season.indexOf(q) !== -1;
+    });
+    var by = { warm: function (a, b) { return M(b).avgHigh.c - M(a).avgHigh.c; }, cold: function (a, b) { return M(a).avgLow.c - M(b).avgLow.c; }, wet: function (a, b) { return M(b).rainMm - M(a).rainMm; } };
+    var html = '', cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+    if (!keys.length) { html = '<p class="empty">No month matches that search.</p>'; }
+    else if (state.sort === 'cal') {
+      sn.forEach(function (name, j) {
+        var ks = keys.filter(function (k) { return M(k).season === name; });
+        if (ks.length) { html += '<div class="band-h ' + (j ? 'dry' : 'wet') + '"><h2>' + cap(name) + ' months</h2><span>' + ks.length + (ks.length === 1 ? ' month' : ' months') + '</span></div>' + ks.map(function (k) { return card(k, maxRain); }).join(''); }
+      });
+    } else {
+      keys.sort(by[state.sort]);
+      html = '<div class="band-h wet"><h2>' + { warm: 'Warmest first', cold: 'Coldest first', wet: 'Wettest first' }[state.sort] + '</h2><span>' + keys.length + ' months</span></div>' + keys.map(function (k) { return card(k, maxRain); }).join('');
+    }
+    $('rows').innerHTML = html;
+  }
+  function about() {
+    var p = P(), pend = [], m0 = p.months[0];
+    var names = [['snowCm', 'snow'], ['rainDays', 'rain days'], ['frostNights', 'frost nights'], ['peakWindKmh', 'peak wind'], ['gustRecordKmh', 'gust record'], ['heaviestRainDayMm', 'heaviest rain day']];
+    names.forEach(function (n) { if (m0[n[0]] === null) { pend.push(n[1]); } });
+    var f = [['Country', p.country], ['Role', p.role === 'pilot' ? 'Pilot place' : p.role.charAt(0).toUpperCase() + p.role.slice(1)], ['Coordinates', Math.abs(p.lat).toFixed(2) + '° ' + (p.lat < 0 ? 'S' : 'N') + ', ' + Math.abs(p.lon).toFixed(2) + '° ' + (p.lon < 0 ? 'W' : 'E')],
+      ['Elevation', p.elevationM.toLocaleString('en-US') + ' m'], ['Climate type', p.climateType], ['Climate', p.climateName]];
+    if (p.tempAdjustment) { f.push(['Temperature adjustment', (p.tempAdjustment.correctionC > 0 ? '+' : '') + Math.round(p.tempAdjustment.correctionC) + ' °C']); }
+    $('aboutSub').textContent = p.note || '';
+    $('facts').innerHTML = f.map(function (x) { return '<li><span>' + esc(x[0]) + '</span><b>' + esc(x[1]) + '</b></li>'; }).join('');
+    $('pendingNote').textContent = pend.length ? 'Still to come for this place: ' + pend.join(', ') + '. They fill in a few places a day.' : 'Every detail is filled in for this place.';
+  }
+  function browse() {
+    var q = $('pq').value.trim().toLowerCase(), html = '';
+    PLACES.forEach(function (p, i) {
+      var l = label(p);
+      if (q && l.toLowerCase().indexOf(q) === -1 && p.country.toLowerCase().indexOf(q) === -1) { return; }
+      html += '<button type="button" class="pbtn" data-i="' + i + '"' + (i === idx ? ' aria-current="true"' : '') + '><b>' + esc(p.place) + '</b><span>' + esc(p.country) + ' · ' + esc(p.climateType) + ' · ' + p.elevationM.toLocaleString('en-US') + ' m</span></button>';
+    });
+    $('browse').innerHTML = html || '<p class="empty">No place matches that search.</p>';
+  }
+  function all() { paintTop(); drawChart(); render(); about(); browse(); }
+  function pick(i) { idx = i; state.scope = 'all'; document.querySelectorAll('button[data-scope]').forEach(function (x) { x.setAttribute('aria-pressed', x.getAttribute('data-scope') === 'all' ? 'true' : 'false'); }); all(); $('said').textContent = ''; }
+
+  // place picker
+  var inp = $('place');
+  inp.addEventListener('change', function () {
+    var v = inp.value.trim().toLowerCase(), hit = -1, i;
+    if (!v) { inp.value = label(P()); return; }
+    for (i = 0; i < PLACES.length; i++) { if (label(PLACES[i]).toLowerCase() === v) { hit = i; break; } }
+    if (hit < 0) { for (i = 0; i < PLACES.length; i++) { if (PLACES[i].place.toLowerCase() === v) { hit = i; break; } } }
+    if (hit < 0) { for (i = 0; i < PLACES.length; i++) { if (label(PLACES[i]).toLowerCase().indexOf(v) === 0) { hit = i; break; } } }
+    if (hit < 0) { for (i = 0; i < PLACES.length; i++) { if (label(PLACES[i]).toLowerCase().indexOf(v) !== -1) { hit = i; break; } } }
+    if (hit < 0) { $('said').textContent = 'No weather canon for \u201C' + inp.value.trim() + '\u201D yet. Pick a capital or largest city from the list.'; inp.value = label(P()); return; }
+    pick(hit);
+  });
+  inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { inp.blur(); } });
+  inp.addEventListener('focus', function () { inp.select(); });
+  $('gaiaBtn').addEventListener('click', function () { $('said').textContent = 'Gaia weather comes after the Earth canon and the app are built.'; });
+  $('browse').addEventListener('click', function (e) { var b = e.target.closest('button[data-i]'); if (b) { pick(+b.getAttribute('data-i')); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+  $('pq').addEventListener('input', browse);
+
+  document.querySelectorAll('button[data-scope]').forEach(function (b) { b.addEventListener('click', function () { state.scope = b.getAttribute('data-scope'); document.querySelectorAll('button[data-scope]').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); render(); }); });
+  $('q').addEventListener('input', function (e) { state.q = e.target.value; render(); });
+  $('sort').addEventListener('change', function (e) { state.sort = e.target.value; render(); });
+  document.querySelectorAll('#units button').forEach(function (b) { b.addEventListener('click', function () { unit = b.getAttribute('data-unit'); document.querySelectorAll('#units button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); paintTop(); drawChart(); render(); }); });
+  $('sourceLine').textContent = 'Sources: ' + (META.upgraded ? 'Open-Meteo historical weather (ERA5), 2001 to 2020, for La Rinconada and ' + META.upgraded + ' upgraded places; for the rest, ' : '') + META.source + '. ' + PLACES.length + ' places.';
+  all();
+})();
+</script>
