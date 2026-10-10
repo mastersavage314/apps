@@ -898,6 +898,9 @@
             <option value="none">No clock changes</option>
             <option value="us">US daylight saving dates</option>
             <option value="eu">European summer time dates</option>
+            <option value="au">Australian daylight saving dates</option>
+            <option value="nz">New Zealand daylight saving dates</option>
+            <option value="cl">Chilean summer time dates</option>
           </select>
         </label>
         <p class="msg" id="gZoneMsg" role="status"></p>
@@ -1014,7 +1017,7 @@
       <p id="gGap"></p>
       <p id="gFine">Gaian clocks run in real time with the same hours, minutes and seconds as Earth's. Gaia's year 2026 began at the same moment Summitbrook's did on Earth, and every Gaian day since has lasted 36 hours, so the dates on the two planets do not line up.</p>
       <p>Gaia's week has five days: Monday, Thursday and Friday for work, then Saturday and Sunday off. Monday feels like an Earth Monday, Thursday like a Wednesday, Friday like a Friday, and the weekend is the same Saturday and Sunday.</p>
-      <p>Every Gaian offset comes from its Earth one: add 9 hours, multiply by 1.5, and settle on a whole hour, with any odd minutes carried over. Places with clock changes follow the US or European dates. Parinacota is shown on Chile's standard time all year, since Gaia's clock-change dates for the southern half of the planet are not locked yet.</p>
+      <p>Every Gaian offset comes from its Earth one: add 9 hours, multiply by 1.5, and settle on a whole hour, with any odd minutes carried over. Places with clock changes follow their Earth twin's dates, on Gaia's calendar: the US and Europe in the north, and in the south Australia (first Sunday of October to first Sunday of April), New Zealand (last Sunday of September to first Sunday of April) and Chile (first Sunday of September to first Sunday of April). Zones that never change on Earth never change on Gaia, Brazil and Argentina included.</p>
       <p>Every zone on Gaia has a HANA ID in the same Area/City form as on Earth, from release 2026a of the HANA Time Zone Database, which everyone on Gaia calls the Olson database. A place that exists on Earth keeps its Earth ID, so Asia/Tokyo is Asia/Tokyo on both planets and only the clock rules behind it are Gaia's. America/Summitbrook is the city clock for all of Colorandoa, and every other town there is an alias that points to it. Etc/ZTC is the fixed base clock, and its Etc/ZTC+4 style cousins flip the sign like Earth's do, so Etc/ZTC+4 is four hours behind. IDs use plain letters only, which is why Apōpō's clocks read Pacific/Toara, Pacific/Fatahi and so on. Summitbrook prints as SMT, or SMDT in summer. Every other zone prints as its offset, like ZTC+06.</p>
     </footer>
   </div>
@@ -2325,10 +2328,18 @@
     var last = first; while (last + 5 < ml[mon]) { last += 5; }
     return start + last;
   }
+  // Southern rules on Gaia's calendar: [month index, which Sunday] for the start; every one of them ends on the first Sunday of April.
+  // au = first Sunday of October (Australia), nz = last Sunday of September (New Zealand), cl = first Sunday of September (Chile).
+  var SOUTH = { au: [9, 1], nz: [8, -1], cl: [8, 1] };
   // Clocks jump one hour at 3:00 AM, the same size of jump as on Earth. us = second Sunday in March to first Sunday in November. eu = last Sundays of March and October.
   function isDst(rule, utcMs, std) {
-    if (rule !== 'us' && rule !== 'eu') { return false; }
+    if (!SOUTH[rule] && rule !== 'us' && rule !== 'eu') { return false; }
     var loc = split(utcMs + std * 60000), pos = (loc.doy + loc.frac) * DAY, a, b;
+    if (SOUTH[rule]) {
+      // Southern summer runs over the new year: on from the spring Sunday until the autumn Sunday.
+      a = sundayOf(loc.y, SOUTH[rule][0], SOUTH[rule][1]); b = sundayOf(loc.y, 3, 1);
+      return pos >= a * DAY + 3 * HOUR || pos < b * DAY + 2 * HOUR;
+    }
     if (rule === 'us') { a = sundayOf(loc.y, 2, 2); b = sundayOf(loc.y, 10, 1); } else { a = sundayOf(loc.y, 2, -1); b = sundayOf(loc.y, 9, -1); }
     return pos >= a * DAY + 3 * HOUR && pos < b * DAY + 2 * HOUR;
   }
@@ -2364,7 +2375,7 @@
     { id: 'arahiti', name: 'Arahiti', std: 2370, rule: 'none' },
     { id: 'hitira', name: 'Hitirā', std: 2400, rule: 'none' }
   ];
-  var RULE_TEXT = { none: 'no clock changes', us: 'US daylight saving', eu: 'European summer time' };
+  var RULE_TEXT = { none: 'no clock changes', us: 'US daylight saving', eu: 'European summer time', au: 'Australian daylight saving', nz: 'New Zealand daylight saving', cl: 'Chilean summer time' };
 
   /* ---------- Saved clocks ----------
      zone = 'custom:<id>' for a rule set above, 'real:<std>:<rule>' for the Gaian twin of a real-world zone, 'ztc:<minutes>' for a fixed offset.
@@ -2474,7 +2485,7 @@
     { id: 'nagqu', group: 'high', name: 'Nagqu, Tibet, China', where: 'On China Standard Time', zone: CHINA },
     { id: 'quzong', group: 'high', name: 'Quzong Village, China', where: 'On China Standard Time', zone: CHINA },
     { id: 'dingboche', group: 'high', name: 'Dingboche, Nepal', where: 'Khumbu, on Nepal Time', zone: NEPAL },
-    { id: 'parinacota', group: 'high', name: 'Parinacota, Chile', where: 'On Chile Time', zone: 'real:480:none' },
+    { id: 'parinacota', group: 'high', name: 'Parinacota, Chile', where: 'On Chile Time', zone: 'real:480:cl' },
     { id: 'cojata', group: 'high', name: 'Cojata, Peru', where: 'On Peru Time', zone: PERU },
     { id: 'chharka', group: 'high', name: 'Chharka Dolpa, Nepal', where: 'On Nepal Time', zone: NEPAL },
     { id: 'cerrodepasco', group: 'high', name: 'Cerro de Pasco, Peru', where: 'Pasco Region, on Peru Time', zone: PERU },
@@ -2577,10 +2588,17 @@
   var viewerTz = null;
   try { viewerTz = Intl.DateTimeFormat().resolvedOptions().timeZone || null; } catch (err) { viewerTz = null; }
   function homeName(tz) { return tz === 'America/New_York' ? 'Burnt Hills, NY' : tz; }   // Nick's zone goes by its place, not its IANA id
+  function southRule(tz) {
+    tz = tz || '';
+    if (/^Australia\//.test(tz) && !/Lord_Howe|LHI/.test(tz)) { return 'au'; }
+    if (/^Pacific\/(Auckland|Chatham)$|^Antarctica\/McMurdo$|^NZ/.test(tz)) { return 'nz'; }
+    if (/^America\/Santiago$|^Chile\/Continental$|^Pacific\/Easter$/.test(tz)) { return 'cl'; }
+    return 'none';
+  }
   function northRule(tz) { return /^(America|US|Canada)\//.test(tz || 'America/') && !/Nuuk|Scoresbysund|Godthab/.test(tz || '') ? 'us' : 'eu'; }
   var viewerRef = (function () {
     var y = new Date().getFullYear(), jan = -new Date(y, 0, 15).getTimezoneOffset(), jul = -new Date(y, 6, 15).getTimezoneOffset();
-    return 'real:' + gaiaOf(Math.min(jan, jul)) + ':' + (jul > jan ? northRule(viewerTz) : 'none');
+    return 'real:' + gaiaOf(Math.min(jan, jul)) + ':' + (jul > jan ? northRule(viewerTz) : (jan > jul ? southRule(viewerTz) : 'none'));
   })();
   // Offset in minutes for a real Earth zone, read from the browser's own time zone data.
   function tzOffset(tz, utcMs) {
@@ -2596,7 +2614,7 @@
   function twinRef(tz) {
     var y = new Date().getUTCFullYear(), jan = tzOffset(tz, Date.UTC(y, 0, 15)), jul = tzOffset(tz, Date.UTC(y, 6, 15));
     if (jan === null || jul === null) { return null; }
-    return 'real:' + gaiaOf(Math.min(jan, jul)) + ':' + (jul > jan ? northRule(tz) : 'none');
+    return 'real:' + gaiaOf(Math.min(jan, jul)) + ':' + (jul > jan ? northRule(tz) : (jan > jul ? southRule(tz) : 'none'));
   }
   var IANA = [];
   try { IANA = Intl.supportedValuesOf('timeZone').slice(); } catch (err) { IANA = []; }
@@ -3036,7 +3054,7 @@
     var rel = z.p.dc - SB.p.dc, cls = 'rd-' + Math.max(0, Math.min(3, rel + 1)), day = isDay(z.p), parts = refParts(z.zone);
     var chips = '<span class="g-chip">' + esc(deltaStr(z.rel)) + '</span><span class="g-chip">' + relDayLabel(z.relDay) + '</span><span class="g-chip off">' + ztc(z.off) + (z.zone === CORD ? ' \u00B7 ' + abbrOf(CORD, z.off) : '') + '</span>';
     if (z.hana) { chips += '<span class="g-chip hana">' + (z.alias ? 'alias of ' : '') + esc(z.hana) + '</span>'; }
-    if (parts && parts.rule !== 'none') { chips += '<span class="g-chip tag">' + (z.off !== parts.std ? (parts.rule === 'eu' ? 'summer time' : 'daylight time') : 'standard time') + '</span>'; }
+    if (parts && parts.rule !== 'none') { chips += '<span class="g-chip tag">' + (z.off !== parts.std ? (parts.rule === 'eu' || parts.rule === 'cl' ? 'summer time' : 'daylight time') : 'standard time') + '</span>'; }
     chips += '<button type="button" class="g-chip go" data-gsand="' + esc(z.id) + '">Show up top</button>';
     if (z.own) { chips += '<button type="button" class="g-chip rm" data-grm="' + esc(z.id) + '">Remove</button>'; }
     return '<article class="g-row ' + cls + (z.isGlow ? ' glow' : '') + (z.zone === sel.ref && z.name === sel.label ? ' picked' : '') + '" id="gr-' + esc(z.id) + '">' +
