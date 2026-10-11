@@ -2390,14 +2390,14 @@
     fatahi: 'Pacific/Fatahi', rainui: 'Pacific/Rainui', arahiti: 'Pacific/Arahiti', hitira: 'Pacific/Hitira' };
   // Typed or picked by ID: [ID, zone reference, label]
   var HANA_TYPED = [['Etc/ZTC', 'ztc:0', 'Etc/ZTC'], ['Etc/ZTC+4', 'real:-240:none', 'Etc/ZTC+4'], ['America/Summitbrook', CORD, 'America/Summitbrook'],
-    ['America/Johnston', 'custom:coastal', 'America/Johnston'], ['America/Ashenix', 'ztc:0', 'America/Ashenix'], ['America/Portkane', 'ztc:0', 'America/Portkane'], ['America/Saskwatoon', 'ztc:0', 'America/Saskwatoon'], ['America/Northgate', 'ztc:60', 'America/Northgate'], ['America/Glacierpoint', 'ztc:0', 'America/Glacierpoint'],
+    ['America/Johnston', 'custom:coastal', 'America/Johnston'], ['America/Ashenix', 'ztc:0', 'America/Ashenix'], ['America/Portkane', 'ztc:0', 'America/Portkane'], ['America/Saskwatoon', 'ztc:0', 'America/Saskwatoon'], ['America/Northgate', 'ztc:60', 'America/Northgate'], ['America/Glacierpoint', 'ztc:-60', 'America/Glacierpoint'],
     ['Pacific/Toara', 'custom:toara', 'Pacific/Toara'], ['Pacific/Aratoa', 'custom:aratoa', 'Pacific/Aratoa'], ['Pacific/Utaroa', 'custom:utaroa', 'Pacific/Utaroa'],
     ['Pacific/Fatahi', 'custom:fatahi', 'Pacific/Fatahi'], ['Pacific/Rainui', 'custom:rainui', 'Pacific/Rainui'], ['Pacific/Arahiti', 'custom:arahiti', 'Pacific/Arahiti'],
     ['Pacific/Hitira', 'custom:hitira', 'Pacific/Hitira']];
   var HANA_ONLY = {};
   HANA_TYPED.forEach(function (t) { HANA_ONLY[t[0]] = true; });
   var HANA_BY_ID = { burnthills: 'America/New_York', summitbrook: 'America/Summitbrook', cord: 'America/Summitbrook', coast: 'America/Johnston', aridona: 'America/Ashenix',
-    bc: 'America/Portkane', baker: 'Etc/ZTC+4', denver: 'America/Denver', nyc: 'America/New_York', london: 'Europe/London', mumbai: 'Asia/Kolkata',
+    bc: 'America/Portkane', saskatchelwyn: 'America/Saskwatoon', yukonaeast: 'America/Northgate', yukonawest: 'America/Glacierpoint', baker: 'Etc/ZTC+4', denver: 'America/Denver', nyc: 'America/New_York', london: 'Europe/London', mumbai: 'Asia/Kolkata',
     kathmandu: 'Asia/Kathmandu', tokyo: 'Asia/Tokyo', kiritimati: 'Pacific/Kiritimati', parinacota: 'America/Santiago', santabarbara: 'America/La_Paz',
     pirquitas: 'America/Argentina/Jujuy', toara: 'Pacific/Toara', aratoa: 'Pacific/Aratoa', utaroa: 'Pacific/Utaroa', fatahi: 'Pacific/Fatahi', rainui: 'Pacific/Rainui',
     arahiti: 'Pacific/Arahiti', hitira: 'Pacific/Hitira' };
@@ -2456,6 +2456,9 @@
     { id: 'coast', group: 'cord', name: 'Coastal-Cordilleran Time', where: 'Calivornia, Orekon and Washingmere', zone: 'custom:coastal', zc: true },
     { id: 'aridona', group: 'cord', name: 'Aridona', where: 'Never changes its clocks, so it sits on Zenith Time all year', zone: 'ztc:0', glow: true },
     { id: 'bc', group: 'cord', name: 'Britannic Columbia', where: 'Stopped changing its clocks in 2026', zone: 'ztc:0', glow: true },
+    { id: 'saskatchelwyn', group: 'cord', name: 'Saskatchelwyn', where: 'Never changes its clocks, so it sits on Zenith Time all year', zone: 'ztc:0', glow: true },
+    { id: 'yukonaeast', group: 'cord', name: 'Eastern Yukona', where: 'On Cordilleran Time, but stays on its summer clock all year', zone: 'ztc:60', glow: true },
+    { id: 'yukonawest', group: 'cord', name: 'Western Yukona', where: 'On Coastal-Cordilleran Time, but stays on its summer clock all year', zone: 'ztc:-60', glow: true },
     { id: 'baker', group: 'world', name: 'Baker Island', where: 'The last place on Gaia to see each day', zone: 'real:-240:none' },
     { id: 'denver', group: 'world', name: 'Denver', where: 'Colorado, on Mountain Time', zone: 'real:180:us' },
     { id: 'nyc', group: 'world', name: 'New York City', where: 'On Eastern Time', zone: 'real:360:us' },
