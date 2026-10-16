@@ -481,6 +481,243 @@
     .lineblock { animation: none; }
   }
   @keyframes shimmer { from { background-position: 0 0; } to { background-position: -200% 0; } }
+
+  /* =====================================================================
+     Toolkit: Atlas, Locations, Converter, Labs, Altimeter, Look and Sound
+     ===================================================================== */
+  .zone-controls, .zone-metrics { display: contents; }
+  .tk-tools { display: flex; gap: .45rem; overflow-x: auto; margin: 0 -1rem .7rem; padding: .2rem 1rem .5rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .tk-tools::-webkit-scrollbar { display: none; }
+  .tk-tools button { flex: none; display: inline-flex; align-items: center; gap: .4rem; border-radius: 999px; border: 1px solid var(--edge); background: var(--card); color: var(--ink); padding: .4rem .85rem; min-height: 2.5rem; font-weight: 700; font-size: .8rem; letter-spacing: .07em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
+  .tk-tools button i { font-style: normal; font-size: 1rem; line-height: 1; color: var(--cl-a); }
+  .tk-tools button:hover { border-color: var(--cl-a); }
+  .tk-browse { display: grid; gap: .45rem; margin: 0 0 .75rem; }
+  .tk-step { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .5rem; align-items: center; }
+  .tk-step > b { font-weight: 700; font-size: .82rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); grid-column: 1 / -1; margin-bottom: -.2rem; }
+  .tk-step button { width: 2.6rem; height: 2.6rem; border-radius: 50%; border: 1px solid var(--edge); background: var(--card); color: var(--ink); font-size: 1.3rem; line-height: 1; cursor: pointer; }
+  .tk-step span { text-align: center; font-weight: 600; background: var(--track); border-radius: 999px; padding: .5rem .8rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .tk-sheet { position: fixed; inset: 0; z-index: 50; background: rgba(3, 6, 20, .62); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: flex; justify-content: center; align-items: stretch; }
+  .tk-sheet[hidden] { display: none; }
+  .tk-panel { width: min(100%, 58rem); background: var(--bg); color: var(--ink); display: flex; flex-direction: column; min-height: 0; outline: none; position: relative; }
+  @media (min-width: 760px) { .tk-panel { margin: 2vh 0; border-radius: 26px; border: 1px solid var(--edge); box-shadow: 0 24px 80px rgba(0, 0, 0, .5); overflow: hidden; } }
+  .tk-head { display: flex; align-items: center; gap: .7rem; padding: .7rem 1rem; padding-top: calc(.7rem + env(safe-area-inset-top, 0px)); border-bottom: 1px solid var(--edge); background: var(--bar-bg); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+  .tk-head h2 { font-family: var(--display); font-weight: 900; font-size: 1.8rem; line-height: 1; margin: 0; flex: 1; }
+  .tk-x { width: 2.7rem; height: 2.7rem; border-radius: 50%; border: 1px solid var(--edge); background: var(--card); color: var(--ink); font-size: 1.5rem; line-height: 1; cursor: pointer; flex: none; }
+  .tk-body { overflow: auto; padding: 1rem 1rem calc(2.2rem + env(safe-area-inset-bottom, 0px)); flex: 1; min-height: 0; -webkit-overflow-scrolling: touch; }
+  body.tk-lock { overflow: hidden; }
+  .tk-lede { margin: 0 0 1rem; color: var(--muted); max-width: 40rem; }
+  .tk-h3 { font-family: var(--display); font-weight: 700; font-size: 1.35rem; margin: 1.4rem 0 .5rem; }
+  .tk-fine { color: var(--muted); font-size: .85rem; line-height: 1.45; margin: 1rem 0 0; max-width: 40rem; }
+  .tk-bar, .tk-row, .tk-inline { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+  .tk-bar { margin-bottom: .6rem; }
+  .tk-in { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--edge); border-radius: 14px; padding: .6rem .8rem; min-height: 2.8rem; min-width: 0; }
+  input.tk-in[type="search"], input.tk-in[type="text"], input.tk-in[type="number"], select.tk-in, textarea.tk-in { width: 100%; }
+  .tk-bar .tk-in { flex: 1; }
+  .tk-inline .tk-in { width: auto; flex: 1 1 8rem; }
+  textarea.tk-in { min-height: 6rem; resize: vertical; font-size: .95rem; }
+  .tk-btn { font: inherit; font-weight: 700; color: var(--ink); background: var(--card); border: 1px solid var(--edge); border-radius: 999px; padding: .5rem 1rem; min-height: 2.6rem; cursor: pointer; }
+  .tk-btn.go { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--cl-a), var(--cl-b)); box-shadow: 0 2px 12px rgba(100, 60, 240, .35); }
+  .tk-btn.warn { color: var(--above); }
+  .tk-btn[disabled] { opacity: .45; cursor: default; }
+  .tk-chips { display: flex; gap: .4rem; overflow-x: auto; margin: 0 -1rem .6rem; padding: .1rem 1rem .3rem; scrollbar-width: none; }
+  .tk-chips::-webkit-scrollbar { display: none; }
+  .tk-chips button { flex: none; border-radius: 999px; border: 1px solid var(--edge); background: var(--card); color: var(--ink); padding: .4rem .85rem; font-weight: 600; font-size: .9rem; cursor: pointer; white-space: nowrap; min-height: 2.4rem; }
+  .tk-chips button[aria-pressed="true"] { background: linear-gradient(135deg, var(--cl-a), var(--cl-b)); color: #fff; border-color: transparent; }
+  .tk-count { color: var(--muted); font-size: .9rem; margin-left: auto; }
+  .tk-field { display: grid; gap: .3rem; margin: 0 0 .8rem; min-width: 0; }
+  .tk-field > label, .tk-field > .tk-lab { font-weight: 600; font-size: .9rem; color: var(--muted); }
+  .tk-two { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .tk-msg { margin: .6rem 0 0; font-size: .95rem; min-height: 1.4em; }
+  .tk-msg.bad { color: var(--above); }
+  .tk-msg.ok { color: var(--below); }
+  .tk-tabs { margin: 0 0 1rem; }
+  .tk-tabs.seg { display: grid; grid-template-columns: repeat(var(--n, 3), 1fr); }
+
+  .tk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: .65rem; }
+  .tk-card { position: relative; display: flex; flex-direction: column; text-align: left; padding: 0; color: var(--ink); background: var(--card); border: 1px solid var(--edge); border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: var(--shadow); font: inherit; }
+  .tk-card.cl { border: 2px solid transparent; background: linear-gradient(var(--card), var(--card)) padding-box, linear-gradient(135deg, var(--cl-a), var(--cl-b)) border-box; }
+  .tk-thumb { display: grid; place-items: center; aspect-ratio: 16 / 9; background: var(--track) no-repeat; color: var(--muted); font-size: 1.6rem; opacity: 1; filter: brightness(var(--tk-bright, 1)); }
+  .tk-thumb em { font-style: normal; opacity: .7; }
+  .tk-thumb.on em { display: none; }
+  .tk-ct { padding: .55rem .65rem .7rem; display: grid; gap: .1rem; min-width: 0; }
+  .tk-ct b { font-family: var(--display); font-weight: 700; font-size: 1.15rem; line-height: 1.05; overflow-wrap: anywhere; }
+  .tk-el { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--cl-b); font-size: .95rem; }
+  .tk-ct small { color: var(--muted); font-size: .8rem; line-height: 1.25; }
+  .tk-heart { position: absolute; top: .4rem; right: .5rem; font-style: normal; color: #FF5FAE; text-shadow: 0 1px 6px rgba(0, 0, 0, .6); }
+  .tk-more { display: flex; justify-content: center; margin: 1rem 0 0; }
+  body.tk-nopics .tk-thumb { display: none; }
+  body.tk-nopics .pfig { display: none; }
+
+  .tk-viewer { position: fixed; inset: 0; z-index: 60; background: #02030F; color: #F4F7FF; display: flex; flex-direction: column; }
+  .tk-viewer[hidden] { display: none; }
+  .tk-vtop { display: flex; align-items: center; gap: .6rem; padding: .6rem 1rem; padding-top: calc(.6rem + env(safe-area-inset-top, 0px)); }
+  .tk-vtop button { border-radius: 999px; border: 1px solid rgba(255, 255, 255, .25); background: rgba(255, 255, 255, .08); color: #F4F7FF; font: inherit; font-weight: 700; padding: .45rem .95rem; min-height: 2.6rem; cursor: pointer; }
+  .tk-vtop .tk-vcount { flex: 1; text-align: center; color: #B9C4EA; font-size: .92rem; }
+  .tk-vtop .tk-vfav[aria-pressed="true"] { color: #FF5FAE; border-color: #FF5FAE; }
+  .tk-vstage { position: relative; display: grid; place-items: center; padding: 0 .5rem; min-height: 0; }
+  .tk-vpic { position: relative; width: min(100%, calc(52vh * 16 / 9)); aspect-ratio: 16 / 9; border-radius: 18px; overflow: hidden; background: #0B1030 no-repeat; filter: brightness(var(--tk-bright, 1)); display: grid; place-items: center; color: #9AA6D6; text-align: center; padding: 1rem; font-size: .95rem; }
+  .tk-vpic.on span { display: none; }
+  .tk-vnav { position: absolute; top: 50%; transform: translateY(-50%); width: 2.8rem; height: 4rem; border-radius: 14px; border: 1px solid rgba(255, 255, 255, .25); background: rgba(6, 8, 25, .6); color: #fff; font-size: 1.8rem; cursor: pointer; z-index: 2; }
+  .tk-vnav.prev { left: .35rem; }
+  .tk-vnav.next { right: .35rem; }
+  .tk-vnav[disabled] { opacity: .25; }
+  .tk-vinfo { overflow: auto; padding: .9rem 1.1rem calc(1.4rem + env(safe-area-inset-bottom, 0px)); width: min(100%, 44rem); margin: 0 auto; }
+  .tk-vinfo h3 { font-family: var(--display); font-weight: 900; font-size: 2.1rem; line-height: 1; margin: .5rem 0 .2rem; }
+  .tk-vel { font-family: var(--display); font-weight: 900; font-size: 2.4rem; color: #FFD447; font-variant-numeric: tabular-nums; line-height: 1; }
+  .tk-vel i { font-style: normal; font-size: 1.1rem; margin-left: .25rem; }
+  .tk-vmeta { color: #B9C4EA; margin: .25rem 0 0; }
+  .tk-vnote { margin: .6rem 0 0; color: #E3EAFF; }
+  .tk-vcred { margin: .6rem 0 0; font-size: .8rem; color: #8F9BC8; }
+  .tk-vcred a { color: #9CC2FF; }
+  .tk-vact { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .9rem; }
+  .tk-vact button { border-radius: 999px; border: 1px solid rgba(255, 255, 255, .25); background: rgba(255, 255, 255, .08); color: #F4F7FF; font: inherit; font-weight: 700; padding: .55rem 1.1rem; min-height: 2.7rem; cursor: pointer; }
+  .tk-vact .go { background: linear-gradient(135deg, #FFB300, #FFE27A); color: #1B1200; border-color: transparent; }
+
+  .tk-list { display: grid; gap: .55rem; }
+  .tk-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .4rem .7rem; align-items: center; background: var(--card); border: 1px solid var(--edge); border-radius: 16px; padding: .7rem .85rem; }
+  .tk-item b { font-family: var(--display); font-weight: 700; font-size: 1.2rem; overflow-wrap: anywhere; }
+  .tk-item small { color: var(--muted); display: block; }
+  .tk-item .acts { display: flex; gap: .35rem; flex-wrap: wrap; justify-content: flex-end; }
+  .tk-item .acts button { border: 1px solid var(--edge); background: var(--track); color: var(--ink); border-radius: 999px; padding: .35rem .75rem; font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer; min-height: 2.2rem; }
+  .tk-prev { max-width: 14rem; border-radius: 12px; border: 1px solid var(--edge); margin-top: .4rem; display: block; }
+  .tk-code { width: 100%; min-height: 8rem; font: .8rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  .tk-res { display: grid; grid-template-columns: repeat(2, 1fr); gap: .55rem; margin: .9rem 0 0; }
+  .tk-res .g b { font-size: clamp(1.5rem, 6vw, 2.1rem); }
+  .tk-res .g.wide { grid-column: 1 / -1; }
+  .tk-verdict { background: var(--card); border: 1px solid var(--edge); border-radius: 16px; padding: .8rem .9rem; margin: .6rem 0 0; }
+  .tk-verdict em { display: block; font-style: normal; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; font-size: .82rem; color: var(--cl-b); }
+  .tk-verdict p { margin: .25rem 0 0; }
+  .tk-verdict.good em { color: var(--below); }
+  .tk-verdict.warn em { color: var(--gold); }
+  .tk-verdict.bad em { color: var(--above); }
+  .tk-kv { display: grid; grid-template-columns: auto 1fr; gap: .2rem .9rem; margin: .5rem 0 0; font-size: .95rem; }
+  .tk-kv dt { color: var(--muted); font-weight: 600; font-size: .82rem; letter-spacing: .04em; text-transform: uppercase; }
+  .tk-kv dd { margin: 0; font-variant-numeric: tabular-nums; }
+  @media (min-width: 640px) { .tk-res { grid-template-columns: repeat(3, 1fr); } }
+
+  .tk-opt { display: grid; gap: .5rem; margin: 0 0 1.1rem; }
+  .tk-opt > .tk-lab { font-weight: 700; }
+  .tk-opt small { color: var(--muted); }
+  .tk-toggle { display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: var(--card); border: 1px solid var(--edge); border-radius: 16px; padding: .7rem .9rem; margin: 0 0 .55rem; }
+  .tk-toggle span { display: grid; gap: .1rem; }
+  .tk-toggle small { color: var(--muted); font-weight: 400; }
+  .tk-toggle input { width: 1.3rem; height: 1.3rem; accent-color: var(--cl-b); }
+  .tk-range { display: grid; grid-template-columns: 1fr auto; gap: .3rem .8rem; align-items: center; background: var(--card); border: 1px solid var(--edge); border-radius: 16px; padding: .7rem .9rem; margin: 0 0 .55rem; }
+  .tk-range input { grid-column: 1 / -1; width: 100%; accent-color: var(--cl-b); }
+  .tk-range output { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .tk-choices { display: grid; gap: .5rem; }
+  .tk-choice { text-align: left; font: inherit; color: var(--ink); background: var(--card); border: 2px solid var(--edge); border-radius: 16px; padding: .7rem .9rem; cursor: pointer; display: grid; gap: .1rem; }
+  .tk-choice b { font-family: var(--display); font-weight: 700; font-size: 1.2rem; }
+  .tk-choice small { color: var(--muted); }
+  .tk-choice[aria-pressed="true"] { border-color: var(--cl-b); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cl-b) 25%, transparent); }
+  @media (min-width: 640px) { .tk-choices.cols { grid-template-columns: 1fr 1fr; } }
+
+  /* The picture of what you just did: one short flash over the scene */
+  .tk-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+  .tk-fx > * { position: absolute; }
+  body.tk-still .tk-fx { display: none; }
+  .fx-sonar > i { left: 50%; top: 55%; width: 10px; height: 10px; margin: -5px; border-radius: 50%; border: 2px solid rgba(110, 230, 255, .9); animation: fxRing 1.1s ease-out forwards; }
+  .fx-sonar > i:nth-child(2) { animation-delay: .18s; }
+  .fx-sonar > i:nth-child(3) { animation-delay: .36s; }
+  @keyframes fxRing { from { transform: scale(1); opacity: 1; } to { transform: scale(60); opacity: 0; } }
+  .fx-glacial > i { inset: -20% -60%; background: linear-gradient(105deg, transparent 38%, rgba(190, 240, 255, .55) 48%, rgba(255, 255, 255, .85) 50%, rgba(190, 240, 255, .55) 52%, transparent 62%); animation: fxSweep .9s ease-out forwards; }
+  @keyframes fxSweep { from { transform: translateX(-60%); opacity: 1; } to { transform: translateX(60%); opacity: 0; } }
+  .fx-ripple > i { left: 50%; top: 70%; width: 30px; height: 12px; margin: -6px -15px; border-radius: 50%; border: 2px solid rgba(80, 200, 255, .8); animation: fxRip 1.2s ease-out forwards; }
+  .fx-ripple > i:nth-child(2) { animation-delay: .2s; }
+  .fx-ripple > i:nth-child(3) { animation-delay: .4s; }
+  @keyframes fxRip { from { transform: scale(1); opacity: 1; } to { transform: scale(22, 18); opacity: 0; } }
+  .fx-grid > i { inset: 0; background-image: linear-gradient(rgba(255, 210, 70, .55) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 210, 70, .55) 1px, transparent 1px); background-size: 34px 34px; animation: fxGrid .8s ease-out forwards; }
+  @keyframes fxGrid { from { transform: scale(.6); opacity: .95; } to { transform: scale(1.5); opacity: 0; } }
+  .fx-aurora > i { inset: -10% 0 0; background: linear-gradient(180deg, transparent 0%, rgba(70, 255, 180, .55) 40%, rgba(155, 107, 255, .5) 70%, transparent 100%); filter: blur(14px); animation: fxAur 1.1s ease-out forwards; }
+  @keyframes fxAur { from { transform: translateY(30%) scaleY(.4); opacity: 0; } 30% { opacity: 1; } to { transform: translateY(-20%) scaleY(1.2); opacity: 0; } }
+  .fx-rings > i { left: 50%; top: 50%; width: 120px; height: 46px; margin: -23px -60px; border-radius: 50%; border: 2px solid rgba(255, 220, 120, .85); animation: fxOrb 1.1s ease-out forwards; }
+  .fx-rings > i:nth-child(2) { transform: rotate(60deg); animation-delay: .12s; }
+  .fx-rings > i:nth-child(3) { transform: rotate(-60deg); animation-delay: .24s; }
+  @keyframes fxOrb { from { scale: .4; opacity: 1; } to { scale: 4; opacity: 0; } }
+  .fx-prism > i { inset: 0; background: conic-gradient(from 0deg at 50% 60%, #FF5FAE, #FFD447, #46FFB4, #38D6FF, #A77BFF, #FF5FAE); mix-blend-mode: screen; animation: fxPrism .7s ease-out forwards; }
+  @keyframes fxPrism { from { opacity: .85; transform: rotate(0) scale(.7); } to { opacity: 0; transform: rotate(40deg) scale(1.6); } }
+  body:not(.tk-still) .tk-tools button:active, body:not(.tk-still) .tk-btn:active, body:not(.tk-still) .pstep:active { transform: scale(.96); }
+  body.tk-solid .tk-head, body.tk-solid .controls, body.tk-solid .hud, body.tk-solid .planets { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: var(--card) !important; }
+  body.tk-solid .tk-sheet { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(3, 6, 20, .85); }
+  #view, .pimg .px { filter: brightness(var(--tk-bright, 1)); }
+
+  /* ---------- Layouts. The small-screen page keeps the same order; wide screens rearrange it. ---------- */
+  html[data-layout="halo"] body { --edge: color-mix(in srgb, var(--ink) 10%, transparent); }
+  html[data-layout="halo"] .g, html[data-layout="halo"] .place, html[data-layout="halo"] .tk-tools button, html[data-layout="halo"] .tk-item { border-radius: 24px; }
+  html[data-layout="halo"] .scene { border-radius: 0 0 32px 32px; }
+  html[data-layout="ledger"] body { background: #F4EFE3; --bg: #F4EFE3; --card: #FBF8F0; --ink: #1E1A12; --muted: #6B6250; --edge: rgba(60, 46, 20, .22); --shadow: 0 1px 0 rgba(60, 46, 20, .15); }
+  html[data-layout="ledger"] h1, html[data-layout="ledger"] h2, html[data-layout="ledger"] h3, html[data-layout="ledger"] .g b, html[data-layout="ledger"] .tk-head h2 { font-family: Georgia, "Times New Roman", serif; font-weight: 700; letter-spacing: -.01em; }
+  html[data-layout="ledger"] .g, html[data-layout="ledger"] .place { border-radius: 4px; border-width: 0 0 2px 0; border-color: #1E1A12; box-shadow: none; background: transparent; }
+  @media (prefers-color-scheme: dark) { html[data-layout="ledger"]:not([data-theme="light"]) body { background: #17140E; --bg: #17140E; --card: #211D14; --ink: #F1EADA; --muted: #B3A98F; --edge: rgba(240, 225, 190, .2); } html[data-layout="ledger"]:not([data-theme="light"]) .g, html[data-layout="ledger"]:not([data-theme="light"]) .place { border-color: #F1EADA; } }
+  html[data-layout="ledger"][data-theme="dark"] body { background: #17140E; --bg: #17140E; --card: #211D14; --ink: #F1EADA; --muted: #B3A98F; --edge: rgba(240, 225, 190, .2); }
+  html[data-layout="ledger"][data-theme="dark"] .g, html[data-layout="ledger"][data-theme="dark"] .place { border-color: #F1EADA; }
+  html[data-layout="abyss"] body { background: #02070F; --bg: #02070F; --card: #07131F; --ink: #D7F6FF; --muted: #7FB0C2; --edge: rgba(80, 220, 255, .22); --shadow: 0 0 24px rgba(40, 200, 255, .08); --cl-a: #19D3F0; --cl-b: #3B7BFF; }
+  html[data-layout="abyss"] .g, html[data-layout="abyss"] .place { border-radius: 8px; border-color: rgba(80, 220, 255, .35); }
+  html[data-layout="abyss"] .g b { color: #7CF3FF; }
+  html[data-layout="orbital"] body { --card: color-mix(in srgb, var(--bg) 70%, var(--ink) 4%); }
+  html[data-layout="orbital"] .g { text-align: center; border-radius: 999px / 28px; }
+  html[data-layout="orbital"] .scene { border-radius: 0 0 50% 50% / 0 0 36px 36px; }
+  html[data-layout="map"] body { background-image: linear-gradient(var(--track) 1px, transparent 1px), linear-gradient(90deg, var(--track) 1px, transparent 1px); background-size: 42px 42px; }
+  html[data-layout="map"] .g, html[data-layout="map"] .place, html[data-layout="map"] .tk-item { border-radius: 6px; border-style: dashed; }
+  html[data-layout="map"] .tk-tools { background: var(--bar-bg); border: 1px solid var(--edge); border-radius: 10px; margin-left: 0; margin-right: 0; padding-left: .6rem; padding-right: .6rem; }
+
+  @media (min-width: 980px) {
+    html:not([data-layout="standard"]) .sand { display: grid; gap: 1rem 1.25rem; align-items: start; max-width: 120rem; margin: 0 auto; padding: 1rem 1.25rem 0; }
+    html:not([data-layout="standard"]) .deck { display: contents; }
+    html:not([data-layout="standard"]) .zone-controls, html:not([data-layout="standard"]) .zone-metrics { display: block; min-width: 0; }
+    html:not([data-layout="standard"]) .scene { border-radius: 22px; height: min(78vh, 760px); min-height: 460px; }
+    html:not([data-layout="standard"]) .zone-metrics .gauges { margin-top: 0; }
+    html:not([data-layout="standard"]) .zone-metrics .feel { margin-top: 0; }
+    html:not([data-layout="standard"]) .tk-tools { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; flex-wrap: wrap; overflow: visible; }
+
+    /* Stratosphere: story on the left, live numbers in the middle, controls on the right */
+    html[data-layout="stratosphere"] .sand { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, .95fr); }
+    html[data-layout="stratosphere"] .scene { grid-column: 1; grid-row: 1; position: sticky; top: 1rem; }
+    html[data-layout="stratosphere"] .zone-metrics { grid-column: 2; grid-row: 1; }
+    html[data-layout="stratosphere"] .zone-controls { grid-column: 3; grid-row: 1; }
+    html[data-layout="stratosphere"] .zone-metrics .gauges { grid-template-columns: 1fr 1fr; }
+
+    /* Halo Care: one rounded workspace, scene and numbers on the left, controls in a side panel */
+    html[data-layout="halo"] .sand { grid-template-columns: minmax(0, 1.7fr) minmax(19rem, 1fr); max-width: 84rem; }
+    html[data-layout="halo"] .scene { grid-column: 1; grid-row: 1; border-radius: 28px; }
+    html[data-layout="halo"] .zone-metrics { grid-column: 1; grid-row: 2; }
+    html[data-layout="halo"] .zone-controls { grid-column: 2; grid-row: 1 / span 2; background: var(--card); border: 1px solid var(--edge); border-radius: 28px; padding: 1rem; box-shadow: var(--shadow); position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow: auto; }
+
+    /* Summit Ledger: a wide editorial column with the control rail on the right */
+    html[data-layout="ledger"] .sand { grid-template-columns: minmax(0, 1fr) 24rem; max-width: 90rem; }
+    html[data-layout="ledger"] .scene { grid-column: 1; grid-row: 1; border-radius: 2px; }
+    html[data-layout="ledger"] .zone-metrics { grid-column: 1; grid-row: 2; }
+    html[data-layout="ledger"] .zone-controls { grid-column: 2; grid-row: 1 / span 2; border-left: 2px solid var(--ink); padding-left: 1.25rem; position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow: auto; }
+    html[data-layout="ledger"] .zone-metrics .gauges { grid-template-columns: repeat(3, 1fr); }
+
+    /* Abyss Console: controls on one side, readings on the other, the view in the middle */
+    html[data-layout="abyss"] .sand { grid-template-columns: minmax(18rem, .8fr) minmax(0, 1.6fr) minmax(18rem, .8fr); }
+    html[data-layout="abyss"] .zone-controls { grid-column: 1; grid-row: 1; max-height: calc(100vh - 2rem); overflow: auto; position: sticky; top: 1rem; }
+    html[data-layout="abyss"] .scene { grid-column: 2; grid-row: 1; position: sticky; top: 1rem; }
+    html[data-layout="abyss"] .zone-metrics { grid-column: 3; grid-row: 1; }
+    html[data-layout="abyss"] .zone-metrics .gauges { grid-template-columns: 1fr; }
+
+    /* Orbital Center: a centered stage with a telemetry strip underneath */
+    html[data-layout="orbital"] .sand { grid-template-columns: minmax(0, 1fr); max-width: 64rem; }
+    html[data-layout="orbital"] .scene { grid-row: 1; }
+    html[data-layout="orbital"] .zone-metrics { grid-row: 2; }
+    html[data-layout="orbital"] .zone-metrics .gauges { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .5rem; }
+    html[data-layout="orbital"] .zone-metrics .gauges .g.wide { grid-column: span 3; }
+    html[data-layout="orbital"] .zone-metrics .g b { font-size: clamp(1.3rem, 2.2vw, 1.9rem); }
+    html[data-layout="orbital"] .zone-controls { grid-row: 3; }
+
+    /* Map Board: a toolbar across the top, the map-like view and its readings below */
+    html[data-layout="map"] .sand { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+    html[data-layout="map"] .zone-controls { grid-column: 1 / -1; grid-row: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem 1.2rem; align-items: start; }
+    html[data-layout="map"] .zone-controls > .tk-tools, html[data-layout="map"] .zone-controls > .tk-browse, html[data-layout="map"] .zone-controls > .place { grid-column: 1 / -1; }
+    html[data-layout="map"] .zone-controls .place { grid-template-columns: 1fr; }
+    html[data-layout="map"] .scene { grid-column: 1; grid-row: 2; }
+    html[data-layout="map"] .zone-metrics { grid-column: 2; grid-row: 2; }
+    html[data-layout="map"] .zone-metrics .gauges { grid-template-columns: 1fr 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { .tk-fx { display: none; } }
 </style>
 </head>
 <body>
@@ -1849,6 +2086,7 @@
     return n.replace(/[^\x00-\x7f]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase();
   }
   function picFor(s) {
+    if (s.pic) return { url: s.pic, tile: 0, cred: -1, kind: 'u', whole: true, credit: s.picCredit || '' };
     var w = PICS[PLANET], e = w && w.k[picKey(s.n)];
     return e ? { url: './pics/' + w.s[e[0]], tile: e[1], cred: e[2], kind: e[3] } : null;
   }
@@ -1873,7 +2111,9 @@
     var el = $('pCred'), c = p.cred >= 0 ? PICS.c[p.cred] : null, k = p.kind;
     el.textContent = '';
     var add = function (x) { el.appendChild(typeof x === 'string' ? document.createTextNode(x) : x); };
-    if (k === 'p' && c) {
+    if (k === 'u') {
+      add(p.credit ? 'Picture: ' + p.credit : 'Your own picture.');
+    } else if (k === 'p' && c) {
       add('Photo by ' + c[0] + ', '); add(c[2] ? link(c[1], c[2]) : c[1]); add('. '); add(link('Source', c[3]));
     } else if (k === 'g' && c) {
       add('Made by AI from a photo by ' + c[0] + ', '); add(c[2] ? link(c[1], c[2]) : c[1]); add('. '); add(link('Original photo', c[3]));
@@ -1886,7 +2126,9 @@
   function setPic(box, p, name, ok) {
     var old = box.querySelectorAll('.px'), i, n = document.createElement('i');
     n.className = 'px';
-    if (ok) {
+    if (ok && p.whole) {
+      n.style.backgroundImage = 'url("' + p.url + '")'; n.style.backgroundSize = 'cover'; n.style.backgroundPosition = 'center';
+    } else if (ok) {
       var col = p.tile % PICS.cols, row = Math.floor(p.tile / PICS.cols);
       n.style.backgroundImage = 'url("' + p.url + '")';
       n.style.backgroundSize = PICS.cols * 100 + '% ' + PICS.rows * 100 + '%';
@@ -1895,10 +2137,10 @@
     box.appendChild(n);
     window.requestAnimationFrame(function () { window.requestAnimationFrame(function () { n.classList.add('on'); }); });
     for (i = 0; i < old.length; i++) { (function (o) { o.classList.remove('on'); window.setTimeout(function () { if (o.parentNode) o.parentNode.removeChild(o); }, 400); })(old[i]); }
-    $('pBadge').textContent = p.kind === 'p' ? 'Photo' : 'AI picture';
+    $('pBadge').textContent = p.kind === 'p' ? 'Photo' : (p.kind === 'u' ? 'Your picture' : 'AI picture');
     $('pBadge').hidden = false;
     box.setAttribute('role', 'img');
-    box.setAttribute('aria-label', name + (p.kind === 'p' ? ', a photo' : ', a picture made by AI'));
+    box.setAttribute('aria-label', name + (p.kind === 'p' ? ', a photo' : (p.kind === 'u' ? ', your picture' : ', a picture made by AI')));
   }
   function warm(L, i) {
     [i - 1, i + 1].forEach(function (j) {
@@ -2897,6 +3139,859 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { sizeInput(); });
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
+
+  /* =====================================================================
+     Toolkit: Atlas, My places, Converter, Bio Lab, Sports Lab, Acclimatization, Live Altimeter, Look and Sound.
+     Every number here comes from the page's own Earth and Gaia canon above. Nothing new is locked.
+     ===================================================================== */
+  var TKD = { layout: 'standard', theme: 'auto', anim: true, solid: false, pics: true, bright: 1, fx: 'adaptive',
+    snd: { on: false, vol: 60, eq: 0, limit: true, profile: 'adaptive' }, favs: [], custom: [] };
+  var TK = JSON.parse(JSON.stringify(TKD));
+  var TK_KEY = 'alt327k2-toolkit';
+  try {
+    var tkSaved = JSON.parse(localStorage.getItem(TK_KEY) || 'null');
+    if (tkSaved && typeof tkSaved === 'object') {
+      Object.keys(TKD).forEach(function (k) { if (tkSaved[k] !== undefined && typeof tkSaved[k] === typeof TKD[k]) TK[k] = tkSaved[k]; });
+      TK.snd = Object.assign({}, TKD.snd, tkSaved.snd || {});
+      if (!Array.isArray(TK.favs)) TK.favs = [];
+      if (!Array.isArray(TK.custom)) TK.custom = [];
+    }
+  } catch (err) {}
+  var tkSaveMsg = '';
+  function tkSave() {
+    try { localStorage.setItem(TK_KEY, JSON.stringify(TK)); tkSaveMsg = ''; return true; }
+    catch (err) { tkSaveMsg = 'This device is out of room to save that. Try a smaller picture, or delete a place.'; return false; }
+  }
+  var mqReduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+  var LAYOUTS = [
+    ['standard', 'Standard', 'The page as it has always looked.'],
+    ['stratosphere', 'Stratosphere', 'On a wide screen: the scene, the readings and the controls side by side.'],
+    ['halo', 'Halo Care', 'Rounded and soft, with the controls in a side panel.'],
+    ['ledger', 'Summit Ledger', 'Warm paper and serif type, with a control rail on the right.'],
+    ['abyss', 'Abyss Console', 'Dark sonar blue, controls left, readings right.'],
+    ['orbital', 'Orbital Center', 'A centered stage with a strip of readings under it.'],
+    ['map', 'Map Board', 'A gridded board with the controls across the top.']
+  ];
+  var FXES = [['adaptive', 'Adaptive', 'Picks one to match where you are.'], ['sonar', 'Sonar pulse', 'Rings spread out from the middle.'], ['glacial', 'Glacial sweep', 'A cold streak of light crosses the scene.'],
+    ['ripple', 'Water ripple', 'Ripples on the water line.'], ['grid', 'Signal grid', 'A gold grid snaps in.'], ['aurora', 'Aurora wash', 'A green and violet curtain rises.'],
+    ['rings', 'Orbit rings', 'Three rings circle out.'], ['prism', 'Prism flash', 'A quick rainbow flash.'], ['off', 'None', 'No picture effect.']];
+  var SNDS = [['adaptive', 'Adaptive', 'Picks a sound to match your altitude.'], ['chime', 'Soft chime', 'Warm and short.'], ['sonar', 'Deep sonar', 'A low ping, good for under the sea.'],
+    ['glass', 'Crystal glass', 'Bright and airy, the Gaia sound.'], ['wind', 'Wind and air', 'Breathy and high, for thin air.'], ['blip', 'Retro blip', 'Little square-wave beeps.']];
+
+  function tkEl(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+  function qs(root, sel) { return root.querySelector(sel); }
+  function fmtN(n, d) { return n.toLocaleString('en-US', { minimumFractionDigits: d || 0, maximumFractionDigits: d == null ? 2 : d }); }
+  function nice(v) {
+    if (!isFinite(v)) return '—';
+    var a = Math.abs(v);
+    if (a >= 1000) return fmtN(v, 0);
+    if (a >= 100) return fmtN(v, 1);
+    if (a >= 1) return fmtN(v, 2);
+    if (a === 0) return '0';
+    return fmtN(v, a >= 0.01 ? 3 : 5);
+  }
+  function worldOf(p) { return WORLDS[p] || WORLDS.earth; }
+  function ftIn(v, unit) { return v / PER_FT[unit]; }
+
+  /* ----- Sheets ----- */
+  var SHEETS = {}, sheetStack = [];
+  function sheet(id, title, build) {
+    var s = SHEETS[id];
+    if (!s) {
+      var root = tkEl('div', 'tk-sheet'); root.hidden = true; root.id = 'tk-' + id;
+      root.setAttribute('role', 'dialog'); root.setAttribute('aria-modal', 'true'); root.setAttribute('aria-label', title);
+      var panel = tkEl('div', 'tk-panel'); panel.tabIndex = -1;
+      var head = tkEl('div', 'tk-head', '<h2></h2>'); head.firstChild.textContent = title;
+      var x = tkEl('button', 'tk-x', '&times;'); x.type = 'button'; x.setAttribute('aria-label', 'Close ' + title);
+      head.appendChild(x);
+      var body = tkEl('div', 'tk-body');
+      panel.appendChild(head); panel.appendChild(body); root.appendChild(panel); document.body.appendChild(root);
+      x.addEventListener('click', function () { closeSheet(id); });
+      root.addEventListener('click', function (ev) { if (ev.target === root) closeSheet(id); });
+      s = SHEETS[id] = { root: root, body: body, panel: panel, build: build, opener: null };
+    }
+    return s;
+  }
+  function openSheet(id, title, build) {
+    var s = sheet(id, title, build);
+    s.opener = document.activeElement;
+    s.body.textContent = '';
+    s.build(s.body, s);
+    s.root.hidden = false;
+    document.body.classList.add('tk-lock');
+    if (sheetStack.indexOf(id) < 0) sheetStack.push(id);
+    s.body.scrollTop = 0;
+    s.panel.focus();
+    tkFx(); beep('open');
+  }
+  function closeSheet(id) {
+    var s = SHEETS[id]; if (!s || s.root.hidden) return;
+    s.root.hidden = true;
+    sheetStack = sheetStack.filter(function (x) { return x !== id; });
+    if (!sheetStack.length && viewer.hidden) document.body.classList.remove('tk-lock');
+    if (s.opener && s.opener.focus) { try { s.opener.focus(); } catch (err) {} }
+    if (s.onClose) s.onClose();
+  }
+  function closeAll() { sheetStack.slice().forEach(closeSheet); closeViewer(); }
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') {
+      if (!viewer.hidden) closeViewer();
+      else if (sheetStack.length) closeSheet(sheetStack[sheetStack.length - 1]);
+    } else if (!viewer.hidden) {
+      if (ev.key === 'ArrowLeft') viewStep(-1);
+      else if (ev.key === 'ArrowRight') viewStep(1);
+    }
+  });
+
+  /* ----- Page wiring: zones, tool strip, category arrows ----- */
+  (function wire() {
+    var deck = qs(document, '.deck');
+    var zc = tkEl('div', 'zone-controls'), zm = tkEl('div', 'zone-metrics');
+    var kids = Array.prototype.slice.call(deck.children);
+    deck.insertBefore(zc, deck.firstChild); deck.appendChild(zm);
+    kids.forEach(function (k) { (k.classList.contains('feel') || k.classList.contains('gauges') || k.id === 'fine' || k.classList.contains('fine') ? zm : zc).appendChild(k); });
+    var tools = tkEl('div', 'tk-tools'); tools.setAttribute('role', 'toolbar'); tools.setAttribute('aria-label', 'Tools');
+    [['atlas', '🗺', 'Atlas'], ['places', '📍', 'My places'], ['convert', '⇄', 'Convert'], ['bio', '🫁', 'Bio Lab'], ['sports', '🏅', 'Sports Lab'],
+      ['acc', '⛰', 'Acclimatize'], ['alti', '🛰', 'Altimeter'], ['look', '🎛', 'Look & Sound'], ['about', 'ℹ', 'About']].forEach(function (t) {
+      var b = tkEl('button'); b.type = 'button'; b.setAttribute('data-tool', t[0]);
+      b.innerHTML = '<i aria-hidden="true">' + t[1] + '</i>' + t[2];
+      tools.appendChild(b);
+    });
+    zc.insertBefore(tools, zc.firstChild);
+    tools.addEventListener('click', function (ev) {
+      var b = ev.target.closest('[data-tool]'); if (!b) return;
+      var t = b.getAttribute('data-tool');
+      ({ atlas: openAtlas, places: openPlaces, convert: openConvert, bio: openBio, sports: openSports, acc: openAcc, alti: openAlti, look: openLook, about: openAbout })[t]();
+    });
+    var br = tkEl('div', 'tk-browse');
+    br.innerHTML = '<div class="tk-step"><b>Browse by kind</b><button type="button" id="tkKPrev" aria-label="Previous kind">&lsaquo;</button><span id="tkKName" role="status"></span><button type="button" id="tkKNext" aria-label="Next kind">&rsaquo;</button></div>';
+    var kinds = $('kinds');
+    kinds.parentNode.insertBefore(br, kinds.nextSibling);
+    function kName() { for (var i = 0; i < KINDS.length; i++) if (KINDS[i][0] === PL.kind) return [i, KINDS[i][1]]; return [0, KINDS[0][1]]; }
+    function sync() { $('tkKName').textContent = kName()[1]; }
+    function shift(d) { var i = (kName()[0] + d + KINDS.length) % KINDS.length; setKind(KINDS[i][0]); sync(); beep('step'); }
+    $('tkKPrev').addEventListener('click', function () { shift(-1); });
+    $('tkKNext').addEventListener('click', function () { shift(1); });
+    kinds.addEventListener('click', function () { window.setTimeout(sync, 0); });
+    sync();
+  })();
+
+  /* ----- My places: custom places live inside the page's own place list ----- */
+  var KIND_OF = { c: 'City or town', p: 'Mountain', w: 'Lake or sea', d: 'Under the sea', s: 'Landmark', l: 'Line or record' };
+  function mergeCustom() {
+    ['earth', 'gaia'].forEach(function (p) {
+      var w = WORLDS[p], arr = w.STOPS, i;
+      for (i = arr.length - 1; i >= 0; i--) if (arr[i].custom) arr.splice(i, 1);
+      TK.custom.forEach(function (c) {
+        if (c.planet !== p) return;
+        arr.push({ id: c.id, n: c.name, where: c.where || '', flag: '', kind: c.kind || 's', cl: false, ft: c.ft, tag: c.fictional ? 'Fictional' : 'My place',
+          note: c.note || '', custom: true, pic: c.pic || '', picCredit: c.credit || '', aliases: c.aliases || '', lat: c.lat, lon: c.lon });
+      });
+      arr.sort(function (a, b) { return a.ft - b.ft; });
+    });
+    PL.cache = {}; PL.sig = ''; PL.listKey = ''; PIC.shown = '';
+    buildFind(); renderPlace();
+  }
+  var favKey = function (s) { return (s.custom ? 'u:' + s.id : PLANET + ':' + s.n); };
+  function isFav(s) { return TK.favs.indexOf(favKey(s)) >= 0; }
+  function toggleFav(s) {
+    var k = favKey(s), i = TK.favs.indexOf(k);
+    if (i >= 0) TK.favs.splice(i, 1); else TK.favs.push(k);
+    tkSave();
+  }
+  function stand(s) { closeAll(); goStop(s); }
+
+  /* thumbnails use the same picture sheets the place card uses */
+  function thumbInto(box, s) {
+    box.classList.remove('on'); box.style.backgroundImage = '';
+    var p = picFor(s); if (!p) return;
+    loadSheet(p.url, function (ok) {
+      if (!ok) return;
+      if (p.whole) { box.style.backgroundImage = 'url("' + p.url + '")'; box.style.backgroundSize = 'cover'; box.style.backgroundPosition = 'center'; }
+      else {
+        var col = p.tile % PICS.cols, row = Math.floor(p.tile / PICS.cols);
+        box.style.backgroundImage = 'url("' + p.url + '")';
+        box.style.backgroundSize = PICS.cols * 100 + '% ' + PICS.rows * 100 + '%';
+        box.style.backgroundPosition = (PICS.cols > 1 ? col * 100 / (PICS.cols - 1) : 0) + '% ' + (PICS.rows > 1 ? row * 100 / (PICS.rows - 1) : 0) + '%';
+      }
+      box.classList.add('on');
+    });
+  }
+  function elevText(s) { return altStr(s.ft, state.unit) + ' <i style="font-style:normal;font-weight:600;opacity:.75">' + state.unit + '</i>'; }
+
+  /* ----- Atlas ----- */
+  var AT = { q: '', kind: 'all', region: 'all', favs: false, n: 48, list: [] };
+  function regionOf(s) { var w = (s.where || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean); return w.length ? w[w.length - 1] : ''; }
+  function openAtlas() {
+    openSheet('atlas', 'Atlas', function (body) {
+      body.innerHTML = '<p class="tk-lede">Every place on the current planet, with its picture. Tap one to open it big, then stand there.</p>' +
+        '<div class="tk-bar"><input class="tk-in" type="search" id="atQ" placeholder="Search places" aria-label="Search places" autocomplete="off"><select class="tk-in" id="atR" aria-label="Region" style="max-width:12rem"></select></div>' +
+        '<div class="tk-chips" id="atK" role="group" aria-label="Kind of place"></div>' +
+        '<div class="tk-row" style="margin-bottom:.7rem"><button type="button" class="tk-chips" style="display:none"></button><span class="tk-count" id="atC"></span></div>' +
+        '<div class="tk-grid" id="atG"></div><div class="tk-more"><button type="button" class="tk-btn" id="atM">Show more</button></div>';
+      var regs = {}, i;
+      STOPS.forEach(function (s) { var r = regionOf(s); if (r) regs[r] = (regs[r] || 0) + 1; });
+      var rl = Object.keys(regs).sort(function (a, b) { return regs[b] - regs[a] || (a < b ? -1 : 1); }).slice(0, 60).sort();
+      $('atR').innerHTML = '<option value="all">All regions</option>' + rl.map(function (r) { return '<option>' + esc(r) + '</option>'; }).join('');
+      $('atR').value = rl.indexOf(AT.region) >= 0 ? AT.region : 'all'; AT.region = $('atR').value;
+      var ks = KINDS.concat([['fav', 'Favorites']]);
+      $('atK').innerHTML = ks.map(function (k) { return '<button type="button" data-k="' + k[0] + '" aria-pressed="' + ((k[0] === 'fav') ? AT.favs : (!AT.favs && k[0] === AT.kind)) + '">' + k[1] + '</button>'; }).join('');
+      $('atQ').value = AT.q;
+      $('atQ').addEventListener('input', function () { AT.q = this.value; AT.n = 48; atDraw(); });
+      $('atR').addEventListener('change', function () { AT.region = this.value; AT.n = 48; atDraw(); });
+      $('atK').addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-k]'); if (!b) return;
+        var k = b.getAttribute('data-k');
+        if (k === 'fav') AT.favs = !AT.favs; else { AT.kind = k; AT.favs = false; }
+        Array.prototype.forEach.call($('atK').children, function (c) { var kk = c.getAttribute('data-k'); c.setAttribute('aria-pressed', String(kk === 'fav' ? AT.favs : (!AT.favs && kk === AT.kind))); });
+        AT.n = 48; atDraw();
+      });
+      $('atM').addEventListener('click', function () { AT.n += 60; atDraw(); });
+      $('atG').addEventListener('click', function (ev) { var c = ev.target.closest('[data-i]'); if (c) openViewer(AT.list, +c.getAttribute('data-i')); });
+      atDraw();
+    });
+  }
+  function atDraw() {
+    var q = fold(AT.q), out = STOPS.filter(function (s) {
+      if (AT.favs && !isFav(s)) return false;
+      if (!AT.favs && AT.kind !== 'all' && (AT.kind === 'cl' ? !s.cl : s.kind !== AT.kind)) return false;
+      if (AT.region !== 'all' && regionOf(s) !== AT.region) return false;
+      if (q) { var n = s.f || (s.f = fold(s.n)); if (n.indexOf(q) < 0 && fold(s.where).indexOf(q) < 0 && !(s.aliases && fold(s.aliases).indexOf(q) >= 0)) return false; }
+      return true;
+    });
+    AT.list = out;
+    $('atC').textContent = out.length + (out.length === 1 ? ' place' : ' places');
+    var g = $('atG'); g.textContent = '';
+    out.slice(0, AT.n).forEach(function (s, i) {
+      var c = tkEl('button', 'tk-card' + (s.cl ? ' cl' : '')); c.type = 'button'; c.setAttribute('data-i', i);
+      c.innerHTML = '<div class="tk-thumb"><em aria-hidden="true">' + (s.kind === 'p' ? '⛰' : s.kind === 'w' || s.kind === 'd' ? '≈' : '●') + '</em></div><div class="tk-ct"><b></b><span class="tk-el">' + elevText(s) + '</span><small></small></div>' + (isFav(s) ? '<i class="tk-heart" aria-label="Favorite">♥</i>' : '');
+      c.querySelector('b').textContent = s.n;
+      c.querySelector('small').textContent = s.where || KIND_OF[s.kind] || '';
+      g.appendChild(c); thumbInto(c.firstChild, s);
+    });
+    $('atM').parentNode.hidden = out.length <= AT.n;
+    if (!out.length) g.innerHTML = '<p class="tk-lede">Nothing matches. Try fewer words or another kind.</p>';
+  }
+
+  /* ----- Full-screen viewer ----- */
+  var viewer = tkEl('div', 'tk-viewer'); viewer.hidden = true; viewer.setAttribute('role', 'dialog'); viewer.setAttribute('aria-modal', 'true'); viewer.setAttribute('aria-label', 'Place viewer');
+  viewer.innerHTML = '<div class="tk-vtop"><button type="button" id="vX">Close</button><span class="tk-vcount" id="vC"></span><button type="button" class="tk-vfav" id="vF" aria-pressed="false">♥ Favorite</button></div>' +
+    '<div class="tk-vstage"><button type="button" class="tk-vnav prev" id="vP" aria-label="Previous place">&lsaquo;</button><div class="tk-vpic" id="vI"><span></span></div><button type="button" class="tk-vnav next" id="vN" aria-label="Next place">&rsaquo;</button></div>' +
+    '<div class="tk-vinfo"><h3 id="vT"></h3><div class="tk-vel" id="vE"></div><p class="tk-vmeta" id="vW"></p><p class="tk-vnote" id="vNote"></p><p class="tk-vcred" id="vCr"></p><div class="tk-vact"><button type="button" class="go" id="vS">Stand here</button></div></div>';
+  document.body.appendChild(viewer);
+  var tkVW = { list: [], i: 0 };
+  function openViewer(list, i) { tkVW.list = list; tkVW.i = i; viewer.hidden = false; document.body.classList.add('tk-lock'); drawViewer(); $('vX').focus(); }
+  function closeViewer() { if (viewer.hidden) return; viewer.hidden = true; if (!sheetStack.length) document.body.classList.remove('tk-lock'); }
+  function viewStep(d) { var n = tkVW.i + d; if (n < 0 || n >= tkVW.list.length) return; tkVW.i = n; drawViewer(); beep('step'); }
+  function drawViewer() {
+    var s = tkVW.list[tkVW.i]; if (!s) return;
+    $('vC').textContent = (tkVW.i + 1) + ' of ' + tkVW.list.length;
+    $('vT').textContent = s.n;
+    $('vE').innerHTML = altStr(s.ft, state.unit) + '<i>' + state.unit + '</i>';
+    $('vW').textContent = (s.flag ? s.flag + ' ' : '') + [s.where, KIND_OF[s.kind]].filter(Boolean).join(' · ') + (s.tag ? ' · ' + s.tag : '');
+    $('vNote').textContent = s.note || ''; $('vNote').hidden = !s.note;
+    $('vF').setAttribute('aria-pressed', String(isFav(s)));
+    $('vP').disabled = tkVW.i === 0; $('vN').disabled = tkVW.i === tkVW.list.length - 1;
+    var box = $('vI'); box.firstChild.textContent = 'No picture for this one yet.';
+    thumbInto(box, s);
+    var p = picFor(s), cr = $('vCr'); cr.textContent = '';
+    if (p) {
+      var c = p.cred >= 0 ? PICS.c[p.cred] : null;
+      if (p.kind === 'u') cr.textContent = s.picCredit ? 'Picture: ' + s.picCredit : 'Your own picture.';
+      else if (p.kind === 'p' && c) { cr.appendChild(document.createTextNode('Photo by ' + c[0] + ', ' + c[1] + '. ')); cr.appendChild(link('Source', c[3])); }
+      else if (p.kind === 'g' && c) { cr.appendChild(document.createTextNode('Made by AI from a photo by ' + c[0] + ', ' + c[1] + '. ')); cr.appendChild(link('Original photo', c[3])); }
+      else cr.textContent = 'A picture made by AI. It is not a real photo.';
+    }
+    $('vS').onclick = function () { stand(s); };
+    $('vF').onclick = function () { toggleFav(s); drawViewer(); if (!SHEETS.atlas.root.hidden) atDraw(); };
+  }
+  $('vX').addEventListener('click', closeViewer);
+  $('vP').addEventListener('click', function () { viewStep(-1); });
+  $('vN').addEventListener('click', function () { viewStep(1); });
+  (function () { var x0 = null; viewer.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+    viewer.addEventListener('touchend', function (e) { if (x0 == null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 60) viewStep(dx < 0 ? 1 : -1); }); })();
+
+  /* ----- My places (Location Studio) ----- */
+  var ED = null;
+  function openPlaces() {
+    openSheet('places', 'My places', function (body) {
+      body.innerHTML = '<p class="tk-lede">Add real or made-up places. They join the place list, the arrows, the search and the Atlas on the planet you choose. They live only on this device.</p>' +
+        '<div class="tk-bar"><button type="button" class="tk-btn go" id="plNew">Add a place</button><button type="button" class="tk-btn" id="plExp">Export</button><button type="button" class="tk-btn" id="plImp">Import</button></div>' +
+        '<div id="plForm"></div><div id="plIO"></div><div class="tk-list" id="plList"></div>';
+      $('plNew').addEventListener('click', function () { plForm(null); });
+      $('plExp').addEventListener('click', plExport);
+      $('plImp').addEventListener('click', plImport);
+      plList();
+    });
+  }
+  function plList() {
+    var l = $('plList'); l.textContent = '';
+    if (!TK.custom.length) { l.innerHTML = '<p class="tk-fine" style="margin:0">You have not added any places yet.</p>'; return; }
+    TK.custom.slice().sort(function (a, b) { return a.ft - b.ft; }).forEach(function (c) {
+      var r = tkEl('div', 'tk-item'), s = findCustom(c.id);
+      r.innerHTML = '<div><b></b><small></small></div><div class="acts"><button type="button" data-a="go">Stand here</button><button type="button" data-a="fav">' + (s && isFav(s) ? '♥' : '♡') + '</button><button type="button" data-a="ed">Edit</button><button type="button" data-a="del">Delete</button></div>';
+      r.querySelector('b').textContent = c.name;
+      r.querySelector('small').textContent = (c.planet === 'gaia' ? 'Gaia' : 'Earth') + ' · ' + altStr(c.ft, state.unit) + ' ' + state.unit + (c.fictional ? ' · fictional' : '') + (c.where ? ' · ' + c.where : '');
+      r.addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-a]'); if (!b) return; var a = b.getAttribute('data-a');
+        if (a === 'ed') plForm(c);
+        else if (a === 'del') { if (b.getAttribute('data-sure')) { TK.custom = TK.custom.filter(function (x) { return x.id !== c.id; }); TK.favs = TK.favs.filter(function (k) { return k !== 'u:' + c.id; }); tkSave(); mergeCustom(); plList(); } else { b.setAttribute('data-sure', '1'); b.textContent = 'Sure?'; } }
+        else if (a === 'fav') { if (s) { toggleFav(s); plList(); } }
+        else if (a === 'go') { if (c.planet !== PLANET) setPlanet(c.planet, false); var t = findCustom(c.id); if (t) stand(t); }
+      });
+      l.appendChild(r);
+    });
+  }
+  function findCustom(id) { for (var p in WORLDS) for (var i = 0; i < WORLDS[p].STOPS.length; i++) if (WORLDS[p].STOPS[i].id === id && WORLDS[p].STOPS[i].custom) return WORLDS[p].STOPS[i]; return null; }
+  function plForm(c) {
+    ED = { pic: c ? c.pic || '' : '' };
+    var f = $('plForm'), pl = c ? c.planet : PLANET, u = state.unit, ev = c ? altStr(c.ft, u).replace(/,/g, '').replace('−', '-') : '';
+    f.innerHTML = '<div class="tk-h3">' + (c ? 'Edit place' : 'New place') + '</div>' +
+      '<div class="tk-field"><label for="fN">Name</label><input class="tk-in" id="fN" type="text" maxlength="80" autocomplete="off"></div>' +
+      '<div class="tk-field"><label for="fA">Other names (separate with commas)</label><input class="tk-in" id="fA" type="text" maxlength="160" autocomplete="off"></div>' +
+      '<div class="tk-field"><label for="fW">Where is it (town, state, country)</label><input class="tk-in" id="fW" type="text" maxlength="120" autocomplete="off"></div>' +
+      '<div class="tk-two"><div class="tk-field"><label for="fP">Planet</label><select class="tk-in" id="fP"><option value="earth">Earth</option><option value="gaia">Gaia</option></select></div>' +
+      '<div class="tk-field"><label for="fK">Kind</label><select class="tk-in" id="fK">' + Object.keys(KIND_OF).map(function (k) { return '<option value="' + k + '">' + KIND_OF[k] + '</option>'; }).join('') + '</select></div></div>' +
+      '<div class="tk-two"><div class="tk-field"><label for="fE">Elevation (negative if below sea level)</label><input class="tk-in" id="fE" type="text" inputmode="decimal" autocomplete="off"></div>' +
+      '<div class="tk-field"><label for="fU">Unit</label><select class="tk-in" id="fU"><option value="ft">Feet</option><option value="m">Meters</option><option value="mi">Miles</option><option value="km">Kilometers</option></select></div></div>' +
+      '<div class="tk-two"><div class="tk-field"><label for="fLa">Latitude (optional)</label><input class="tk-in" id="fLa" type="text" inputmode="decimal" autocomplete="off"></div>' +
+      '<div class="tk-field"><label for="fLo">Longitude (optional)</label><input class="tk-in" id="fLo" type="text" inputmode="decimal" autocomplete="off"></div></div>' +
+      '<div class="tk-field"><label for="fNo">Notes</label><textarea class="tk-in" id="fNo" maxlength="600"></textarea></div>' +
+      '<label class="tk-toggle"><span>Made-up place<small>Marks it as fictional in the list.</small></span><input type="checkbox" id="fF"></label>' +
+      '<div class="tk-field"><span class="tk-lab">Picture (optional)</span><input type="file" id="fI" accept="image/*"><img class="tk-prev" id="fPv" alt="" hidden></div>' +
+      '<div class="tk-field"><label for="fC">Picture credit (optional)</label><input class="tk-in" id="fC" type="text" maxlength="120" autocomplete="off"></div>' +
+      '<div class="tk-bar"><button type="button" class="tk-btn go" id="fS">Save</button><button type="button" class="tk-btn" id="fX">Cancel</button><button type="button" class="tk-btn" id="fR" hidden>Remove picture</button></div><p class="tk-msg" id="fM" role="status"></p>';
+    $('fN').value = c ? c.name : ''; $('fA').value = c ? c.aliases || '' : ''; $('fW').value = c ? c.where || '' : ''; $('fP').value = pl; $('fK').value = c ? c.kind : 's';
+    $('fE').value = c ? ev : ''; $('fU').value = u; $('fLa').value = c && c.lat != null ? c.lat : ''; $('fLo').value = c && c.lon != null ? c.lon : '';
+    $('fNo').value = c ? c.note || '' : ''; $('fF').checked = c ? !!c.fictional : pl === 'gaia'; $('fC').value = c ? c.credit || '' : '';
+    function pv() { $('fPv').hidden = !ED.pic; $('fR').hidden = !ED.pic; if (ED.pic) $('fPv').src = ED.pic; }
+    pv();
+    $('fI').addEventListener('change', function () {
+      var file = this.files && this.files[0]; if (!file) return;
+      if (!/^image\//.test(file.type)) { $('fM').className = 'tk-msg bad'; $('fM').textContent = 'That is not a picture.'; return; }
+      var rd = new FileReader();
+      rd.onload = function () {
+        var im = new Image();
+        im.onload = function () {
+          var w = im.naturalWidth, h = im.naturalHeight, sc = Math.min(1, 720 / Math.max(w, h)), cv = document.createElement('canvas');
+          cv.width = Math.max(1, Math.round(w * sc)); cv.height = Math.max(1, Math.round(h * sc));
+          cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
+          ED.pic = cv.toDataURL('image/jpeg', 0.72); pv();
+        };
+        im.onerror = function () { $('fM').className = 'tk-msg bad'; $('fM').textContent = 'That picture could not be read.'; };
+        im.src = rd.result;
+      };
+      rd.readAsDataURL(file);
+    });
+    $('fR').addEventListener('click', function () { ED.pic = ''; $('fI').value = ''; pv(); });
+    $('fX').addEventListener('click', function () { f.textContent = ''; });
+    $('fS').addEventListener('click', function () {
+      var m = $('fM'), name = $('fN').value.trim(), pl2 = $('fP').value, w = worldOf(pl2), unit = $('fU').value;
+      var raw = $('fE').value.replace(/[,\s]/g, '').replace('−', '-'), v = parseFloat(raw);
+      m.className = 'tk-msg bad';
+      if (!name) { m.textContent = 'Give the place a name.'; return; }
+      if (raw === '' || !isFinite(v) || !/^-?\d*\.?\d+$/.test(raw)) { m.textContent = 'Type the elevation as a plain number, like 5280 or -86.'; return; }
+      var ft = Math.round(ftIn(v, unit) * 100) / 100;
+      if (ft > w.MAX_UP || ft < w.MAX_DOWN) { m.textContent = 'On ' + (pl2 === 'gaia' ? 'Gaia' : 'Earth') + ' this page covers ' + altStr(w.MAX_DOWN, unit) + ' to ' + altStr(w.MAX_UP, unit) + ' ' + unit + '.'; return; }
+      var la = $('fLa').value.trim(), lo = $('fLo').value.trim(), lat = la === '' ? null : parseFloat(la), lon = lo === '' ? null : parseFloat(lo);
+      if ((la !== '' && (!isFinite(lat) || lat < -90 || lat > 90)) || (lo !== '' && (!isFinite(lon) || lon < -180 || lon > 180))) { m.textContent = 'Latitude runs -90 to 90 and longitude -180 to 180.'; return; }
+      var rec = { id: c ? c.id : 'u' + Date.now().toString(36) + Math.floor(Math.random() * 1e4), name: name, aliases: $('fA').value.trim(), where: $('fW').value.trim(), planet: pl2, kind: $('fK').value,
+        ft: ft, lat: lat, lon: lon, note: $('fNo').value.trim(), fictional: $('fF').checked, pic: ED.pic, credit: $('fC').value.trim() };
+      var prev = TK.custom.slice();
+      if (c) TK.custom = TK.custom.map(function (x) { return x.id === c.id ? rec : x; }); else TK.custom.push(rec);
+      if (!tkSave()) { TK.custom = prev; m.textContent = tkSaveMsg; return; }
+      mergeCustom(); f.textContent = ''; plList(); beep('ok');
+    });
+    $('fN').focus();
+  }
+  function plExport() {
+    var data = JSON.stringify({ app: 'ALT 327K 2.0', version: 1, places: TK.custom }, null, 2), io = $('plIO');
+    io.innerHTML = '<div class="tk-h3">Export</div><textarea class="tk-in tk-code" readonly></textarea><div class="tk-bar"><button type="button" class="tk-btn" id="ioD">Download file</button><button type="button" class="tk-btn" id="ioC">Copy</button></div><p class="tk-msg" id="ioM"></p>';
+    qs(io, 'textarea').value = data;
+    $('ioD').addEventListener('click', function () {
+      try { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' })); a.download = 'alt327k-places.json'; document.body.appendChild(a); a.click(); a.remove(); }
+      catch (err) { $('ioM').textContent = 'Downloads are blocked here. Use Copy instead.'; }
+    });
+    $('ioC').addEventListener('click', function () {
+      var t = qs(io, 'textarea'); t.select();
+      try { if (navigator.clipboard) navigator.clipboard.writeText(data); else document.execCommand('copy'); $('ioM').className = 'tk-msg ok'; $('ioM').textContent = 'Copied.'; } catch (err) { $('ioM').textContent = 'Select the text and copy it.'; }
+    });
+  }
+  function plImport() {
+    var io = $('plIO');
+    io.innerHTML = '<div class="tk-h3">Import</div><p class="tk-fine" style="margin-top:0">Pick an exported file, or paste its text. Places with the same name on the same planet are replaced.</p><input type="file" id="imF" accept=".json,application/json"><textarea class="tk-in tk-code" id="imT" placeholder="Paste exported places here"></textarea><div class="tk-bar"><button type="button" class="tk-btn go" id="imG">Import</button></div><p class="tk-msg" id="imM" role="status"></p>';
+    $('imF').addEventListener('change', function () { var f = this.files[0]; if (!f) return; var r = new FileReader(); r.onload = function () { $('imT').value = r.result; }; r.readAsText(f); });
+    $('imG').addEventListener('click', function () {
+      var m = $('imM'); m.className = 'tk-msg bad';
+      var d; try { d = JSON.parse($('imT').value); } catch (err) { m.textContent = 'That is not valid exported text.'; return; }
+      var arr = Array.isArray(d) ? d : (d && d.places); if (!Array.isArray(arr)) { m.textContent = 'No places found in that.'; return; }
+      var prev = TK.custom.slice(), n = 0;
+      arr.forEach(function (p) {
+        if (!p || typeof p.name !== 'string' || !isFinite(+p.ft) || (p.planet !== 'earth' && p.planet !== 'gaia')) return;
+        var w = worldOf(p.planet); if (+p.ft > w.MAX_UP || +p.ft < w.MAX_DOWN) return;
+        var rec = { id: 'u' + Date.now().toString(36) + Math.floor(Math.random() * 1e5), name: p.name.slice(0, 80), aliases: String(p.aliases || '').slice(0, 160), where: String(p.where || '').slice(0, 120), planet: p.planet,
+          kind: KIND_OF[p.kind] ? p.kind : 's', ft: +p.ft, lat: isFinite(+p.lat) && p.lat !== null ? +p.lat : null, lon: isFinite(+p.lon) && p.lon !== null ? +p.lon : null, note: String(p.note || '').slice(0, 600),
+          fictional: !!p.fictional, pic: typeof p.pic === 'string' && /^data:image\//.test(p.pic) ? p.pic : '', credit: String(p.credit || '').slice(0, 120) };
+        TK.custom = TK.custom.filter(function (x) { return !(x.name === rec.name && x.planet === rec.planet); }); TK.custom.push(rec); n++;
+      });
+      if (!n) { TK.custom = prev; m.textContent = 'Nothing in there could be used.'; return; }
+      if (!tkSave()) { TK.custom = prev; m.textContent = tkSaveMsg; return; }
+      mergeCustom(); plList(); m.className = 'tk-msg ok'; m.textContent = 'Imported ' + n + (n === 1 ? ' place.' : ' places.');
+    });
+  }
+
+  /* ----- Converter ----- */
+  function openConvert() {
+    openSheet('convert', 'Convert', function (body) {
+      body.innerHTML = '<div class="seg tk-tabs" style="--n:3" id="cvT" role="group" aria-label="Converter"><button type="button" data-t="el" aria-pressed="true">Elevation</button><button type="button" data-t="gen" aria-pressed="false">Exact</button><button type="button" data-t="eg" aria-pressed="false">Earth ⇄ Gaia</button></div><div id="cvB"></div>';
+      $('cvT').addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-t]'); if (!b) return;
+        Array.prototype.forEach.call($('cvT').children, function (c) { c.setAttribute('aria-pressed', String(c === b)); });
+        cvTab(b.getAttribute('data-t'));
+      });
+      cvTab('el');
+    });
+  }
+  function cvTab(t) { ({ el: cvElev, gen: cvExact, eg: cvEG })[t](); }
+  var LEN = { ft: 0.3048, m: 1, mi: 1609.344, km: 1000, yd: 0.9144, nmi: 1852, cm: 0.01, in: 0.0254 };
+  function parseNum(s) { s = String(s).replace(/[,\s_]/g, '').replace('−', '-'); return /^-?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(s) ? parseFloat(s) : NaN; }
+  function cvElev() {
+    $('cvB').innerHTML = '<p class="tk-lede">Type a height in any unit and see it in all of them.</p><div class="tk-inline"><input class="tk-in" id="ceV" type="text" inputmode="decimal" value="14764" aria-label="Value"><select class="tk-in" id="ceU" aria-label="Unit">' +
+      ['ft', 'm', 'mi', 'km', 'yd', 'nmi'].map(function (u) { return '<option value="' + u + '">' + ({ ft: 'feet', m: 'meters', mi: 'miles', km: 'kilometers', yd: 'yards', nmi: 'nautical miles' })[u] + '</option>'; }).join('') + '</select></div><div class="tk-res" id="ceR"></div><div class="tk-bar" style="margin-top:.9rem"><button type="button" class="tk-btn go" id="ceG">Stand here on ' + (PLANET === 'gaia' ? 'Gaia' : 'Earth') + '</button><button type="button" class="tk-btn" id="ceH">Use my current height</button></div><p class="tk-msg" id="ceM" role="status"></p>';
+    $('ceU').value = state.unit;
+    function go() {
+      var v = parseNum($('ceV').value), r = $('ceR'); r.textContent = '';
+      if (!isFinite(v)) { $('ceM').className = 'tk-msg bad'; $('ceM').textContent = 'Type a plain number.'; return; }
+      $('ceM').textContent = '';
+      var m = v * LEN[$('ceU').value];
+      [['ft', 'feet'], ['m', 'meters'], ['mi', 'miles'], ['km', 'kilometers'], ['yd', 'yards'], ['nmi', 'nautical miles']].forEach(function (u) {
+        r.appendChild(tkEl('div', 'g', '<span>' + u[1] + '</span><b>' + nice(m / LEN[u[0]]) + '</b>'));
+      });
+    }
+    $('ceV').addEventListener('input', go); $('ceU').addEventListener('change', go); go();
+    $('ceG').addEventListener('click', function () {
+      var v = parseNum($('ceV').value), w = WORLDS[PLANET];
+      if (!isFinite(v)) return;
+      var ft = v * LEN[$('ceU').value] / 0.3048;
+      if (ft > w.MAX_UP || ft < w.MAX_DOWN) { $('ceM').className = 'tk-msg bad'; $('ceM').textContent = 'That is outside what this page covers (' + altStr(w.MAX_DOWN, 'ft') + ' to ' + altStr(w.MAX_UP, 'ft') + ' ft).'; return; }
+      closeAll(); PL.fly = false; flyTo(ft, 'your height');
+    });
+    $('ceH').addEventListener('click', function () { var u = $('ceU').value; $('ceV').value = String(+(SB.alt * 0.3048 / LEN[u]).toFixed(4)); go(); });
+  }
+
+  /* exact conversions with BigInt fractions */
+  function gcd(a, b) { a = a < 0n ? -a : a; b = b < 0n ? -b : b; while (b) { var t = a % b; a = b; b = t; } return a; }
+  function frac(n, d) { if (d < 0n) { n = -n; d = -d; } var g = gcd(n, d) || 1n; return { n: n / g, d: d / g }; }
+  function fmul(a, b) { return frac(a.n * b.n, a.d * b.d); }
+  function fdiv(a, b) { return frac(a.n * b.d, a.d * b.n); }
+  function fadd(a, b) { return frac(a.n * b.d + b.n * a.d, a.d * b.d); }
+  function fsub(a, b) { return frac(a.n * b.d - b.n * a.d, a.d * b.d); }
+  function tkDec(s) { // decimal string -> fraction, or null
+    s = String(s).replace(/[,\s_]/g, '').replace('−', '-');
+    var m = /^(-?)(\d*)\.?(\d*)$/.exec(s); if (!m || (m[2] === '' && m[3] === '')) return null;
+    return frac(BigInt((m[1] ? '-' : '') + (m[2] || '0') + m[3]), 10n ** BigInt(m[3].length));
+  }
+  function ftxt(f, places) { // fraction -> decimal text, exact if it ends
+    var neg = f.n < 0n, n = neg ? -f.n : f.n, whole = n / f.d, rem = n % f.d, out = '', i = 0, seen = rem === 0n;
+    var ds = whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    while (rem !== 0n && i < places) { rem *= 10n; out += (rem / f.d).toString(); rem %= f.d; i++; }
+    var exact = rem === 0n;
+    return { text: (neg && (whole !== 0n || /[1-9]/.test(out)) ? '−' : '') + ds + (out ? '.' + out : '') + (exact ? '' : '…'), exact: exact };
+  }
+  var tkF = function (a, b) { return frac(BigInt(a), BigInt(b || 1)); };
+  var XU = {
+    length: { m: tkF(1), km: tkF(1000), cm: tkF(1, 100), mm: tkF(1, 1000), in: tkF(254, 10000), ft: tkF(3048, 10000), yd: tkF(9144, 10000), mi: tkF(1609344, 1000), nmi: tkF(1852) },
+    mass: { kg: tkF(1), g: tkF(1, 1000), t: tkF(1000), lb: tkF(45359237, 100000000), oz: tkF(45359237, 1600000000), st: tkF(45359237 * 14, 100000000) },
+    pressure: { Pa: tkF(1), kPa: tkF(1000), bar: tkF(100000), atm: tkF(101325), torr: tkF(101325, 760), psi: fdiv(fmul(tkF(45359237, 100000000), tkF(980665, 100000)), fmul(tkF(254, 10000), tkF(254, 10000))), inHg: tkF(3386389, 1000) },
+    speed: { 'm/s': tkF(1), 'km/h': tkF(1000, 3600), mph: tkF(1609344, 3600000), kn: tkF(1852, 3600), 'ft/s': tkF(3048, 10000) },
+    temperature: { C: 0, F: 0, K: 0 }
+  };
+  function cvExact() {
+    $('cvB').innerHTML = '<p class="tk-lede">Exact answers for numbers of any size. Nothing is rounded until the digits run out, and a … means the digits go on forever.</p><div class="tk-field"><label for="cxC">What kind of thing</label><select class="tk-in" id="cxC">' +
+      Object.keys(XU).map(function (k) { return '<option value="' + k + '">' + k.charAt(0).toUpperCase() + k.slice(1) + '</option>'; }).join('') + '</select></div><div class="tk-two"><div class="tk-field"><label for="cxV">Value</label><input class="tk-in" id="cxV" type="text" inputmode="decimal" value="1"></div><div class="tk-field"><label for="cxA">From</label><select class="tk-in" id="cxA"></select></div></div><div class="tk-field"><label for="cxB">To</label><select class="tk-in" id="cxB"></select></div><div class="tk-verdict" id="cxR"><em>Result</em><p id="cxO"></p></div>';
+    function fill() { var u = Object.keys(XU[$('cxC').value]); $('cxA').innerHTML = $('cxB').innerHTML = u.map(function (x) { return '<option>' + x + '</option>'; }).join(''); $('cxA').value = u[0]; $('cxB').value = u[Math.min(1, u.length - 1)]; if ($('cxC').value === 'length') { $('cxA').value = 'mi'; $('cxB').value = 'ft'; } go(); }
+    function go() {
+      var c = $('cxC').value, a = $('cxA').value, b = $('cxB').value, v = tkDec($('cxV').value), o = $('cxO'), big = $('cxV').value.replace(/[^\d]/g, '').length > 400;
+      if (!v || big) { o.textContent = big ? 'That number is too long.' : 'Type a plain number, like 14764 or -40.5.'; return; }
+      var r;
+      if (c === 'temperature') {
+        var k = a === 'C' ? fadd(v, tkF(27315, 100)) : a === 'F' ? fadd(fdiv(fmul(fsub(v, tkF(32)), tkF(5)), tkF(9)), tkF(27315, 100)) : v;
+        r = b === 'C' ? fsub(k, tkF(27315, 100)) : b === 'F' ? fadd(fdiv(fmul(fsub(k, tkF(27315, 100)), tkF(9)), tkF(5)), tkF(32)) : k;
+      } else r = fdiv(fmul(v, XU[c][a]), XU[c][b]);
+      var t = ftxt(r, 40);
+      o.innerHTML = '<b style="font-family:var(--display);font-size:1.8rem;overflow-wrap:anywhere"></b> ' + b + '<br><small style="color:var(--muted)">' + (t.exact ? 'Exact.' : 'The first 40 decimal places. The true answer never ends.') + '</small>';
+      qs(o, 'b').textContent = t.text;
+    }
+    $('cxC').addEventListener('change', fill); $('cxV').addEventListener('input', go); $('cxA').addEventListener('change', go); $('cxB').addEventListener('change', go);
+    fill();
+  }
+  function cvEG() {
+    $('cvB').innerHTML = '<p class="tk-lede">Every height on Earth sits 7,560 m higher on Gaia. Land and lakes below the sea are 10 times deeper there, and the oceans are 1.25 times deeper.</p><div class="tk-two"><div class="tk-field"><label for="cgD">Direction</label><select class="tk-in" id="cgD"><option value="eg">Earth to Gaia</option><option value="ge">Gaia to Earth</option></select></div><div class="tk-field"><label for="cgS">If it is below the sea</label><select class="tk-in" id="cgS"><option value="land">Dry land or a lake</option><option value="sea">The ocean</option></select></div></div><div class="tk-inline"><input class="tk-in" id="cgV" type="text" inputmode="decimal" value="14764" aria-label="Elevation"><select class="tk-in" id="cgU" aria-label="Unit"><option value="ft">feet</option><option value="m">meters</option><option value="mi">miles</option><option value="km">kilometers</option></select></div><div class="tk-res" id="cgR"></div><div class="tk-bar" style="margin-top:.9rem"><button type="button" class="tk-btn go" id="cgG"></button></div><p class="tk-msg" id="cgM"></p>';
+    $('cgU').value = state.unit;
+    var last = null;
+    function go() {
+      var v = parseNum($('cgV').value), r = $('cgR'), dir = $('cgD').value, sea = $('cgS').value === 'sea'; r.textContent = '';
+      if (!isFinite(v)) { last = null; $('cgM').className = 'tk-msg bad'; $('cgM').textContent = 'Type a plain number.'; return; }
+      $('cgM').textContent = '';
+      var m = v * LEN[$('cgU').value], out;
+      if (dir === 'eg') out = m >= 0 ? m + UP_M : m * (sea ? 1.25 : 10);
+      else out = m >= UP_M ? m - UP_M : (m >= 0 ? NaN : m / (sea ? 1.25 : 10));
+      if (dir === 'ge' && m >= 0 && m < UP_M) { $('cgM').className = 'tk-msg bad'; $('cgM').textContent = 'Nothing on Earth sits that low and still above the sea. Gaia’s ground between its sea and 7,560 m is the Great Stair, which Earth has no match for.'; last = null; $('cgG').textContent = 'Stand there'; return; }
+      last = { to: dir === 'eg' ? 'gaia' : 'earth', ft: out / 0.3048 };
+      [['ft', 'feet'], ['m', 'meters'], ['mi', 'miles'], ['km', 'kilometers']].forEach(function (u) { r.appendChild(tkEl('div', 'g', '<span>' + u[1] + ' on ' + (last.to === 'gaia' ? 'Gaia' : 'Earth') + '</span><b>' + nice(out / LEN[u[0]]) + '</b>')); });
+      $('cgG').textContent = 'Stand there on ' + (last.to === 'gaia' ? 'Gaia' : 'Earth');
+    }
+    ['cgV', 'cgD', 'cgS', 'cgU'].forEach(function (id) { $(id).addEventListener(id === 'cgV' ? 'input' : 'change', go); });
+    $('cgG').addEventListener('click', function () {
+      if (!last) return; var w = WORLDS[last.to];
+      if (last.ft > w.MAX_UP || last.ft < w.MAX_DOWN) { $('cgM').className = 'tk-msg bad'; $('cgM').textContent = 'That is outside what this page covers on ' + (last.to === 'gaia' ? 'Gaia' : 'Earth') + '.'; return; }
+      closeAll(); if (PLANET !== last.to) setPlanet(last.to, false); PL.fly = false; flyTo(last.ft, 'that height');
+    });
+    go();
+  }
+
+  /* ----- Shared physiology helpers (same functions the gauges use) ----- */
+  function airAt(ft, planet, who) {
+    var z = ft * 0.3048, a = planet === 'gaia' ? GAIA.atm(z) : PHYS.atm(z), P = a.P;
+    var lungP = (planet === 'gaia' && who === 'gaian' && z <= 19600) ? PHYS.atm(GAIA.lungs(z, 0)).P : P;
+    var eqM = PHYS.alt(lungP), sp = planet === 'gaia' ? GAIA.sat(who, z, P) : PHYS.spo2(P);
+    return { z: z, P: P, rho: a.rho, T: a.T, lungP: lungP, eqM: eqM, spo2: sp, boil: PHYS.boil(P) };
+  }
+  function spo2With(P, f) { return PHYS.spo2((f / 0.2095) * (P - 6266) + 6266); }
+  function planetPick(id) { return '<div class="tk-two"><div class="tk-field"><label for="' + id + 'P">Planet</label><select class="tk-in" id="' + id + 'P"><option value="earth">Earth</option><option value="gaia">Gaia</option></select></div><div class="tk-field"><label for="' + id + 'W">Whose lungs</label><select class="tk-in" id="' + id + 'W"><option value="earth">Born on Earth</option><option value="gaian">Born on Gaia</option></select></div></div>'; }
+  function whoOf(planet, sel) { return planet === 'gaia' ? (sel === 'gaian' ? 'gaian' : 'visitor') : 'earth'; }
+  function altField(id, ft) { return '<div class="tk-two"><div class="tk-field"><label for="' + id + 'V">Height</label><input class="tk-in" id="' + id + 'V" type="text" inputmode="decimal" value="' + altStr(ft, state.unit).replace(/,/g, '').replace('−', '-') + '"></div><div class="tk-field"><label for="' + id + 'U">Unit</label><select class="tk-in" id="' + id + 'U"><option value="ft">feet</option><option value="m">meters</option><option value="mi">miles</option><option value="km">kilometers</option></select></div></div>'; }
+  function readAlt(id, planet) {
+    var v = parseNum($(id + 'V').value); if (!isFinite(v)) return { err: 'Type the height as a plain number.' };
+    var ft = v / PER_FT[$(id + 'U').value], w = WORLDS[planet];
+    if (ft > w.MAX_UP || ft < w.MAX_DOWN) return { err: 'This page covers ' + altStr(w.MAX_DOWN, $(id + 'U').value) + ' to ' + altStr(w.MAX_UP, $(id + 'U').value) + ' ' + $(id + 'U').value + ' on ' + (planet === 'gaia' ? 'Gaia' : 'Earth') + '.' };
+    return { ft: ft };
+  }
+  function labHead(id) {
+    $(id + 'P').value = PLANET; $(id + 'U').value = state.unit; $(id + 'W').value = PLANET === 'gaia' ? WHO === 'gaian' ? 'gaian' : 'earth' : 'earth';
+    $(id + 'W').innerHTML = PLANET === 'gaia' ? '<option value="gaian">Born on Gaia</option><option value="earth">Born on Earth</option>' : '<option value="earth">Born on Earth</option>';
+    $(id + 'W').value = PLANET === 'gaia' ? (WHO === 'gaian' ? 'gaian' : 'earth') : 'earth';
+  }
+  function labPlanetChange(id, redo) {
+    $(id + 'P').addEventListener('change', function () {
+      var p = this.value; $(id + 'W').innerHTML = p === 'gaia' ? '<option value="gaian">Born on Gaia</option><option value="earth">Born on Earth</option>' : '<option value="earth">Born on Earth</option>'; redo();
+    });
+  }
+  var NOT_MED = '<p class="tk-fine">This is a simulation built on the page’s own air numbers. It is not a medical reading and not medical advice.</p>';
+
+  /* ----- Bio Lab ----- */
+  function openBio() {
+    openSheet('bio', 'Bio Lab', function (body) {
+      body.innerHTML = '<p class="tk-lede">What the air does to a body at any height, on either planet.</p>' + planetPick('bi') + altField('bi', SB.alt) +
+        '<div class="tk-field"><label for="biA">What you are doing</label><select class="tk-in" id="biA"><option value="0">Resting</option><option value="1">Walking</option><option value="2">Climbing hard</option></select></div><div id="biR"></div>' + NOT_MED;
+      labHead('bi');
+      function go() {
+        var p = $('biP').value, a = readAlt('bi', p), R = $('biR'); if (a.err) { R.innerHTML = '<p class="tk-msg bad">' + a.err + '</p>'; return; }
+        var who = whoOf(p, $('biW').value), A = airAt(a.ft, p, who), act = +$('biA').value;
+        var sp = A.spo2, spAct = Math.max(0, sp - act * (sp < 97 ? Math.min(5, (98 - sp) * 0.35 + 1.5) : 0.6));
+        var need = null; for (var f = 0.21; f <= 1.0001; f += 0.01) { if (spo2With(A.lungP, f) >= 92) { need = f; break; } }
+        var verdict = sp >= 94 ? ['good', 'Comfortable', 'The air has plenty of oxygen for this body.'] : sp >= 85 ? ['warn', 'Strained', 'Breathing hard and a pounding head are likely without time to adjust.'] : sp >= 70 ? ['bad', 'Dangerous', 'Confusion and collapse are close. This body needs extra oxygen or a way down.'] : ['bad', 'Not survivable for long', 'Without sealed oxygen this body loses consciousness in minutes or less.'];
+        var tuc = p === 'earth' || who !== 'gaian' ? PHYS.ept(A.eqM / 0.3048) : null;
+        var boilF = A.boil.ice ? 'Water is ice at this pressure' : nice(A.boil.K - 273.15) + '°C (' + nice((A.boil.K - 273.15) * 9 / 5 + 32) + '°F)';
+        R.innerHTML = '<div class="tk-verdict ' + verdict[0] + '"><em>' + verdict[1] + '</em><p>' + verdict[2] + '</p></div><div class="tk-res">' +
+          '<div class="g"><span>Air pressure</span><b>' + nice(A.P / 1000) + '<i style="font-size:.5em"> kPa</i></b></div>' +
+          '<div class="g"><span>SpO2 at rest</span><b>' + Math.round(sp) + '<i style="font-size:.5em">%</i></b></div>' +
+          '<div class="g"><span>SpO2 ' + ['', 'walking', 'climbing hard'][act] + '</span><b>' + Math.round(act ? spAct : sp) + '<i style="font-size:.5em">%</i></b></div>' +
+          '<div class="g"><span>Lungs feel like Earth at</span><b>' + altStr(A.eqM / 0.3048, state.unit) + '<i style="font-size:.5em"> ' + state.unit + '</i></b></div>' +
+          '<div class="g"><span>Air density</span><b>' + nice(A.rho) + '<i style="font-size:.5em"> kg/m³</i></b></div>' +
+          '<div class="g"><span>Water boils at</span><b style="font-size:1.1rem">' + boilF + '</b></div></div>' +
+          '<dl class="tk-kv"><dt>Oxygen to add</dt><dd>' + (sp >= 94 ? 'None needed.' : need ? 'About ' + Math.round(need * 100) + '% oxygen in the mix to hold 92% or better.' : 'Even pure oxygen cannot hold 92% here. A sealed suit is needed.') + '</dd>' +
+          (tuc ? '<dt>Time of useful consciousness</dt><dd>' + (tuc[0] >= 60 ? nice(tuc[0] / 60) + ' to ' + nice(tuc[1] / 60) + ' minutes' : Math.round(tuc[0]) + ' to ' + Math.round(tuc[1]) + ' seconds') + ' if the oxygen stopped suddenly.</dd>' : '') +
+          '<dt>Water to drink</dt><dd>' + (A.eqM > 2500 ? 'Drink more than usual. Dry thin air pulls water out of every breath.' : 'The usual amount.') + '</dd></dl>';
+      }
+      ['biV', 'biU', 'biW', 'biA'].forEach(function (id) { $(id).addEventListener(id === 'biV' ? 'input' : 'change', go); });
+      labPlanetChange('bi', go); go();
+    });
+  }
+
+  /* ----- Sports Lab: my own simple models of how air changes each sport ----- */
+  var SPORTS = [
+    ['Marathon', function (c) { var t = 7500 / c.vo2; return [['Elite finish', hms(t)], ['Slowdown', tkPct(c.vo2 - 1)]]; }],
+    ['100 m sprint', function (c) { var t = 10 - 0.3 * (1 - c.r) - 0.06 * (1 - c.vo2) * 10; return [['Elite time', t.toFixed(2) + ' s'], ['Why', c.r < 1 ? 'Thinner air pushes back less.' : 'Thicker air pushes back more.']]; }],
+    ['Long jump', function (c) { return [['Elite jump', (8.5 + 0.4 * (1 - c.r)).toFixed(2) + ' m'], ['Change', (0.4 * (1 - c.r) >= 0 ? '+' : '') + (0.4 * (1 - c.r)).toFixed(2) + ' m']]; }],
+    ['Cycling time trial', function (c) { var v = 50 * Math.pow(c.vo2 / c.r, 1 / 3); return [['40 km pace', v.toFixed(1) + ' km/h'], ['Time', hms(40 / v * 3600)]]; }],
+    ['Swimming, 1500 m', function (c) { return [['Elite time', hms(870 / Math.pow(c.vo2, 0.8))], ['Why', 'Water is the same, but the lungs feel the air.']]; }],
+    ['Soccer', function (c) { return [['Distance covered', nice(11 * Math.pow(c.vo2, 0.5)) + ' km'], ['Long ball flies', tkPct(Math.pow(1 / c.r, 0.3) - 1) + ' farther']]; }],
+    ['Baseball', function (c) { return [['400-ft hit carries', nice(400 * Math.pow(1 / c.r, 0.3)) + ' ft'], ['Curveballs', c.r < 0.9 ? 'Break less.' : 'Break the usual amount.']]; }],
+    ['Golf', function (c) { return [['280-yd drive carries', nice(280 * Math.pow(1 / c.r, 0.4)) + ' yd'], ['Change', tkPct(Math.pow(1 / c.r, 0.4) - 1)]]; }],
+    ['American football', function (c) { return [['50-yd kick travels', nice(50 * Math.pow(1 / c.r, 0.3)) + ' yd'], ['Fourth-quarter legs', tkPct(c.vo2 - 1)]]; }],
+    ['Tennis', function (c) { return [['120 mph serve lands at', nice(120 * Math.pow(1 / c.r, 0.08)) + ' mph'], ['Stamina', tkPct(c.vo2 - 1)]]; }],
+    ['Basketball', function (c) { return [['Minutes before fading', nice(36 * Math.pow(c.vo2, 1.5)) + ' of 48'], ['Ball flight', c.r < 0.8 ? 'Shots carry a touch farther.' : 'The usual.']]; }],
+    ['Downhill skiing', function (c) { return [['Top speed', nice(140 * Math.pow(1 / c.r, 0.5)) + ' km/h'], ['Why', c.r < 1 ? 'Less air to push through.' : 'More air to push through.']]; }],
+    ['Mountaineering', function (c) { return [['Climbing rate', nice(300 * c.vo2) + ' m per hour'], ['Rest more often', c.vo2 < 0.8 ? 'Yes, a lot.' : 'Not yet.']]; }],
+    ['Skydiving', function (c) { var v = 55 * Math.sqrt(1.225 / c.rho); return [['Belly-down fall speed', nice(v * 2.23694) + ' mph'], ['Same in km/h', nice(v * 3.6)]]; }],
+    ['Archery', function (c) { return [['70 m arrow drops', nice(1.7 * c.r) + ' m'], ['Wind matters', c.r < 0.7 ? 'Less.' : 'The usual.']]; }]
+  ];
+  function tkPct(x) { return (x >= 0 ? '+' : '−') + Math.abs(x * 100).toFixed(1) + '%'; }
+  function hms(s) { s = Math.round(s); var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return (h ? h + ':' + ('0' + m).slice(-2) : m) + ':' + ('0' + x).slice(-2); }
+  function openSports() {
+    openSheet('sports', 'Sports Lab', function (body) {
+      body.innerHTML = '<p class="tk-lede">Fifteen sports, played at any height on either planet. These are rough models built from the page’s air numbers, not sports-science predictions.</p>' + planetPick('sp') + altField('sp', SB.alt) + '<div id="spR"></div>';
+      labHead('sp');
+      function go() {
+        var p = $('spP').value, a = readAlt('sp', p), R = $('spR'); if (a.err) { R.innerHTML = '<p class="tk-msg bad">' + a.err + '</p>'; return; }
+        var who = whoOf(p, $('spW').value), A = airAt(a.ft, p, who), vo2 = Math.max(0.08, Math.min(1, 1 - 0.07 * Math.max(0, (A.eqM - 1500) / 1000)));
+        var ctx = { r: A.rho / 1.225, rho: A.rho, vo2: vo2 };
+        R.innerHTML = '<p class="tk-fine" style="margin-top:0">Lungs here feel like Earth at ' + altStr(A.eqM / 0.3048, state.unit) + ' ' + state.unit + '. Air is ' + nice(ctx.r * 100) + '% as thick as at Earth’s sea.</p><div class="tk-list" style="margin-top:.7rem"></div>';
+        var l = qs(R, '.tk-list');
+        SPORTS.forEach(function (s) {
+          var r = s[1](ctx), d = tkEl('div', 'tk-item');
+          d.innerHTML = '<div><b></b><small></small></div>'; qs(d, 'b').textContent = s[0];
+          qs(d, 'small').textContent = r.map(function (x) { return x[0] + ': ' + x[1]; }).join(' · ');
+          l.appendChild(d);
+        });
+        if (vo2 < 0.2) R.insertAdjacentHTML('afterbegin', '<div class="tk-verdict bad"><em>Nobody plays here</em><p>The air is too thin to breathe for any sport. The numbers below are only for the math.</p></div>');
+      }
+      ['spV', 'spU', 'spW'].forEach(function (id) { $(id).addEventListener(id === 'spV' ? 'input' : 'change', go); });
+      labPlanetChange('sp', go); go();
+    });
+  }
+
+  /* ----- Acclimatization ----- */
+  function openAcc() {
+    openSheet('acc', 'Acclimatize', function (body) {
+      body.innerHTML = '<p class="tk-lede">A night-by-night plan for climbing high without getting sick. For a trip to Gaia, it works in the air your lungs actually feel.</p>' + planetPick('ac') +
+        '<div class="tk-field"><label for="acH">Where you start (height)</label><input class="tk-in" id="acH" type="text" inputmode="decimal" value="0"></div>' + altField('ac', SB.alt) + '<div id="acR"></div>' + NOT_MED;
+      labHead('ac');
+      $('acW').innerHTML = '<option value="earth">Born on Earth</option><option value="gaian">Born on Gaia</option>';
+      $('acW').value = WHO === 'gaian' && PLANET === 'gaia' ? 'gaian' : 'earth';
+      function go() {
+        var p = $('acP').value, a = readAlt('ac', p), R = $('acR'); if (a.err) { R.innerHTML = '<p class="tk-msg bad">' + a.err + '</p>'; return; }
+        var h0 = parseNum($('acH').value); if (!isFinite(h0)) { R.innerHTML = '<p class="tk-msg bad">Type where you start as a plain number.</p>'; return; }
+        var u = $('acU').value, w = WORLDS[p], start = Math.max(w.MAX_DOWN, Math.min(w.MAX_UP, h0 / PER_FT[u])), who = whoOf(p, $('acW').value);
+        // the height the body feels at each sleeping height
+        function feel(ft) { return airAt(ft, p, who).eqM; }
+        var f0 = feel(start), f1 = feel(a.ft);
+        if (f1 <= f0 + 1) { R.innerHTML = '<div class="tk-verdict good"><em>Nothing to adjust</em><p>The air at your goal is no thinner than where you start, so there is no climb to plan.</p></div>'; return; }
+        function ftAtFeel(target) { var lo = start, hi = a.ft; for (var i = 0; i < 40; i++) { var mid = (lo + hi) / 2; if (feel(mid) < target) lo = mid; else hi = mid; } return hi; }
+        var nights = [], cur = f0, day = 0, sinceRest = 0, fe = f0;
+        while (fe < f1 - 0.5 && day < 60) {
+          day++;
+          if (fe >= 2500 && sinceRest >= 3) { nights.push({ d: day, rest: true, fe: fe, ft: ftAtFeel(fe) }); sinceRest = 0; continue; }
+          fe = Math.min(f1, fe < 2500 ? Math.min(f1, Math.max(fe + 1200, 2500)) : fe + 500);
+          nights.push({ d: day, rest: false, fe: fe, ft: ftAtFeel(fe) }); if (fe >= 2500) sinceRest++;
+        }
+        var t = '<div class="tk-verdict ' + (nights.length > 10 ? 'warn' : 'good') + '"><em>' + nights.length + ' nights</em><p>' + (f1 > 5500 ? 'Your lungs end up feeling like Earth above 5,500 m, higher than anyone can live for good. Plan for oxygen, and a long stay low first.' : f1 > 3500 ? 'That is real high country. Go slowly and watch for headache or nausea.' : 'A gentle climb. Easy to do with a little care.') + '</p></div>' +
+          '<div class="tk-list" style="margin-top:.7rem">' + nights.map(function (n) {
+            return '<div class="tk-item"><div><b>Night ' + n.d + (n.rest ? ' · rest day' : '') + '</b><small>Sleep at ' + altStr(n.ft, state.unit) + ' ' + state.unit + ' · lungs feel like Earth at ' + altStr(n.fe / 0.3048, state.unit) + ' ' + state.unit + '</small></div></div>';
+          }).join('') + '</div><dl class="tk-kv"><dt>The rule</dt><dd>Once the air feels like Earth above 2,500 m, sleep no more than 500 m higher each night, with a rest night after every third climb. Climb high, sleep low.</dd>' +
+          (p === 'gaia' && who === 'visitor' ? '<dt>Gaian note</dt><dd>On Gaia the low ground has thicker air than Earth’s sea, so the first part of the climb costs you nothing. A visitor needs a tube from the top of the Great Stair, and a full mask in Summitbrook.</dd>' : '') + '</dl>';
+        R.innerHTML = t;
+      }
+      ['acH', 'acV', 'acU', 'acW'].forEach(function (id) { $(id).addEventListener(id === 'acH' || id === 'acV' ? 'input' : 'change', go); });
+      labPlanetChange('ac', go); go();
+    });
+  }
+
+  /* ----- Live Altimeter ----- */
+  var ALT = { watch: null };
+  function openAlti() {
+    openSheet('alti', 'Altimeter', function (body, s) {
+      body.innerHTML = '<p class="tk-lede">Find the real height of wherever you are on Earth, then stand there in the sandbox.</p>' +
+        '<div class="tk-bar"><button type="button" class="tk-btn go" id="alGo">Use my location</button><button type="button" class="tk-btn" id="alWatch">Follow me</button></div>' +
+        '<div class="tk-h3">Or look up any coordinates</div><div class="tk-two"><div class="tk-field"><label for="alLa">Latitude</label><input class="tk-in" id="alLa" type="text" inputmode="decimal"></div><div class="tk-field"><label for="alLo">Longitude</label><input class="tk-in" id="alLo" type="text" inputmode="decimal"></div></div><div class="tk-bar"><button type="button" class="tk-btn" id="alLk">Look up</button></div>' +
+        '<div id="alR"></div><p class="tk-msg" id="alM" role="status"></p><p class="tk-fine">Your phone’s own altitude is used when it has one. If not, the height comes from a public elevation map (Copernicus, through Open-Meteo), which is good to a few meters on open ground. Your location stays on this device, except for the coordinates sent to that map.</p>';
+      s.onClose = stopWatch;
+      function show(ft, src, acc, lat, lon) {
+        $('alR').innerHTML = '<div class="tk-res"><div class="g wide"><span>Your height on Earth</span><b>' + altStr(ft, state.unit) + '<i style="font-size:.5em"> ' + state.unit + '</i></b></div></div><dl class="tk-kv"><dt>Source</dt><dd>' + src + '</dd>' + (acc ? '<dt>Accuracy</dt><dd>about ' + Math.round(acc) + ' m</dd>' : '') + '<dt>Coordinates</dt><dd>' + lat.toFixed(4) + ', ' + lon.toFixed(4) + '</dd></dl><div class="tk-bar" style="margin-top:.8rem"><button type="button" class="tk-btn go" id="alSt">Stand here on Earth</button><button type="button" class="tk-btn" id="alSv">Save to My places</button></div>';
+        $('alSt').addEventListener('click', function () { closeAll(); if (PLANET !== 'earth') setPlanet('earth', false); PL.fly = false; flyTo(Math.max(WORLDS.earth.MAX_DOWN, Math.min(WORLDS.earth.MAX_UP, ft)), 'where you are'); });
+        $('alSv').addEventListener('click', function () {
+          var rec = { id: 'u' + Date.now().toString(36), name: 'My spot ' + lat.toFixed(3) + ', ' + lon.toFixed(3), aliases: '', where: '', planet: 'earth', kind: 's', ft: Math.round(ft), lat: lat, lon: lon, note: 'Measured with the Altimeter.', fictional: false, pic: '', credit: '' };
+          TK.custom.push(rec); if (!tkSave()) { TK.custom.pop(); $('alM').className = 'tk-msg bad'; $('alM').textContent = tkSaveMsg; return; } mergeCustom(); $('alM').className = 'tk-msg ok'; $('alM').textContent = 'Saved in My places.';
+        });
+      }
+      function lookup(lat, lon, acc, devAlt) {
+        $('alM').className = 'tk-msg'; $('alM').textContent = 'Looking up the height…';
+        fetch('https://api.open-meteo.com/v1/elevation?latitude=' + lat + '&longitude=' + lon).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
+          var m = j && j.elevation && j.elevation[0]; if (m == null || !isFinite(m)) throw 0;
+          $('alM').textContent = ''; show(m / 0.3048, 'Copernicus elevation map', acc, lat, lon);
+        }).catch(function () {
+          if (devAlt != null) { $('alM').textContent = ''; show(devAlt / 0.3048, 'Your device’s own altitude', acc, lat, lon); }
+          else { $('alM').className = 'tk-msg bad'; $('alM').textContent = 'The elevation map could not be reached. Check your connection and try again.'; }
+        });
+      }
+      function fix(pos) {
+        var c = pos.coords;
+        if (c.altitude != null && isFinite(c.altitude)) { $('alM').textContent = ''; show(c.altitude / 0.3048, 'Your device’s own altitude', c.altitudeAccuracy || c.accuracy, c.latitude, c.longitude); }
+        else lookup(c.latitude, c.longitude, c.accuracy, null);
+      }
+      function err(e) {
+        $('alM').className = 'tk-msg bad';
+        $('alM').textContent = e && e.code === 1 ? 'Location is turned off for this page. Allow it in your browser settings, or type coordinates below.' : 'Your location could not be found. Type coordinates below instead.';
+      }
+      function stopWatch() { if (ALT.watch != null && navigator.geolocation) navigator.geolocation.clearWatch(ALT.watch); ALT.watch = null; var b = $('alWatch'); if (b) b.textContent = 'Follow me'; }
+      $('alGo').addEventListener('click', function () {
+        if (!navigator.geolocation) { err(null); return; }
+        $('alM').className = 'tk-msg'; $('alM').textContent = 'Finding you…';
+        navigator.geolocation.getCurrentPosition(fix, err, { enableHighAccuracy: true, timeout: 20000, maximumAge: 10000 });
+      });
+      $('alWatch').addEventListener('click', function () {
+        if (ALT.watch != null) { stopWatch(); return; }
+        if (!navigator.geolocation) { err(null); return; }
+        ALT.watch = navigator.geolocation.watchPosition(function (p) { var c = p.coords; if (c.altitude != null && isFinite(c.altitude)) show(c.altitude / 0.3048, 'Your device’s own altitude (live)', c.altitudeAccuracy || c.accuracy, c.latitude, c.longitude); else if (!ALT.last || Date.now() - ALT.last > 15000) { ALT.last = Date.now(); lookup(c.latitude, c.longitude, c.accuracy, null); } }, err, { enableHighAccuracy: true, maximumAge: 5000 });
+        $('alWatch').textContent = 'Stop following';
+      });
+      $('alLk').addEventListener('click', function () {
+        var la = parseNum($('alLa').value), lo = parseNum($('alLo').value);
+        if (!isFinite(la) || !isFinite(lo) || la < -90 || la > 90 || lo < -180 || lo > 180) { $('alM').className = 'tk-msg bad'; $('alM').textContent = 'Latitude runs -90 to 90 and longitude -180 to 180.'; return; }
+        lookup(la, lo, null, null);
+      });
+    });
+  }
+
+  /* ----- Look and Sound ----- */
+  function applyLook() {
+    var h = document.documentElement;
+    h.setAttribute('data-layout', TK.layout);
+    if (TK.theme === 'light' || TK.theme === 'dark') h.setAttribute('data-theme', TK.theme); else h.removeAttribute('data-theme');
+    reduce = mqReduce || !TK.anim;
+    document.body.classList.toggle('tk-still', reduce);
+    document.body.classList.toggle('tk-solid', !!TK.solid);
+    document.body.classList.toggle('tk-nopics', !TK.pics);
+    h.style.setProperty('--tk-bright', String(TK.bright));
+    if (typeof refresh === 'function') { try { refresh(true); } catch (err) {} }
+  }
+  function openLook() {
+    openSheet('look', 'Look & Sound', function (body) {
+      function choices(name, list, cur, cols) { return '<div class="tk-choices' + (cols ? ' cols' : '') + '" data-name="' + name + '">' + list.map(function (x) { return '<button type="button" class="tk-choice" data-v="' + x[0] + '" aria-pressed="' + (cur === x[0]) + '"><b>' + x[1] + '</b><small>' + x[2] + '</small></button>'; }).join('') + '</div>'; }
+      body.innerHTML = '<div class="tk-h3" style="margin-top:0">Layout</div><p class="tk-fine" style="margin:0 0 .6rem">Standard is the page as it has always looked. The others rearrange it on wide screens and restyle it on phones.</p>' + choices('layout', LAYOUTS, TK.layout, true) +
+        '<div class="tk-h3">Color</div>' + choices('theme', [['auto', 'Match my device', 'Follows your light or dark setting.'], ['light', 'Light', 'Always light.'], ['dark', 'Dark', 'Always dark.']], TK.theme, true) +
+        '<div class="tk-h3">Comfort</div>' +
+        '<label class="tk-toggle"><span>Animations<small>Moving scenery and smooth flights.</small></span><input type="checkbox" data-k="anim"' + (TK.anim ? ' checked' : '') + '></label>' +
+        '<label class="tk-toggle"><span>Reduce transparency<small>Solid bars instead of frosted glass.</small></span><input type="checkbox" data-k="solid"' + (TK.solid ? ' checked' : '') + '></label>' +
+        '<label class="tk-toggle"><span>Show pictures<small>Turn off to hide place pictures.</small></span><input type="checkbox" data-k="pics"' + (TK.pics ? ' checked' : '') + '></label>' +
+        '<div class="tk-range"><label for="lkB">Picture brightness</label><output id="lkBo">' + Math.round(TK.bright * 100) + '%</output><input type="range" id="lkB" min="50" max="130" step="5" value="' + Math.round(TK.bright * 100) + '"></div>' +
+        '<div class="tk-h3">Picture of what you do</div><p class="tk-fine" style="margin:0 0 .6rem">A short visual when you step, switch planets or open a tool.</p>' + choices('fx', FXES, TK.fx, true) +
+        '<div class="tk-h3">Sound</div><label class="tk-toggle"><span>Sound on<small>Off by default. Made right here, no files.</small></span><input type="checkbox" data-s="on"' + (TK.snd.on ? ' checked' : '') + '></label>' +
+        '<div class="tk-range"><label for="lkV">Volume</label><output id="lkVo">' + TK.snd.vol + '%</output><input type="range" id="lkV" min="0" max="100" step="5" value="' + TK.snd.vol + '"></div>' +
+        '<div class="tk-range"><label for="lkE">EQ boost (low to bright)</label><output id="lkEo">' + (TK.snd.eq > 0 ? '+' : '') + TK.snd.eq + ' dB</output><input type="range" id="lkE" min="-6" max="9" step="1" value="' + TK.snd.eq + '"></div>' +
+        '<label class="tk-toggle"><span>Soft limiter<small>Keeps loud sounds from getting harsh.</small></span><input type="checkbox" data-s="limit"' + (TK.snd.limit ? ' checked' : '') + '></label>' +
+        choices('profile', SNDS, TK.snd.profile, true) + '<div class="tk-bar" style="margin-top:.8rem"><button type="button" class="tk-btn" id="lkT">Play a sample</button><button type="button" class="tk-btn warn" id="lkR">Reset to defaults</button></div>';
+      body.addEventListener('click', function (ev) {
+        var c = ev.target.closest('.tk-choice'); if (!c) return;
+        var wrap = c.parentNode, n = wrap.getAttribute('data-name'), v = c.getAttribute('data-v');
+        Array.prototype.forEach.call(wrap.children, function (x) { x.setAttribute('aria-pressed', String(x === c)); });
+        if (n === 'profile') { TK.snd.profile = v; } else { TK[n] = v; }
+        tkSave(); applyLook(); if (n === 'fx') tkFx(true); if (n === 'profile') beep('ok', true);
+      });
+      body.addEventListener('change', function (ev) {
+        var t = ev.target;
+        if (t.getAttribute('data-k')) { TK[t.getAttribute('data-k')] = t.checked; tkSave(); applyLook(); }
+        else if (t.getAttribute('data-s')) { TK.snd[t.getAttribute('data-s')] = t.checked; tkSave(); if (t.getAttribute('data-s') === 'on' && t.checked) beep('ok', true); }
+      });
+      $('lkB').addEventListener('input', function () { TK.bright = this.value / 100; $('lkBo').textContent = this.value + '%'; tkSave(); applyLook(); });
+      $('lkV').addEventListener('input', function () { TK.snd.vol = +this.value; $('lkVo').textContent = this.value + '%'; tkSave(); sndLevels(); });
+      $('lkE').addEventListener('input', function () { TK.snd.eq = +this.value; $('lkEo').textContent = (this.value > 0 ? '+' : '') + this.value + ' dB'; tkSave(); sndLevels(); });
+      $('lkT').addEventListener('click', function () { beep('ok', true); });
+      $('lkR').addEventListener('click', function () {
+        var keep = { favs: TK.favs, custom: TK.custom }; TK = JSON.parse(JSON.stringify(TKD)); TK.favs = keep.favs; TK.custom = keep.custom; tkSave(); applyLook(); sndLevels(); openLook();
+      });
+    });
+  }
+
+  /* ----- Picture effects ----- */
+  function fxName() {
+    if (TK.fx !== 'adaptive') return TK.fx;
+    if (PLANET === 'gaia') return SB.alt < 0 ? 'ripple' : 'rings';
+    if (SB.alt < -1) return 'sonar';
+    if (SB.alt > 60000) return 'prism';
+    if (SB.alt > 14764) return 'aurora';
+    return SB.alt < 3000 ? 'ripple' : 'grid';
+  }
+  function tkFx(force) {
+    if (TK.fx === 'off' || reduce) return;
+    var sc = qs(document, '.scene'), n = fxName();
+    if (!sc) return;
+    var old = qs(sc, '.tk-fx'); if (old) old.remove();
+    var box = tkEl('div', 'tk-fx fx-' + n, '<i></i><i></i><i></i>'); box.setAttribute('aria-hidden', 'true');
+    sc.appendChild(box); window.setTimeout(function () { if (box.parentNode) box.remove(); }, 1500);
+  }
+
+  /* ----- Synthesized sound ----- */
+  var AU = { ctx: null, master: null, eq: null, hi: null, lim: null };
+  function sndGraph() {
+    if (AU.ctx) return AU.ctx;
+    var C = window.AudioContext || window.webkitAudioContext; if (!C) return null;
+    try {
+      var c = new C();
+      AU.ctx = c; AU.master = c.createGain(); AU.eq = c.createBiquadFilter(); AU.eq.type = 'lowshelf'; AU.eq.frequency.value = 220;
+      AU.hi = c.createBiquadFilter(); AU.hi.type = 'highshelf'; AU.hi.frequency.value = 3200;
+      AU.lim = c.createDynamicsCompressor();
+      AU.master.connect(AU.eq); AU.eq.connect(AU.hi); AU.hi.connect(AU.lim); AU.lim.connect(c.destination);
+      sndLevels();
+    } catch (err) { AU.ctx = null; }
+    return AU.ctx;
+  }
+  function sndLevels() {
+    if (!AU.ctx) return;
+    AU.master.gain.value = Math.pow(TK.snd.vol / 100, 1.6) * 0.5;
+    var e = TK.snd.eq; AU.eq.gain.value = e < 0 ? e : e * 0.6; AU.hi.gain.value = e > 0 ? e : e * 0.5;
+    var L = AU.lim; L.threshold.value = TK.snd.limit ? -14 : 0; L.knee.value = TK.snd.limit ? 12 : 0; L.ratio.value = TK.snd.limit ? 12 : 1; L.attack.value = 0.003; L.release.value = 0.2;
+  }
+  function sndProfile() {
+    var p = TK.snd.profile; if (p !== 'adaptive') return p;
+    if (PLANET === 'gaia') return 'glass';
+    if (SB.alt < -1) return 'sonar';
+    if (SB.alt > 20000) return 'wind';
+    return 'chime';
+  }
+  function beep(kind, force) {
+    if (!TK.snd.on || TK.snd.vol <= 0) return;
+    if (document.hidden) return;
+    var c = sndGraph(); if (!c) return;
+    if (c.state === 'suspended') c.resume();
+    var pr = sndProfile(), now = c.currentTime + 0.01, lift = Math.max(0, Math.min(1, (SB.alt + 36000) / 400000));
+    var base = { open: 440, step: 520, ok: 660, planet: 392 }[kind] || 500; base *= 0.7 + lift * 1.2;
+    var seq = kind === 'ok' ? [1, 1.25, 1.5] : kind === 'open' ? [1, 1.5] : kind === 'planet' ? [1, 0.75, 1.5] : [1];
+    seq.forEach(function (m, i) {
+      var t = now + i * 0.085, o = c.createOscillator(), g = c.createGain(), f = base * m, dur = 0.32;
+      o.type = { chime: 'sine', sonar: 'sine', glass: 'triangle', wind: 'sine', blip: 'square' }[pr] || 'sine';
+      if (pr === 'sonar') { f *= 0.4; dur = 0.7; o.frequency.setValueAtTime(f * 1.5, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.12); }
+      else if (pr === 'glass') { f *= 2; o.frequency.setValueAtTime(f, t); }
+      else if (pr === 'wind') { f *= 1.6; dur = 0.45; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 1.12, t + dur); }
+      else if (pr === 'blip') { dur = 0.1; o.frequency.setValueAtTime(f, t); }
+      else o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(pr === 'blip' ? 0.12 : 0.5, t + (pr === 'wind' ? 0.08 : 0.012));
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(AU.master); o.start(t); o.stop(t + dur + 0.05);
+    });
+  }
+
+  /* ----- About ----- */
+  function openAbout() {
+    openSheet('about', 'About', function (body) {
+      body.innerHTML = '<p class="tk-lede">ALT 327K 2.0 is an altitude sandbox for Earth and Gaia, from the deepest sea floor to 62 miles up, with every settlement on the board stacked at its height.</p>' +
+        '<div class="tk-h3" style="margin-top:0">What is in the toolbar</div><dl class="tk-kv">' +
+        '<dt>Atlas</dt><dd>Every place with its picture. Search, filter, favorite, open big, and stand there.</dd>' +
+        '<dt>My places</dt><dd>Add real or made-up places with an elevation, a note and a picture. Export and import them as a file.</dd>' +
+        '<dt>Convert</dt><dd>Elevations in any unit, exact conversions of huge numbers, and Earth to Gaia heights.</dd>' +
+        '<dt>Bio Lab</dt><dd>Pressure, oxygen, simulated SpO2 and water’s boiling point at any height.</dd>' +
+        '<dt>Sports Lab</dt><dd>Fifteen sports played in thin or thick air.</dd>' +
+        '<dt>Acclimatize</dt><dd>A night-by-night climbing plan, including for a visitor to Gaia.</dd>' +
+        '<dt>Altimeter</dt><dd>Your real height on Earth from your location.</dd>' +
+        '<dt>Look & Sound</dt><dd>Layouts, color, comfort options, picture effects and optional sound.</dd></dl>' +
+        '<div class="tk-h3">Your data</div><p class="tk-fine" style="margin-top:0">Everything you add or choose stays on this device in this browser. It does not follow you to your other devices, and clearing the site’s data erases it. Use Export in My places to keep a copy.</p>' +
+        '<div class="tk-h3">Keys</div><p class="tk-fine" style="margin-top:0">Escape closes a window. In the Atlas viewer, the left and right arrow keys move between places.</p>' +
+        '<p class="tk-fine">The Bio Lab, Sports Lab and Acclimatize numbers are simulations built on the page’s own air numbers. They are not medical advice.</p>';
+    });
+  }
+
+  /* ----- Hooks into the page's own actions ----- */
+  (function hooks() {
+    var _go = goStop; goStop = function (s) { _go(s); tkFx(); beep('step'); };
+    var _sp = setPlanet; setPlanet = function (w, sc) { var changed = w !== PLANET; _sp(w, sc); if (changed) { tkFx(); beep('planet'); } };
+    $('pUp').addEventListener('click', function () { tkFx(); beep('step'); });
+    $('pDown').addEventListener('click', function () { tkFx(); beep('step'); });
+  })();
+
+  mergeCustom();
+  applyLook();
+
   var startPlanet = 'earth';
   try { if (localStorage.getItem('thinair-planet') === 'gaia') startPlanet = 'gaia'; } catch (err) {}
   if (startPlanet === 'gaia') setPlanet('gaia', false);
