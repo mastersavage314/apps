@@ -835,8 +835,8 @@
 
   <section class="lead" aria-labelledby="h-lead">
     <h2 id="h-lead">Who lives up here</h2>
-    <p class="sub only-earth">One line, 4,500 meters up, and Summitbrook sits on it to the foot. This is everyone on Earth living above it, on it, and below it, with all of Colorandoa on the board. Tap "Stand here" on any town to put the sandbox at its height.</p>
-    <p class="sub only-gaia" hidden>One line, 12,060 meters up, and Summitbrook sits on it here too. Every town on the Earth board is on this one, 7,560 meters higher and in the same order. Tap "Stand here" on any town to put the sandbox at its height.</p>
+    <p class="sub only-earth">One line, 4,828 meters up (exactly three miles), and Summitbrook sits on it to the foot. This is everyone on Earth living above it, on it, and below it, with all of Colorandoa on the board. Tap "Stand here" on any town to put the sandbox at its height.</p>
+    <p class="sub only-gaia" hidden>One line, 12,388 meters up, and Summitbrook sits on it here too. Every town on the Earth board is on this one, 7,560 meters higher and in the same order. Tap "Stand here" on any town to put the sandbox at its height.</p>
   </section>
 
   <section class="score" aria-label="How many settlements sit above, on, and below the line">
@@ -917,7 +917,7 @@
 <script>
 (function () {
   'use strict';
-  var LINE_M = 4500, LINE_FT = 14764, MIN_M = 3200, MAX_M = 6000;
+  var LINE_M = 4828.032, LINE_FT = 15840, MIN_M = 3200, MAX_M = 6000;
   var MAX_UP = 327360, MAX_DOWN = -35876;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var $ = function (id) { return document.getElementById(id); };
@@ -1029,8 +1029,8 @@
   var PER_FT = { ft: 1, m: 0.3048, mi: 1 / 5280, km: 0.0003048 };
   var DEC = { ft: 0, m: 0, mi: 3, km: 3 };
   var PAIR = { ft: 'm', m: 'ft', mi: 'km', km: 'mi' };
-  var LINE_IN = { ft: '14,764 ft', m: '4,500 m', mi: '2.796 mi', km: '4.500 km' };
-  var LINE_WORDS = { ft: '4,500 meters', m: '14,764 feet', mi: '4.5 kilometers', km: '2.796 miles' };
+  var LINE_IN = { ft: '15,840 ft', m: '4,828 m', mi: '3.000 mi', km: '4.828 km' };
+  var LINE_WORDS = { ft: '4,828 meters', m: '15,840 feet', mi: '4.828 kilometers', km: '3 miles' };
   function num(v, dec) { return v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
   function altStr(ft, unit) {
     var v = ft * PER_FT[unit], a = Math.abs(v), s = num(a, DEC[unit]);
@@ -1059,14 +1059,14 @@
       note: 'Home of the University of Colorandoa Yaks. Folston Field sits at 15,360 ft.' },
     { id: 'ospero', n: 'Ospero', where: 'Lake Rokentario, Colorandoa', ft: 15200, tag: 'Lake level',
       note: 'Sits on Lake Rokentario. Home of the SUCL Ospero Tarners.' },
-    { id: 'cyrillo', n: 'Cyrillo', where: 'Oneywaka Lake, Colorandoa', ft: 14770, pop: '~63,000', tag: 'Lake level',
+    { id: 'cyrillo', n: 'Cyrillo', where: 'Oneywaka Lake, Colorandoa', ft: 15846, pop: '~63,000', tag: 'Lake level',
       note: 'On the shore of Oneywaka Lake, just outside Summitbrook, with the hamlet of Breverton inside it.' },
-    { id: 'summitbrook', n: 'Summitbrook', where: 'The Crown Heart, Colorandoa', ft: 14764, pop: '10 million',
-      note: 'Capital of Colorandoa, the biggest city in the US with 24 million in the metro, and the highest major city on Earth. Pyratech Arena sits a little higher, at 14,877 ft. The official elevation is 14,764 ft, the low end of the city, which climbs to exactly three miles up (15,840 ft). The whole metro runs from 13,796 ft in Aspenwood to 16,404 ft (5,000 m) in the southern foothills.' },
+    { id: 'summitbrook', n: 'Summitbrook', where: 'The Crown Heart, Colorandoa', ft: 15840, pop: '10 million',
+      note: 'Capital of Colorandoa, the biggest city in the US with 24 million in the metro, and the highest major city on Earth. The official elevation is 15,840 ft, exactly three miles up. That is the downtown reading and the low end of the city, which climbs to about 16,170 ft. Pyratech Arena sits a little higher, at 15,953 ft. The whole metro runs from 13,796 ft in Aspenwood to 17,000 ft (5,182 m) in the southern foothills.' },
     { id: 'aspenwood', n: 'Aspenwood', where: 'Eastern Basin, Colorandoa', ft: 13796, pop: '~1.1 million',
       note: 'Summitbrook\u2019s biggest suburb. SOVRN Arena, home of the Pallor Wraith and the Hoarfrost, sits at 13,846 ft.' },
-    { id: 'colorandoa-city', n: 'Colorandoa City', where: 'The Metro, Colorandoa', ft: 13764, pop: '8.9 million',
-      note: 'Five boroughs: Manhawen, Brecklyn, Crowns, the Branx, and Staton Mesa. Second-biggest city in the US.' },
+    { id: 'colorandoa-city', n: 'Colorandoa City', where: 'The Metro, Colorandoa', ft: 10900, pop: '8.9 million',
+      note: 'Five boroughs: Manhawen, Brecklyn, Crowns, the Branx, and Staton Mesa. Second-biggest city in the US. At 10,900 ft it sits below the oxygen line, so the air is raw.' },
     { id: 'ohwensennaha', n: 'Ohwensennaha', where: 'The Rokens, Colorandoa', m: 3986,
       note: 'Gateway town on the way up into the Rokens.' },
     { id: 'blackened-hills', n: 'Blackened Hills', where: 'The Aleron Region, Colorandoa', ft: 12407,
@@ -1337,7 +1337,7 @@
     ['Lake Titicaca', 'Peru and Bolivia', 'w', 3812, 'm', 'The highest lake that big ships sail on.'],
     ['Pangong Tso', 'Ladakh and Tibet', 'w', 4225, 'm', ''],
     ['Laguna Colorada', 'Bolivia', 'w', 4278, 'm', 'A red salt lake full of flamingos.'],
-    ['Oneywaka Lake', 'The Crown Heart, Colorandoa', 'w', 14770, 'ft', 'Cyrillo sits on its shore, just outside Summitbrook.', { cl: 1 }],
+    ['Oneywaka Lake', 'The Crown Heart, Colorandoa', 'w', 15846, 'ft', 'Cyrillo sits on its shore, just outside Summitbrook.', { cl: 1 }],
     ['Tso Moriri', 'Ladakh, India', 'w', 4522, 'm', ''],
     ['Lake Manasarovar', 'Tibet', 'w', 4590, 'm', ''],
     ['Lake Rokentario', 'Colorandoa', 'w', 15200, 'ft', 'Ospero sits on its shore.', { cl: 1 }],
@@ -1387,7 +1387,7 @@
     ['SOVRN Arena', 'Aspenwood, Colorandoa', 's', 13846, 'ft', 'Home of the Pallor Wraith and the Hoarfrost.', { cl: 1 }],
     ['Estadio Daniel Alcides Carrión', 'Cerro de Pasco, Peru', 's', 4378, 'm', 'One of the highest stadiums on Earth outside Colorandoa.'],
     ['Daocheng Yading Airport', 'Sichuan, China', 's', 4411, 'm', 'The highest civilian airport on Earth outside Colorandoa.'],
-    ['Pyratech Arena', 'Summitbrook, Colorandoa', 's', 14877, 'ft', 'Home of the Silent Wraith and the Blizzard.', { cl: 1 }],
+    ['Pyratech Arena', 'Summitbrook, Colorandoa', 's', 15953, 'ft', 'Home of the Silent Wraith and the Blizzard.', { cl: 1 }],
     ['ALMA Observatory', 'Atacama Desert, Chile', 's', 5058, 'm', 'Sixty-six radio dishes on the Chajnantor plateau.'],
     ['Tanggula railway station', 'Tibet', 's', 5068, 'm', 'A stop on the Qinghai–Tibet Railway.'],
     ['Folston Field', 'Bouldren, Colorandoa', 's', 15360, 'ft', 'Home of the University of Colorandoa Yaks.', { cl: 1 }],
@@ -1498,8 +1498,8 @@
   }
   function lineBlock() {
     return '<div class="lineblock" id="theline" data-id="__line"><h2>The line: ' + LINE_IN[state.unit] + '</h2>' +
-      '<p>' + LINE_WORDS[state.unit] + (PLANET === 'gaia' ? ' above the sea. Summitbrook lives here on Gaia too, with the same town in Tibet and the same village in Ladakh.' :
-        ' above the sea. Summitbrook lives here, and so do a town in Tibet and a village in Ladakh.') + '</p></div>';
+      '<p>' + LINE_WORDS[state.unit] + (PLANET === 'gaia' ? ' above the sea. Summitbrook lives here on Gaia too, and nothing else on the board sits on it.' :
+        ' above the sea. Summitbrook lives here, exactly three miles up, and nothing else on the board sits on it.') + '</p></div>';
   }
   function render() {
     var rows = visible();
@@ -1783,8 +1783,8 @@
     [-13123, 'The start of the abyss', 'l'], [-12500, 'The wreck of the Titanic'], [-12100, 'The average depth of the ocean', 'l'],
     [-9816, 'The deepest whale dive on record', 'l'], [-3281, 'The end of the twilight zone', 'l'], [-1412, 'The Dead Sea shore, the lowest land on Earth'],
     [-1090, 'The deepest scuba dive ever', 'l'], [-656, 'The end of the sunlight zone', 'l'], [-282, 'Badwater Basin in Death Valley'],
-    [0, 'Sea level', 'l'], [2717, 'The tip of the Burj Khalifa'], [5280, 'Denver, one mile up'], [10560, 'Selvak, Colorandoa\u2019s floor'],
-    [12467, 'Colorandoa\u2019s oxygen line', 'l'], [13764, 'Colorandoa City'], [14764, 'Summitbrook, the line'], [14877, 'Pyratech Arena'],
+    [0, 'Sea level', 'l'], [2717, 'The tip of the Burj Khalifa'], [5280, 'Denver, one mile up'], [10560, 'Selvak, Colorandoa\u2019s floor'], [10900, 'Colorandoa City'],
+    [12467, 'Colorandoa\u2019s oxygen line', 'l'], [15840, 'Summitbrook, the line'], [15953, 'Pyratech Arena'],
     [16400, 'Colorandoa\u2019s treeline', 'l'], [16732, 'La Rinconada, Peru'], [17598, 'Summitcrest and Everest South Base Camp'],
     [18045, 'The long-term limit for human life', 'l'], [19341, 'Kilimanjaro\u2019s summit'], [19629, 'Ohwentsarako'], [20310, 'Denali\u2019s summit'],
     [20340, 'Rinconada Alta\u2019s highest mine shafts'], [22838, 'Aconcagua\u2019s summit'], [26247, 'The death zone, 8,000 meters', 'l'],
@@ -1794,13 +1794,13 @@
     [264000, '50 miles, where the US hands out astronaut wings', 'l'], [278871, 'The top of the mesosphere', 'l'], [327360, '62 miles up', 'l']
   ];
   var PRESETS = [
-    ['The line', 14764], ['Sea level', 0], ['Summitcrest', 17598], ['Everest', 29032], ['Mount Ohwenroken', 31332], ['Airliner cruise', 36000],
+    ['The line', 15840], ['Sea level', 0], ['Summitcrest', 17598], ['Everest', 29032], ['Mount Ohwenroken', 31332], ['Airliner cruise', 36000],
     ['Armstrong limit', 63000], ['Baumgartner\u2019s jump', 127852], ['62 miles up', 327360], ['Dead Sea shore', -1412], ['Titanic', -12500], ['Challenger Deep', -35876]
   ];
   var SNAPS = MARKS.map(function (m) { return m[0]; });
   var STEP = { ft: 100, m: 50, mi: 0.1, km: 0.1 }, ROUND = { ft: 10, m: 5, mi: 0.01, km: 0.01 };
   var TRACK = {
-    above: 'linear-gradient(90deg, #17C9B8 0%, #FFD447 21%, #FF5FAE 30%, #7A3CFF 44%, #1B1464 66%, #03021A 100%)',
+    above: 'linear-gradient(90deg, #17C9B8 0%, #FFD447 22%, #FF5FAE 30%, #7A3CFF 44%, #1B1464 66%, #03021A 100%)',
     below: 'linear-gradient(90deg, #3CC8E4 0%, #1273B8 14%, #0A2F6E 32%, #050E33 60%, #01030C 100%)'
   };
 
@@ -2065,8 +2065,8 @@
     var n = Math.max(1, L.length - 1);
     var pos = function (ft) { var i = 0; while (i < L.length && L[i].ft < ft) i++; return Math.round(Math.min(1, i / n) * 1000) / 10; };
     var g = PLANET === 'gaia' ?
-      [[-1e9, '#010509'], [-16404, '#0A4460'], [0, '#7FE9FF'], [24803, '#1B8FB0'], [27559, '#46FFB4'], [39567, '#FF5CCB'], [52493, '#9B6BFF'], [101706, '#0B1D4A'], [1e9, '#020B14']] :
-      [[-1e9, '#01030C'], [-13123, '#0A2F6E'], [0, '#3CC8E4'], [1, '#17C9B8'], [8000, '#FFD447'], [14764, '#FF5FAE'], [29032, '#7A3CFF'], [63000, '#1B1464'], [1e9, '#03021A']];
+      [[-1e9, '#010509'], [-16404, '#0A4460'], [0, '#7FE9FF'], [24803, '#1B8FB0'], [27559, '#46FFB4'], [40643, '#FF5CCB'], [52493, '#9B6BFF'], [101706, '#0B1D4A'], [1e9, '#020B14']] :
+      [[-1e9, '#01030C'], [-13123, '#0A2F6E'], [0, '#3CC8E4'], [1, '#17C9B8'], [8000, '#FFD447'], [15840, '#FF5FAE'], [29032, '#7A3CFF'], [63000, '#1B1464'], [1e9, '#03021A']];
     return 'linear-gradient(90deg, ' + g.map(function (c) { return c[1] + ' ' + pos(c[0]) + '%'; }).join(', ') + ')';
   }
   function stepBtn(id, s, diff, word, none, noneSub) {
@@ -2509,7 +2509,7 @@
   }
 
   function drawGaiaSky(ft, t, W, H) {
-    var z = ft * 0.3048, A = GAIA.atm(z), f = Math.pow(clamp01(A.P / GAIA.P0), 0.62), SBF = 0.488; // f is 1 at the coast and about .49 over Summitbrook
+    var z = ft * 0.3048, A = GAIA.atm(z), f = Math.pow(clamp01(A.P / GAIA.P0), 0.62), SBF = 0.478; // f is 1 at the coast and about .48 over Summitbrook
     var lo = Math.min(1, f / SBF), hi = clamp01((f - SBF) / (1 - SBF));
     var zen = mix(mix([1, 5, 12], [3, 27, 78], lo), [22, 118, 196], hi), mid = mix(mix([2, 9, 20], [7, 52, 124], lo), [74, 172, 216], hi), hor = mix(mix([6, 24, 44], [44, 124, 192], lo), [216, 246, 236], hi);
     var dip = Math.acos(6371000 / (6371000 + z)) * 57.2958, g = clamp01(dip / 10.2);
@@ -2835,7 +2835,7 @@
     'skawenta': 'Tsiʼkaroñwaheh, “where the clouds sleep,” towers over town at 15,710 m.',
     'rinconada-alta': 'Old gold-mining town near the New Moxelo border. Its shafts climb to about 45,143 ft, the highest mines on Gaia. Home of the Mineros.',
     'bouldren': 'Home of the University of Colorandoa Yaks. Folston Field sits at 40,163 ft.',
-    'summitbrook': 'Capital of Colorandoa, the biggest city in the US with 24 million in the metro, and the highest major city on Gaia. Pyratech Arena sits a little higher, at 39,680 ft. The official elevation is 39,567 ft, the low end of the city, which climbs to 40,643 ft (12,388 m). The whole metro runs from 38,599 ft in Aspenwood to 41,207 ft (12,560 m) in the southern foothills. Water boils at 167°F here, so every kitchen has a pressure cooker.',
+    'summitbrook': 'Capital of Colorandoa, the biggest city in the US with 24 million in the metro, and the highest major city on Gaia. The official elevation is 40,643 ft (12,388 m), the downtown reading and the low end of the city, which climbs to 40,973 ft (12,489 m). Pyratech Arena sits a little higher, at 40,756 ft. The whole metro runs from 38,599 ft in Aspenwood to 41,803 ft (12,742 m) in the southern foothills. Water boils at 166°F here, so every kitchen has a pressure cooker.',
     'aspenwood': 'Summitbrook’s biggest suburb. SOVRN Arena, home of the Pallor Wraith and the Hoarfrost, sits at 38,649 ft.',
     'blackened-hills': 'Home of the BH-BL Hoplites.',
     'cliffton-mesa': 'Home of the Shen Highlanders, next door to Blackened Hills.',
@@ -2845,13 +2845,13 @@
     var e = {}, k;
     for (k in d) e[k] = d[k];
     e.exact = d.exact + UP_M; e.m = Math.round(e.exact); e.ft = Math.round(e.exact / 0.3048);
-    e.dFt = e.ft - 39567; e.dM = e.m - 12060;
+    e.dFt = e.ft - 40643; e.dM = e.m - 12388;
     e.note = GNOTE.hasOwnProperty(d.id) ? GNOTE[d.id] : d.note.replace(/on Earth/g, 'on Gaia');
     return e;
   });
   var BYID_G = {};
   DATA_G.forEach(function (d) { BYID_G[d.id] = d; });
-  BYID_G.__line = { id: '__line', n: 'The line', ft: 39567, m: 12060, exact: 12060, band: 'on' };
+  BYID_G.__line = { id: '__line', n: 'The line', ft: 40643, m: 12388, exact: 12388.032, band: 'on' };
   var MARKERS_G = [
     { m: 13060, show: 13060, ft: 42848, text: 'The Gaians’ living ceiling. Nobody on Gaia lives higher than this for good. Anything above is a seasonal stop for climbers.', scope: 'any' },
     { m: 11060, show: 11060, ft: 36286, text: 'The world list stops here. Below this, only Colorandoa is on the board.', scope: 'all' },
@@ -2861,7 +2861,7 @@
     [0, 'The coast', 'A thin strip of land at sea level. The air is thicker than anything on Earth and it averages 130°F. Hypercanes spin offshore. The only people down here are the dock crews at the ports.'],
     [500, 'The Great Stair', 'Cliff bands and terraces climbing 7,560 meters from the sea to where the land really starts. It is the wettest place on the planet and nobody lives on it. Rivers drop down it through canyons and waterfalls, and the Lifts carry people past it.'],
     [24803, 'Gaia’s ground floor', 'The top of the Great Stair, where Earth’s coastlines sit. Gaia’s New York, London and Tokyo are all up here, and it is about 59°F on an average day. Average ground on the whole planet is only 840 meters higher.'],
-    [33415, 'High country', 'Tree lines and snow lines start showing up, depending on where you are. Summitbrook sits in this band at 12,060 meters, under a deep, dark blue sky where auroras are a regular thing.'],
+    [33415, 'High country', 'Tree lines and snow lines start showing up, depending on where you are. Summitbrook sits in this band at 12,388 meters, under a deep, dark blue sky where auroras are a regular thing.'],
     [42848, 'Above the living ceiling', 'No Gaian lives up here for good. This is climbing country. The camps on Gaia’s Everest are all in this band, and a climber from Earth has been in their own death zone since Base Camp.'],
     [52493, 'The Gaian death zone', 'Even Gaians can’t keep up here. Gaia’s Everest and all of the Roken 14 top out in this zone, and Mount Ohwenroken pokes 1,110 meters into it.'],
     [64304, 'Past the mask line', 'Higher than any mountain on Gaia. From here up, everybody needs a sealed oxygen mask, Gaian or not. Gaian airliners cruise in this band on huge wings.'],
@@ -2881,7 +2881,7 @@
     [-15625, 'The wreck of the Titanic'], [-15125, 'The average depth of the ocean', 'l'], [-14108, 'The Dead Sea shore, the lowest land on Gaia'],
     [-3281, 'The end of the twilight zone', 'l'], [-2820, 'Badwater Basin in Death Valley'], [-656, 'The end of the sunlight zone', 'l'],
     [0, 'Sea level', 'l'], [24803, 'The top of the Great Stair', 'l'], [27559, 'Average ground on Gaia', 'l'], [30083, 'Denver'],
-    [35363, 'Selvak, Colorandoa’s floor'], [38567, 'Colorandoa City'], [39567, 'Summitbrook, the line'], [39680, 'Pyratech Arena'],
+    [35363, 'Selvak, Colorandoa’s floor'], [35703, 'Colorandoa City'], [40643, 'Summitbrook, the line'], [40756, 'Pyratech Arena'],
     [41535, 'La Rinconada, Peru'], [42401, 'Summitcrest and Everest Base Camp'], [42848, 'The Gaians’ living ceiling', 'l'],
     [44144, 'Kilimanjaro’s summit'], [44432, 'Ohwentsarako'], [44701, 'Camp I on Everest'], [45113, 'Denali’s summit'],
     [45143, 'Rinconada Alta’s highest mine shafts'], [45801, 'Camp II on Everest'], [47641, 'Aconcagua’s summit'],
@@ -2890,7 +2890,7 @@
     [70000, 'A Gaian airliner at cruise', 'l'], [80709, 'The pressure suit line', 'l'], [101706, 'The Armstrong limit', 'l'], [327360, '62 miles up', 'l']
   ];
   var PRESETS_G = [
-    ['The line', 39567], ['Sea level', 0], ['Top of the Great Stair', 24803], ['Average ground', 27559], ['Summitcrest', 42401], ['Living ceiling', 42848],
+    ['The line', 40643], ['Sea level', 0], ['Top of the Great Stair', 24803], ['Average ground', 27559], ['Summitcrest', 42401], ['Living ceiling', 42848],
     ['Death zone', 52493], ['Everest', 53835], ['Mount Ohwenroken', 56135], ['Airliner cruise', 70000], ['Pressure suit line', 80709], ['Armstrong limit', 101706],
     ['62 miles up', 327360], ['Dead Sea shore', -14108], ['Titanic', -15625], ['Challenger Deep', -44846]
   ];
@@ -2901,9 +2901,9 @@
       PILE_T: PILE_T, PILE_MARKS: PILE_MARKS, sb: { alt: 0, mode: 'above', last: { above: 0, below: 0 } }
     },
     gaia: {
-      LINE_M: 12060, LINE_FT: 39567, MIN_M: MIN_M + UP_M, MAX_M: MAX_M + UP_M, MAX_UP: 327360, MAX_DOWN: -44846,
-      LINE_IN: { ft: '39,567 ft', m: '12,060 m', mi: '7.494 mi', km: '12.060 km' },
-      LINE_WORDS: { ft: '12,060 meters', m: '39,567 feet', mi: '12.06 kilometers', km: '7.494 miles' },
+      LINE_M: 12388.032, LINE_FT: 40643, MIN_M: MIN_M + UP_M, MAX_M: MAX_M + UP_M, MAX_UP: 327360, MAX_DOWN: -44846,
+      LINE_IN: { ft: '40,643 ft', m: '12,388 m', mi: '7.698 mi', km: '12.388 km' },
+      LINE_WORDS: { ft: '12,388 meters', m: '40,643 feet', mi: '12.388 kilometers', km: '7.698 miles' },
       DATA: DATA_G, BYID: BYID_G, MARKERS: MARKERS_G, ZONES_UP: ZONES_UP_G, ZONES_DOWN: ZONES_DOWN_G, MARKS: MARKS_G, PRESETS: PRESETS_G,
       TRACK: {
         above: 'linear-gradient(90deg, #7FE9FF 0%, #1B8FB0 14%, #46FFB4 27%, #7FE9FF 35%, #FF5CCB 40%, #9B6BFF 50%, #0B1D4A 68%, #020B14 100%)',
@@ -2911,7 +2911,7 @@
       },
       PILE_T: { ft: [[36000, 38000, 42000, 44000], 0.3048, 0], m: [[11000, 11500, 12500, 13500], 1, 0], mi: [[6.75, 7, 8, 8.25], 1609.344, 2], km: [[11, 11.5, 12.5, 13.5], 1000, 1] },
       PILE_MARKS: [[13060, 'living ceiling']],
-      sb: { alt: 39567, mode: 'above', last: { above: 39567, below: 0 } }
+      sb: { alt: 40643, mode: 'above', last: { above: 40643, below: 0 } }
     }
   };
   function buildStops(w, gaia) {
@@ -3019,7 +3019,7 @@
   var RULER_TOP = 105000, RULER = [
     ['Coastlines', 0, 'Top of the Stair', 24803],
     ['Average land', 2756, 'Average land', 27559],
-    ['Summitbrook', 14764, 'Summitbrook', 39567, 1],
+    ['Summitbrook', 15840, 'Summitbrook', 40643, 1],
     ['Living limit', 18045, 'Living ceiling', 42848],
     ['Death zone', 26247, 'Death zone', 52493],
     ['Everest', 29032, 'Everest', 53835],
@@ -3556,7 +3556,7 @@
   var LEN = { ft: 0.3048, m: 1, mi: 1609.344, km: 1000, yd: 0.9144, nmi: 1852, cm: 0.01, in: 0.0254 };
   function parseNum(s) { s = String(s).replace(/[,\s_]/g, '').replace('−', '-'); return /^-?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(s) ? parseFloat(s) : NaN; }
   function cvElev() {
-    $('cvB').innerHTML = '<p class="tk-lede">Type a height in any unit and see it in all of them.</p><div class="tk-inline"><input class="tk-in" id="ceV" type="text" inputmode="decimal" value="14764" aria-label="Value"><select class="tk-in" id="ceU" aria-label="Unit">' +
+    $('cvB').innerHTML = '<p class="tk-lede">Type a height in any unit and see it in all of them.</p><div class="tk-inline"><input class="tk-in" id="ceV" type="text" inputmode="decimal" value="15840" aria-label="Value"><select class="tk-in" id="ceU" aria-label="Unit">' +
       ['ft', 'm', 'mi', 'km', 'yd', 'nmi'].map(function (u) { return '<option value="' + u + '">' + ({ ft: 'feet', m: 'meters', mi: 'miles', km: 'kilometers', yd: 'yards', nmi: 'nautical miles' })[u] + '</option>'; }).join('') + '</select></div><div class="tk-res" id="ceR"></div><div class="tk-bar" style="margin-top:.9rem"><button type="button" class="tk-btn go" id="ceG">Stand here on ' + (PLANET === 'gaia' ? 'Gaia' : 'Earth') + '</button><button type="button" class="tk-btn" id="ceH">Use my current height</button></div><p class="tk-msg" id="ceM" role="status"></p>';
     $('ceU').value = state.unit;
     function go() {
@@ -3612,7 +3612,7 @@
     function fill() { var u = Object.keys(XU[$('cxC').value]); $('cxA').innerHTML = $('cxB').innerHTML = u.map(function (x) { return '<option>' + x + '</option>'; }).join(''); $('cxA').value = u[0]; $('cxB').value = u[Math.min(1, u.length - 1)]; if ($('cxC').value === 'length') { $('cxA').value = 'mi'; $('cxB').value = 'ft'; } go(); }
     function go() {
       var c = $('cxC').value, a = $('cxA').value, b = $('cxB').value, v = tkDec($('cxV').value), o = $('cxO'), big = $('cxV').value.replace(/[^\d]/g, '').length > 400;
-      if (!v || big) { o.textContent = big ? 'That number is too long.' : 'Type a plain number, like 14764 or -40.5.'; return; }
+      if (!v || big) { o.textContent = big ? 'That number is too long.' : 'Type a plain number, like 15840 or -40.5.'; return; }
       var r;
       if (c === 'temperature') {
         var k = a === 'C' ? fadd(v, tkF(27315, 100)) : a === 'F' ? fadd(fdiv(fmul(fsub(v, tkF(32)), tkF(5)), tkF(9)), tkF(27315, 100)) : v;
@@ -3626,7 +3626,7 @@
     fill();
   }
   function cvEG() {
-    $('cvB').innerHTML = '<p class="tk-lede">Every height on Earth sits 7,560 m higher on Gaia. Land and lakes below the sea are 10 times deeper there, and the oceans are 1.25 times deeper.</p><div class="tk-two"><div class="tk-field"><label for="cgD">Direction</label><select class="tk-in" id="cgD"><option value="eg">Earth to Gaia</option><option value="ge">Gaia to Earth</option></select></div><div class="tk-field"><label for="cgS">If it is below the sea</label><select class="tk-in" id="cgS"><option value="land">Dry land or a lake</option><option value="sea">The ocean</option></select></div></div><div class="tk-inline"><input class="tk-in" id="cgV" type="text" inputmode="decimal" value="14764" aria-label="Elevation"><select class="tk-in" id="cgU" aria-label="Unit"><option value="ft">feet</option><option value="m">meters</option><option value="mi">miles</option><option value="km">kilometers</option></select></div><div class="tk-res" id="cgR"></div><div class="tk-bar" style="margin-top:.9rem"><button type="button" class="tk-btn go" id="cgG"></button></div><p class="tk-msg" id="cgM"></p>';
+    $('cvB').innerHTML = '<p class="tk-lede">Every height on Earth sits 7,560 m higher on Gaia. Land and lakes below the sea are 10 times deeper there, and the oceans are 1.25 times deeper.</p><div class="tk-two"><div class="tk-field"><label for="cgD">Direction</label><select class="tk-in" id="cgD"><option value="eg">Earth to Gaia</option><option value="ge">Gaia to Earth</option></select></div><div class="tk-field"><label for="cgS">If it is below the sea</label><select class="tk-in" id="cgS"><option value="land">Dry land or a lake</option><option value="sea">The ocean</option></select></div></div><div class="tk-inline"><input class="tk-in" id="cgV" type="text" inputmode="decimal" value="15840" aria-label="Elevation"><select class="tk-in" id="cgU" aria-label="Unit"><option value="ft">feet</option><option value="m">meters</option><option value="mi">miles</option><option value="km">kilometers</option></select></div><div class="tk-res" id="cgR"></div><div class="tk-bar" style="margin-top:.9rem"><button type="button" class="tk-btn go" id="cgG"></button></div><p class="tk-msg" id="cgM"></p>';
     $('cgU').value = state.unit;
     var last = null;
     function go() {
@@ -3900,7 +3900,7 @@
     if (PLANET === 'gaia') return SB.alt < 0 ? 'ripple' : 'rings';
     if (SB.alt < -1) return 'sonar';
     if (SB.alt > 60000) return 'prism';
-    if (SB.alt > 14764) return 'aurora';
+    if (SB.alt > 15840) return 'aurora';
     return SB.alt < 3000 ? 'ripple' : 'grid';
   }
   function tkFx(force) {
