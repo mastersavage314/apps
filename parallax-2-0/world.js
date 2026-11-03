@@ -619,6 +619,65 @@
     if (d !== 'real' && d !== 'none' && d !== 'on' && d !== 'us' && d !== 'eu') { d = (to === 'gaia' && (d === 'au' || d === 'nz' || d === 'cl')) ? d : 'real'; }
     return (s === null && d === 'real') ? null : { s: s, d: d };
   }
+  // Weekdays: Earth 0..6 (Sun..Sat) <-> Gaia 0..4 (Sunday, Monday, Thursday, Friday, Saturday), matched by the Earth day each one feels like.
+  var E2G_WD = [0, 1, 1, 2, 2, 3, 4], G2E_WD = [0, 1, 3, 5, 6];
+  function uniqueName(to, name, max) {
+    var P = PLANETS[to], taken = {}, k = 2, base = name, label = to === 'gaia' ? 'Gaia' : 'Earth', nm = name;
+    P.zones().forEach(function (z) { taken[norm(z.name)] = 1; });
+    if (taken[norm(nm)]) { nm = (base.slice(0, max - label.length - 3) + ' (' + label + ')'); }
+    while (taken[norm(nm)] && k < 99) { nm = base.slice(0, max - 6) + ' (' + label + ' ' + k + ')'; k++; }
+    return nm;
+  }
+  // Your own clock-change rule carried to the other planet: same months, times of day scaled to that day's length, weekdays by feel.
+  function convertRule(from, to, r) {
+    var PF = PLANETS[from], PT = PLANETS[to], c = { name: r.name, save: r.save }, ok = true;
+    ['s', 'e'].forEach(function (k) {
+      var kind = r[k + 'k'], wd = r[k + 'd'], n = r[k + 'n'];
+      wd = from === 'earth' ? E2G_WD[wd] : G2E_WD[wd];
+      if (kind === 'd') { wd = 0; }
+      if (kind === 'n') { n = Math.min(4, n); } else if (kind === 'l') { n = 1; } else { n = Math.min(PT.maxDay, n); }
+      c[k + 'k'] = kind; c[k + 'm'] = r[k + 'm']; c[k + 'n'] = n; c[k + 'd'] = wd == null ? 0 : wd;
+      c[k + 't'] = Math.min(PT.dayMin - 1, Math.round(r[k + 't'] * PT.dayMin / PF.dayMin));
+    });
+    return ok ? c : null;
+  }
+  // Copies one of your own zones to the other planet. Returns {ok, note} or {error}.
+  function copyZone(from, to, id) {
+    var PF = PLANETS[from], PT = PLANETS[to], z = null, note = '';
+    PF.getStore().zones.forEach(function (q) { if (q.id === id) { z = q; } });
+    if (!z) { return { error: 'That zone is gone.' }; }
+    var std, rule = 'none';
+    if (z.base) {
+      var ref = PT.refFor(z.base), parts = ref && PT.refParts(ref);
+      if (!parts) { return { error: 'The other planet has no clock data for ' + z.base + '.' }; }
+      std = parts.std + (z.delta || 0); rule = parts.rule;
+    } else {
+      std = to === 'gaia' ? gaiaOf(z.std) : earthOf(z.std); rule = z.rule;
+    }
+    std = Math.max(PT.minStd, Math.min(PT.maxStd, std));
+    if (rule.charAt(0) === 'x') {
+      var src = null, made = null;
+      PF.getStore().rules.forEach(function (q) { if ('x' + q.id === rule) { src = q; } });
+      var conv = src && convertRule(from, to, src);
+      if (!conv) { rule = 'none'; note = ' Its clock-change rule could not be carried across, so it keeps no clock changes.'; }
+      else {
+        PT.getStore().rules.forEach(function (q) { if (norm(q.name) === norm(conv.name) && q.save === conv.save) { made = 'x' + q.id; } });
+        if (!made) {
+          var rr = PT.addRule(conv);
+          if (rr.error) { rr = PT.addRule(Object.assign({}, conv, { name: uniqueName(to, conv.name, 40) })); }
+          made = rr.ok ? rr.code : null;
+        }
+        if (made) { rule = made; note = ' Its rule came along, with times and weekdays matched to that planet.'; } else { rule = 'none'; note = ' Its rule could not be copied (limit reached), so it keeps no clock changes.'; }
+      }
+    } else if (!PT.ruleText[rule]) { note = ' ' + PF.ruleText[rule] + ' only exists on the other planet, so it keeps no clock changes.'; rule = 'none'; }
+    var dupe = null;
+    PT.getStore().zones.forEach(function (q) { if (norm(q.name) === norm(z.name) && q.std === std && q.rule === rule) { dupe = q; } });
+    if (dupe) { return { ok: true, skipped: true, name: dupe.name, note: ' It was already there, so nothing changed.' }; }
+    var name = uniqueName(to, z.name, 60);
+    var res = PT.addZone({ name: name, std: std, rule: rule });
+    if (res.error) { return res; }
+    return { ok: true, name: name, note: note };
+  }
   function mergeLab(from, to, lab, only) {
     var out = PLANETS[to].lab(), n = 0;
     Object.keys(lab.ov).forEach(function (k) {
@@ -652,7 +711,7 @@
       '<div class="px-scen" data-role="scen"></div>' +
       '<div class="px-chaos"><select data-role="chaoslvl" aria-label="How much chaos"><option value="15">Mild: 15 zones</option><option value="60" selected>Wild: 60 zones</option><option value="200">Total: 200 zones</option></select><button type="button" class="btn" data-role="chaos">🎲 Chaos button</button><button type="button" class="btn plain" data-role="undo" disabled>Undo last scenario</button></div>' +
       '<h3>Everything you changed</h3><ul class="px-edits" data-role="edits"></ul>' +
-      '<div class="acts"><button type="button" class="btn plain" data-role="revertall">Revert everything</button><button type="button" class="btn grad" data-role="copyall">Copy my edits to ' + (gaia ? 'Earth' : 'Gaia') + '</button></div>' +
+      '<div class="acts"><button type="button" class="btn plain" data-role="revertall">Revert everything</button><button type="button" class="btn grad" data-role="copyall">Copy my edits to ' + (gaia ? 'Earth' : 'Gaia') + '</button><button type="button" class="btn grad" data-role="copyzones">Copy my zones to ' + (gaia ? 'Earth' : 'Gaia') + '</button></div>' +
       '<h3>Save or share your sandbox</h3><p class="sub">This code holds your edits. Keep it, send it, or paste one in to load it.</p>' +
       '<textarea readonly data-role="code" aria-label="Your sandbox code" placeholder="Tap Make code"></textarea>' +
       '<div class="acts"><button type="button" class="btn gold" data-role="mkcode">Make code</button><button type="button" class="btn plain" data-role="cpcode">Copy it</button></div>' +
@@ -838,7 +897,11 @@
       }
       else if (b.getAttribute('data-k') === 'revert') { revertTarget(t); note('Reverted. ' + st.name + ' is back to how it was.'); }
       else if (b.getAttribute('data-k') === 'copy') {
-        if (t.kind === 'custom') { note('Your own zones live on one planet. Copy a real or built-in zone instead.'); return; }
+        if (t.kind === 'custom') {
+          var cz = copyZone(pk, other, t.id);
+          note(cz.error ? cz.error : 'Copied ' + st.name + ' to ' + (gaia ? 'Earth' : 'Gaia') + ' as ' + cz.name + '.' + cz.note);
+          return;
+        }
         var n = mergeLab(pk, other, lab(), t.kind === 'builtin' ? '@' + t.id : t.id);
         note(n ? 'Copied ' + st.name + ' to ' + (gaia ? 'Earth' : 'Gaia') + '.' : 'Nothing to copy: edit it first.');
         return;
@@ -905,6 +968,12 @@
       P.revertAllZones(); P.labSetAll({ ov: {}, cc: {}, pl: {} }); $('undo').disabled = false;
       note('Everything is back to normal. Undo brings it back.'); drawCard(); paintEdits(); paintMeter();
     });
+    $('copyzones').addEventListener('click', function () {
+      var zs = P.getStore().zones.slice(), n = 0, bad = 0;
+      if (!zs.length) { note('You have no zones of your own on ' + (gaia ? 'Gaia' : 'Earth') + ' yet.'); return; }
+      zs.forEach(function (z) { var r = copyZone(pk, other, z.id); if (r.ok && !r.skipped) { n++; } else if (!r.ok) { bad++; } });
+      note(!n && !bad ? 'Your zones are already on ' + (gaia ? 'Earth' : 'Gaia') + '.' : 'Copied ' + plural(n, 'zone', 'zones') + ' to ' + (gaia ? 'Earth' : 'Gaia') + (bad ? ', ' + bad + ' could not be carried across.' : '.'));
+    });
     $('copyall').addEventListener('click', function () {
       var n = mergeLab(pk, other, lab());
       note(n ? 'Copied ' + plural(n, 'edit', 'edits') + ' to ' + (gaia ? 'Earth' : 'Gaia') + ' (zones, countries and places with a twin).' : 'Nothing to copy yet.');
@@ -942,8 +1011,9 @@
     function b64(s) { return btoa(unescape(encodeURIComponent(s))); }
     function unb64(s) { return decodeURIComponent(escape(atob(s))); }
     $('mkcode').addEventListener('click', function () {
-      $('code').value = 'PX1' + (gaia ? 'G' : 'E') + '.' + b64(JSON.stringify(lab()));
-      $('code').select(); note('Code made. Tap Copy it, or hold and copy from the box.');
+      var st = P.getStore(), withOwn = st.zones.length || st.rules.length;
+      $('code').value = (withOwn ? 'PX2' : 'PX1') + (gaia ? 'G' : 'E') + '.' + b64(JSON.stringify(withOwn ? { lab: lab(), zones: st.zones, rules: st.rules } : lab()));
+      $('code').select(); note('Code made' + (withOwn ? ', with your ' + plural(st.zones.length, 'zone', 'zones') + ' and ' + plural(st.rules.length, 'rule', 'rules') : '') + '. Tap Copy it, or hold and copy from the box.');
     });
     $('cpcode').addEventListener('click', function () {
       if (!$('code').value) { $('mkcode').click(); }
@@ -951,11 +1021,13 @@
       catch (err) { $('code').select(); note('Select the code and copy it.'); }
     });
     $('load').addEventListener('click', function () {
-      var t = $('paste').value.trim(), m = /^PX1([EG])\.([A-Za-z0-9+\/=]+)$/.exec(t);
+      var t = $('paste').value.trim(), m = /^PX([12])([EG])\.([A-Za-z0-9+\/=]+)$/.exec(t);
       if (!m) { note('That does not look like a sandbox code.'); return; }
-      if ((m[1] === 'G') !== gaia) { note('That code is for ' + (m[1] === 'G' ? 'Gaia' : 'Earth') + '. Load it on that side, then copy the edits across.'); return; }
-      var raw; try { raw = JSON.parse(unb64(m[2])); } catch (err) { note('That code is damaged.'); return; }
-      L.undo = JSON.stringify(lab()); P.labSetAll(raw); $('undo').disabled = false; $('paste').value = '';
+      if ((m[2] === 'G') !== gaia) { note('That code is for ' + (m[2] === 'G' ? 'Gaia' : 'Earth') + '. Load it on that side, then copy the edits across.'); return; }
+      var raw; try { raw = JSON.parse(unb64(m[3])); } catch (err) { note('That code is damaged.'); return; }
+      L.undo = JSON.stringify(lab()); $('undo').disabled = false; $('paste').value = '';
+      if (m[1] === '2') { var ip = P.importPack(raw); if (ip.error) { note(ip.error); return; } paintAll(); note('Loaded with ' + plural(ip.zones, 'zone', 'zones') + ' and ' + plural(ip.rules, 'rule', 'rules') + ' of yours. Undo restores the edits.'); return; }
+      P.labSetAll(raw);
       note('Loaded. ' + plural(Object.keys(P.lab().ov).length + Object.keys(P.lab().cc).length + Object.keys(P.lab().pl).length, 'edit', 'edits') + ' in the sandbox. Undo goes back.'); paintAll();
     });
 

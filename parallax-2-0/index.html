@@ -1884,7 +1884,7 @@
   }
 
   /* ---------- The viewer's own clocks and zones: kept between visits ---------- */
-  var LS_KEY = 'worldclock-own', docRef = null, writing = false, dirty = false, syncState = 'local';
+  var LS_KEY = 'worldclock-own', docRef = null, writing = false, dirty = false, syncState = 'local', tooBig = false;
   function cleanRef(ref, zones) {
     if (typeof ref !== 'string') { return null; }
     var kind = refKind(ref), id = refId(ref);
@@ -1935,6 +1935,7 @@
     try { window.localStorage.setItem(LS_KEY, JSON.stringify(store)); } catch (err) { /* nothing more to do */ }
   }
   function paintSync() {
+    if (tooBig) { $('syncNote').textContent = 'Your sandbox is too big to sync to your account, so it is saved in this browser only. Revert some edits to sync again.'; return; }
     $('syncNote').textContent = syncState === 'account' ?
       'Clocks and zones you make are saved to your account for this page, so they follow you to your other devices.' :
       'Clocks and zones you make are saved in this browser.';
@@ -1944,8 +1945,13 @@
     saveLocal();
     if (!docRef) { return; }
     if (writing) { dirty = true; return; }
+    var pack = { zones: store.zones, places: store.places, rules: store.rules, lab: store.lab };
+    var big = false;
+    try { big = JSON.stringify(pack).length > 900000; } catch (err) { big = false; }
+    if (big !== tooBig) { tooBig = big; paintSync(); }
+    if (big) { return; }   // too large for one account document; it stays saved in this browser
     writing = true; dirty = false;
-    docRef.set({ zones: store.zones, places: store.places, rules: store.rules, lab: store.lab }).then(function () {
+    docRef.set(pack).then(function () {
       writing = false;
       if (dirty) { persist(); }
     }, function () {
@@ -2457,6 +2463,42 @@
     planet: 'earth', sandboxId: 'sandbox', pickId: 'zin', dayMin: RULE_DAYMIN, weekdays: DAYS, months: MONTHS, maxDay: RULE_MAXDAY, weekLen: 7,
     limits: { zones: MAX_OWN_ZONES, places: MAX_OWN_PLACES, rules: MAX_OWN_RULES },
     getStore: function () { return store; },
+    // Merges zones and rules from a sandbox code (same ids replace), then loads its lab. Returns counts, or {error}.
+    importPack: function (pack) {
+      if (!pack || typeof pack !== 'object') { return { error: 'That code is damaged.' }; }
+      var inZ = (Array.isArray(pack.zones) ? pack.zones : []).filter(function (z) { return z && typeof z.id === 'string'; });
+      var inR = (Array.isArray(pack.rules) ? pack.rules : []).filter(function (r) { return r && typeof r.id === 'string'; });
+      var zid = {}, rid = {}, taken = {};
+      inZ.forEach(function (z) { zid[z.id] = 1; });
+      inR.forEach(function (r) { rid[r.id] = 1; });
+      var keepZ = store.zones.filter(function (z) { return !zid[z.id]; }), keepR = store.rules.filter(function (r) { return !rid[r.id]; });
+      RULESETS.concat(keepZ).forEach(function (z) { taken[norm(z.name)] = 1; });
+      var rtaken = {}; keepR.forEach(function (r) { rtaken[norm(r.name)] = 1; });
+      inZ = inZ.map(function (z) {
+        var c = Object.assign({}, z), nm = String(c.name || '').trim().slice(0, 60), base = nm, k = 2;
+        while (taken[norm(nm)] && k < 99) { nm = base.slice(0, 54) + ' (' + k + ')'; k++; }
+        taken[norm(nm)] = 1; c.name = nm; return c;
+      });
+      inR = inR.map(function (r) {
+        var c = Object.assign({}, r), nm = String(c.name || '').trim().slice(0, 40), base = nm, k = 2;
+        while (rtaken[norm(nm)] && k < 99) { nm = base.slice(0, 34) + ' (' + k + ')'; k++; }
+        rtaken[norm(nm)] = 1; c.name = nm; return c;
+      });
+      var raw = { zones: keepZ.concat(inZ), rules: keepR.concat(inR), places: store.places.slice(), lab: pack.lab || { ov: {}, cc: {}, pl: {} } };
+      store = sanitize(raw);
+      var made = 0;
+      inZ.forEach(function (z) {
+        var rs = null; store.zones.forEach(function (q) { if (q.id === z.id) { rs = q; } });
+        if (!rs) { return; }
+        made++;
+        var ref = 'custom:' + rs.id;
+        var have = store.places.some(function (p) { return p.zone === ref && p.zc; });
+        if (!have && store.places.length < MAX_OWN_PLACES) { store.places.push({ id: newId() + 'c', name: rs.name, where: 'Your custom zone, ' + ruleLine(rs), zone: ref, zc: true }); }
+        else { store.places.forEach(function (p) { if (p.zone === ref && p.zc) { p.name = rs.name; } }); }
+      });
+      persist(); storeChanged();
+      return { ok: true, zones: made, rules: inR.length };
+    },
     commit: function () { setRules(store.rules); persist(); storeChanged(); },
     setSel: function (ref, label) { setSel(ref, label); },
     say: say,
@@ -3143,15 +3185,15 @@
 
   /* ---------- Build once ---------- */
   var PRESETS = [
-    ['Your time', function () { return { ref: viewerRef, label: viewerTz ? homeName(viewerTz) : ztc(V.off || 0) }; }],
+    ['Your time', function () { return { ref: viewerTz && /^[A-Za-z]+\/[A-Za-z0-9_+\-\/]+$/.test(viewerTz) && viewerRef.split(':').length === 3 ? viewerRef + ':' + viewerTz : viewerRef, label: viewerTz ? homeName(viewerTz) : ztc(V.off || 0) }; }],
     ['Summitbrook', function () { return { ref: CORD, label: 'Summitbrook, CL' }; }],
     ['ZTC', function () { return { ref: 'ztc:0', label: ztc(0) }; }],
     ['Hitirā', function () { return { ref: 'custom:hitira', label: 'Hitirā' }; }],
-    ['Kathmandu', function () { return { ref: NEPAL, label: 'Kathmandu' }; }],
-    ['London', function () { return { ref: 'real:840:eu', label: 'London' }; }],
-    ['Tokyo', function () { return { ref: 'real:1620:none', label: 'Tokyo' }; }],
-    ['Kiritimati', function () { return { ref: 'real:2040:none', label: 'Kiritimati' }; }],
-    ['Baker Island', function () { return { ref: 'real:-240:none', label: 'Baker Island' }; }]
+    ['Kathmandu', function () { return { ref: NEPAL + ':Asia/Kathmandu', label: 'Kathmandu' }; }],
+    ['London', function () { return { ref: 'real:840:eu:Europe/London', label: 'London' }; }],
+    ['Tokyo', function () { return { ref: 'real:1620:none:Asia/Tokyo', label: 'Tokyo' }; }],
+    ['Kiritimati', function () { return { ref: 'real:2040:none:Pacific/Kiritimati', label: 'Kiritimati' }; }],
+    ['Baker Island', function () { return { ref: 'real:-240:none:Etc/GMT+12', label: 'Baker Island' }; }]
   ];
   (function marks() {
     var html = '', i, a, r1, r2, s, c;
@@ -3522,7 +3564,7 @@
   }
 
   /* ---------- The viewer's own Gaian clocks and zones: kept between visits ---------- */
-  var LS_KEY = 'highnoon-gaia-own', docRef = null, writing = false, dirty = false, syncState = 'local', asked = false;
+  var LS_KEY = 'highnoon-gaia-own', docRef = null, writing = false, dirty = false, syncState = 'local', tooBig = false, asked = false;
   function cleanRef(ref, zones) {
     if (typeof ref !== 'string') { return null; }
     var a = ref.split(':'), n = parseInt(a[1], 10);
@@ -3572,6 +3614,7 @@
     try { window.localStorage.setItem(LS_KEY, JSON.stringify(store)); } catch (err) { /* nothing more to do */ }
   }
   function paintSync() {
+    if (tooBig) { $('gSyncNote').textContent = 'Your sandbox is too big to sync to your account, so it is saved in this browser only. Revert some edits to sync again.'; return; }
     $('gSyncNote').textContent = syncState === 'account' ?
       'Gaian clocks and zones you make are saved to your account for this page, so they follow you to your other devices.' :
       'Gaian clocks and zones you make are saved in this browser.';
@@ -3581,8 +3624,13 @@
     saveLocal();
     if (!docRef) { return; }
     if (writing) { dirty = true; return; }
+    var pack = { zones: store.zones, places: store.places, rules: store.rules, lab: store.lab };
+    var big = false;
+    try { big = JSON.stringify(pack).length > 900000; } catch (err) { big = false; }
+    if (big !== tooBig) { tooBig = big; paintSync(); }
+    if (big) { return; }   // too large for one account document; it stays saved in this browser
     writing = true; dirty = false;
-    docRef.set({ zones: store.zones, places: store.places, rules: store.rules, lab: store.lab }).then(function () {
+    docRef.set(pack).then(function () {
       writing = false;
       if (dirty) { persist(); }
     }, function () {
@@ -3897,6 +3945,42 @@
     planet: 'gaia', sandboxId: 'gSandbox', pickId: 'gPick', dayMin: RULE_DAYMIN, weekdays: WEEK, months: MONTHS, maxDay: RULE_MAXDAY, weekLen: 5,
     limits: { zones: MAX_OWN_ZONES, places: MAX_OWN_PLACES, rules: MAX_OWN_RULES },
     getStore: function () { return store; },
+    // Merges zones and rules from a sandbox code (same ids replace), then loads its lab. Returns counts, or {error}.
+    importPack: function (pack) {
+      if (!pack || typeof pack !== 'object') { return { error: 'That code is damaged.' }; }
+      var inZ = (Array.isArray(pack.zones) ? pack.zones : []).filter(function (z) { return z && typeof z.id === 'string'; });
+      var inR = (Array.isArray(pack.rules) ? pack.rules : []).filter(function (r) { return r && typeof r.id === 'string'; });
+      var zid = {}, rid = {}, taken = {};
+      inZ.forEach(function (z) { zid[z.id] = 1; });
+      inR.forEach(function (r) { rid[r.id] = 1; });
+      var keepZ = store.zones.filter(function (z) { return !zid[z.id]; }), keepR = store.rules.filter(function (r) { return !rid[r.id]; });
+      RULESETS.concat(keepZ).forEach(function (z) { taken[norm(z.name)] = 1; });
+      var rtaken = {}; keepR.forEach(function (r) { rtaken[norm(r.name)] = 1; });
+      inZ = inZ.map(function (z) {
+        var c = Object.assign({}, z), nm = String(c.name || '').trim().slice(0, 60), base = nm, k = 2;
+        while (taken[norm(nm)] && k < 99) { nm = base.slice(0, 54) + ' (' + k + ')'; k++; }
+        taken[norm(nm)] = 1; c.name = nm; return c;
+      });
+      inR = inR.map(function (r) {
+        var c = Object.assign({}, r), nm = String(c.name || '').trim().slice(0, 40), base = nm, k = 2;
+        while (rtaken[norm(nm)] && k < 99) { nm = base.slice(0, 34) + ' (' + k + ')'; k++; }
+        rtaken[norm(nm)] = 1; c.name = nm; return c;
+      });
+      var raw = { zones: keepZ.concat(inZ), rules: keepR.concat(inR), places: store.places.slice(), lab: pack.lab || { ov: {}, cc: {}, pl: {} } };
+      store = sanitize(raw);
+      var made = 0;
+      inZ.forEach(function (z) {
+        var rs = null; store.zones.forEach(function (q) { if (q.id === z.id) { rs = q; } });
+        if (!rs) { return; }
+        made++;
+        var ref = 'custom:' + rs.id;
+        var have = store.places.some(function (p) { return p.zone === ref && p.zc; });
+        if (!have && store.places.length < MAX_OWN_PLACES) { store.places.push({ id: newId() + 'c', name: rs.name, where: 'Your custom zone, ' + ruleLine(rs), zone: ref, zc: true }); }
+        else { store.places.forEach(function (p) { if (p.zone === ref && p.zc) { p.name = rs.name; } }); }
+      });
+      persist(); storeChanged();
+      return { ok: true, zones: made, rules: inR.length };
+    },
     commit: function () { setRules(store.rules); persist(); storeChanged(); },
     setSel: function (ref, label) { setSel(ref, label); },
     say: say,
