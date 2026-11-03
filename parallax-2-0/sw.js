@@ -1,9 +1,10 @@
 /* Parallax 2.0: offline support. The page and everything it needs are saved on first visit. */
-const CACHE = 'high-noon-3b8e51a4d7';
+const CACHE = 'high-noon-w7c41e9a02';
 const CORE = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
+  "./world.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png",
@@ -51,6 +52,14 @@ self.addEventListener('fetch', function (event) {
     }).catch(function () {
       return caches.match('./index.html').then(function (hit) { return hit || caches.match('./'); });
     }));
+    return;
+  }
+  if (req.url.indexOf('/world.js') !== -1) {
+    // The world places code: newest copy when online, saved copy when not.
+    event.respondWith(fresh(req, 4000).then(function (res) {
+      if (res && res.ok) { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(req.url, copy); }); }
+      return res;
+    }).catch(function () { return caches.match(req.url); }));
     return;
   }
   if (req.url.indexOf('manifest.webmanifest') !== -1) {

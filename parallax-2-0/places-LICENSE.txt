@@ -1,0 +1,4 @@
+places-a.json and places-b.json are derived from GeoNames (https://www.geonames.org),
+cities1000 and cities5000 dumps, licensed under Creative Commons Attribution 4.0
+(https://creativecommons.org/licenses/by/4.0/). Changes: names, countries, first-level
+regions, populations and time zones repacked into a compact format, grouped by time zone.

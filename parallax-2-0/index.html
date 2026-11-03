@@ -1159,13 +1159,13 @@
 
   var GROUPS = { home: 'Home', mine: 'Your clocks', cord: 'Cordilleran Region', high: 'South America and Asia', apo: 'Apōpō' };
   var GROUP_ORDER = ['home', 'mine', 'cord', 'high', 'apo'];
-  var MIN_STD = -720, MAX_STD = 1440, MAX_OWN_ZONES = 40, MAX_OWN_PLACES = 120;
+  var MIN_STD = -720, MAX_STD = 1440, MAX_OWN_ZONES = 200, MAX_OWN_PLACES = 1500;
 
   var state = { scope: 'all', q: '', sort: 'region', h24: false };
   try { state.h24 = window.localStorage.getItem('worldclock-24h') === '1'; } catch (err) { state.h24 = false; }
 
   // What the viewer has added: their own rule sets and their own saved clocks.
-  var store = { zones: [], places: [] };
+  var store = { zones: [], places: [], rules: [] };
   // What the sandbox is showing.
   var sel = { ref: 'custom:cordilleran', label: 'Summitbrook, CL' };
   var ALL = [], BYID = {};
@@ -1233,7 +1233,56 @@
     for (var k = 0; k < store.zones.length; k++) { if (store.zones[k].id === id) { return store.zones[k]; } }
     return null;
   }
+
+  /* ---------- Your own clock-change rules (made in the zone workshop) ----------
+     A rule says when a zone's clocks jump forward and back: month, which day, what time, and how far.
+     kind n = the nth weekday of a month, l = the last weekday, a = the first weekday on or after a date, d = a fixed date.
+     st = minutes after midnight, in standard time, when the clocks go forward. et = minutes after midnight, on the clock then showing, when they go back. */
+  var MAX_OWN_RULES = 100, CR = {};
+  var RULE_DAYMIN = 1440, RULE_WEEKDAYS = 7, RULE_MAXDAY = 28;
+  function ruleInt(v, lo, hi) { v = Math.round(Number(v)); return isNaN(v) || v < lo || v > hi ? null : v; }
+  function sanitizeRule(r) {
+    if (!r || typeof r.id !== 'string' || !/^u[a-z0-9]{4,24}$/.test(r.id) || typeof r.name !== 'string' || !r.name.trim()) { return null; }
+    var o = { id: r.id, name: r.name.trim().slice(0, 40), save: ruleInt(r.save, 15, 120) }, ok = o.save !== null;
+    ['s', 'e'].forEach(function (k) {
+      var kind = typeof r[k + 'k'] === 'string' && r[k + 'k'].length === 1 && 'nlad'.indexOf(r[k + 'k']) !== -1 ? r[k + 'k'] : null;
+      var m = ruleInt(r[k + 'm'], 0, 11), t = ruleInt(r[k + 't'], 0, RULE_DAYMIN - 1);
+      var n = kind === 'n' ? ruleInt(r[k + 'n'], 1, 4) : (kind === 'l' ? 1 : ruleInt(r[k + 'n'], 1, RULE_MAXDAY));
+      var d = kind === 'd' ? 0 : ruleInt(r[k + 'd'], 0, RULE_WEEKDAYS - 1);
+      if (kind === null || m === null || t === null || n === null || d === null) { ok = false; return; }
+      o[k + 'k'] = kind; o[k + 'm'] = m; o[k + 't'] = t; o[k + 'n'] = n; o[k + 'd'] = d;
+    });
+    return ok ? o : null;
+  }
+  function setRules(list) {
+    Object.keys(CR).forEach(function (c) { delete CR[c]; delete RULE_TEXT[c]; });
+    list.forEach(function (r) { CR['x' + r.id] = r; RULE_TEXT['x' + r.id] = r.name; });
+  }
+  function saveOf(rule) { return CR[rule] ? CR[rule].save : 60; }
+
+  // Day of the month a rule picks in a given year (month is 0-based; weekday 0 = Sunday).
+  function dayIn(y, m, kind, n, wd) {
+    var dim = new Date(Date.UTC(y, m + 1, 0)).getUTCDate(), dow;
+    if (kind === 'd') { return Math.min(n, dim); }
+    if (kind === 'l') { dow = new Date(Date.UTC(y, m, dim)).getUTCDay(); return dim - ((dow - wd + 7) % 7); }
+    if (kind === 'a') { var d0 = Math.min(n, dim); dow = new Date(Date.UTC(y, m, d0)).getUTCDay(); return d0 + ((wd - dow + 7) % 7); }
+    dow = new Date(Date.UTC(y, m, 1)).getUTCDay();
+    var d2 = 1 + ((wd - dow + 7) % 7) + (n - 1) * 7;
+    return d2 > dim ? d2 - 7 : d2;
+  }
+  function customDst(c, utcMs, std) {
+    var y = new Date(utcMs + std * 60000).getUTCFullYear();
+    var s0 = Date.UTC(y, c.sm, dayIn(y, c.sm, c.sk, c.sn, c.sd), 0, c.st) - std * 60000;
+    var e0 = Date.UTC(y, c.em, dayIn(y, c.em, c.ek, c.en, c.ed), 0, c.et) - (std + c.save) * 60000;
+    return s0 < e0 ? (utcMs >= s0 && utcMs < e0) : (utcMs >= s0 || utcMs < e0);
+  }
+  function ruleDates(c) {
+    var y = new Date().getUTCFullYear(), a = new Date(Date.UTC(y, c.sm, dayIn(y, c.sm, c.sk, c.sn, c.sd))), b = new Date(Date.UTC(y, c.em, dayIn(y, c.em, c.ek, c.en, c.ed)));
+    return { start: MONTHS[a.getUTCMonth()] + ' ' + a.getUTCDate(), end: MONTHS[b.getUTCMonth()] + ' ' + b.getUTCDate() };
+  }
   function ruleOffset(rs, utcMs) {
+    if (rs.base) { var bo = tzOffset(rs.base, utcMs); if (bo !== null) { return bo + (rs.delta || 0); } }
+    if (CR[rs.rule]) { return rs.std + (customDst(CR[rs.rule], utcMs, rs.std) ? CR[rs.rule].save : 0); }
     if (rs.rule === 'us' && usDaylight(utcMs, rs.std)) { return rs.std + 60; }
     if (rs.rule === 'eu' && euSummer(utcMs)) { return rs.std + 60; }
     return rs.std;
@@ -1427,6 +1476,8 @@
     if (key.length >= 3) {
       for (i = 0; i < lookups.loose.length; i++) { row = lookups.loose[i]; if (row[0].indexOf(key) !== -1) { return { ref: row[1], label: row[2] }; } }
     }
+    var wr = window.pxWorld && window.pxWorld.resolve ? window.pxWorld.resolve(text, 'earth') : null;
+    if (wr) { return wr; }
     return { error: 'No match for \u201C' + String(text).trim() + '\u201D. Try a place on the board, a zone like Asia/Tokyo, or an offset like UTC+05:45.' };
   }
   function fillDatalist() {
@@ -1755,7 +1806,10 @@
     $('saveWhat').textContent = 'This puts ' + refLabel(sel.ref) + ' on the board under Your clocks, ticking live.';
   }
 
-  function ruleLine(rs) { return offsetLabel(rs.std) + ', ' + RULE_TEXT[rs.rule]; }
+  function ruleLine(rs) {
+    if (rs.base) { return offsetLabel(rs.std) + ', follows ' + rs.base + (rs.delta ? (rs.delta > 0 ? ' +' : ' \u2212') + Math.abs(rs.delta) + ' min' : ''); }
+    return offsetLabel(rs.std) + ', ' + RULE_TEXT[rs.rule];
+  }
   function drawZones() {
     var chip = function (rs) {
       return '<button type="button" class="town" data-zone="' + esc(rs.id) + '" aria-pressed="' + (sel.ref === 'custom:' + rs.id) + '"><b>' + esc(rs.name) + '</b><small>' + ruleLine(rs) + '</small></button>';
@@ -1782,13 +1836,18 @@
   }
   // Only keeps entries shaped the way this page writes them.
   function sanitize(raw) {
-    var out = { zones: [], places: [] };
+    var out = { zones: [], places: [], rules: [] };
+    setRules([]);
     if (!raw || typeof raw !== 'object') { return out; }
+    (Array.isArray(raw.rules) ? raw.rules : []).slice(0, MAX_OWN_RULES).forEach(function (r) { var c = sanitizeRule(r); if (c) { out.rules.push(c); } });
+    setRules(out.rules);
     (Array.isArray(raw.zones) ? raw.zones : []).slice(0, MAX_OWN_ZONES).forEach(function (z) {
       if (!z || typeof z.id !== 'string' || !/^u[a-z0-9]{4,24}$/.test(z.id) || typeof z.name !== 'string' || !z.name.trim()) { return; }
       var std = Math.round(Number(z.std));
       if (isNaN(std) || std < MIN_STD || std > MAX_STD) { return; }
-      out.zones.push({ id: z.id, name: z.name.trim().slice(0, 60), std: std, rule: RULE_TEXT[z.rule] ? z.rule : 'none' });
+      var zo = { id: z.id, name: z.name.trim().slice(0, 60), std: std, rule: RULE_TEXT[z.rule] ? z.rule : 'none' };
+      if (typeof z.base === 'string' && /^[A-Za-z0-9_+\-\/]{1,64}$/.test(z.base)) { zo.base = z.base; zo.delta = Math.max(-1440, Math.min(1440, Math.round(Number(z.delta) || 0))); }
+      out.zones.push(zo);
     });
     (Array.isArray(raw.places) ? raw.places : []).slice(0, MAX_OWN_PLACES).forEach(function (p) {
       if (!p || typeof p.id !== 'string' || !/^u[a-z0-9]{4,24}$/.test(p.id) || typeof p.name !== 'string' || !p.name.trim()) { return; }
@@ -1800,7 +1859,7 @@
   }
   function loadLocal() {
     try { var raw = window.localStorage.getItem(LS_KEY); if (raw) { return sanitize(JSON.parse(raw)); } } catch (err) { /* start empty */ }
-    return { zones: [], places: [] };
+    return { zones: [], places: [], rules: [] };
   }
   function saveLocal() {
     try { window.localStorage.setItem(LS_KEY, JSON.stringify(store)); } catch (err) { /* nothing more to do */ }
@@ -1816,7 +1875,7 @@
     if (!docRef) { return; }
     if (writing) { dirty = true; return; }
     writing = true; dirty = false;
-    docRef.set({ zones: store.zones, places: store.places }).then(function () {
+    docRef.set({ zones: store.zones, places: store.places, rules: store.rules }).then(function () {
       writing = false;
       if (dirty) { persist(); }
     }, function () {
@@ -1835,6 +1894,7 @@
     paintScene();
     paintSky();
     paintDeck();
+    try { window.dispatchEvent(new CustomEvent('px:store', { detail: 'earth' })); } catch (err) { /* fine */ }
   }
   function connectAccount() {
     if (!window.claude || typeof window.claude.use !== 'function') { return; }
@@ -2261,6 +2321,83 @@
     window.setTimeout(tick, 1000 - (Date.now() % 1000) + 8);
   }
 
+  /* ---------- The world places and the zone workshop reach this page through here ---------- */
+  function ianaOk(id) { return typeof id === 'string' && /^[A-Za-z0-9_+\-\/]{1,64}$/.test(id) && tzOffset(id, Date.now()) !== null; }
+  window.pxEarth = {
+    planet: 'earth', sandboxId: 'sandbox', pickId: 'zin', dayMin: RULE_DAYMIN, weekdays: DAYS, months: MONTHS, maxDay: RULE_MAXDAY, weekLen: 7,
+    limits: { zones: MAX_OWN_ZONES, places: MAX_OWN_PLACES, rules: MAX_OWN_RULES },
+    getStore: function () { return store; },
+    commit: function () { setRules(store.rules); persist(); storeChanged(); },
+    setSel: function (ref, label) { setSel(ref, label); },
+    say: say,
+    refFor: function (zoneId) { return ianaOk(zoneId) ? 'iana:' + zoneId : null; },
+    describe: function (ref, nowMs) {
+      var off = refOffset(ref, nowMs, null, false), L = new Date(nowMs + off * 60000), h = L.getUTCHours(), cp = clockParts(h, L.getUTCMinutes(), 0);
+      var vOff = -new Date(nowMs).getTimezoneOffset();
+      return { off: off, offLabel: offsetLabel(off), time: cp.hm, ap: cp.ampm, day: DAYS[L.getUTCDay()].slice(0, 3),
+        dayRel: Math.floor((nowMs + off * 60000) / 86400000) - Math.floor((nowMs + vOff * 60000) / 86400000), rel: off - vOff, isDay: h >= 6 && h < 18 };
+    },
+    addClock: function (name, where, ref) {
+      if (store.places.some(function (p) { return p.zone === ref && p.name === name; })) { return 'dup'; }
+      if (store.places.length >= MAX_OWN_PLACES) { return 'full'; }
+      store.places.push({ id: newId(), name: name.slice(0, 60), where: String(where || '').slice(0, 90), zone: ref, zc: false });
+      return 'added';
+    },
+    hasClock: function (name, ref) { return store.places.some(function (p) { return p.zone === ref && p.name === name; }); },
+    addZone: function (spec) {
+      var name = String(spec.name || '').trim();
+      if (!name) { return { error: 'Give the zone a name first.' }; }
+      if (RULESETS.concat(store.zones).some(function (rs) { return norm(rs.name) === norm(name); })) { return { error: 'There is already a zone called that. Pick another name.' }; }
+      if (store.zones.length >= MAX_OWN_ZONES) { return { error: 'That is the limit of ' + MAX_OWN_ZONES + ' zones of your own. Remove one to add another.' }; }
+      var rs = { id: newId(), name: name.slice(0, 60) };
+      if (spec.base) {
+        if (!ianaOk(spec.base)) { return { error: 'This browser has no clock data for ' + spec.base + '.' }; }
+        var delta = Math.round(Number(spec.delta) || 0);
+        if (Math.abs(delta) > 1440) { return { error: 'The shift can run up to 24 hours either way.' }; }
+        var y = new Date().getUTCFullYear(), jan = tzOffset(spec.base, Date.UTC(y, 0, 15)), jul = tzOffset(spec.base, Date.UTC(y, 6, 15));
+        rs.std = Math.max(MIN_STD, Math.min(MAX_STD, Math.min(jan, jul) + delta)); rs.rule = 'none'; rs.base = spec.base; rs.delta = delta;
+      } else {
+        var std = Math.round(Number(spec.std));
+        if (isNaN(std) || std < MIN_STD || std > MAX_STD) { return { error: 'Offsets can run from ' + offsetLabel(MIN_STD) + ' to ' + offsetLabel(MAX_STD) + '.' }; }
+        rs.std = std; rs.rule = RULE_TEXT[spec.rule] ? spec.rule : 'none';
+      }
+      store.zones.push(rs);
+      if (store.places.length < MAX_OWN_PLACES) { store.places.push({ id: newId() + 'c', name: rs.name, where: 'Your custom zone, ' + ruleLine(rs), zone: 'custom:' + rs.id, zc: true }); }
+      setRules(store.rules); persist();
+      sel = { ref: 'custom:' + rs.id, label: rs.name }; $('zin').value = sel.label;
+      storeChanged();
+      say('Made. ' + rs.name + ' has its own clock on the board under Your clocks.');
+      return { ok: true, id: rs.id };
+    },
+    addRule: function (spec) {
+      var c = sanitizeRule(Object.assign({}, spec, { id: newId() }));
+      if (!c) { return { error: 'Check the rule: every field needs a value in range.' }; }
+      if (store.rules.length >= MAX_OWN_RULES) { return { error: 'That is the limit of ' + MAX_OWN_RULES + ' rules of your own. Remove one to add another.' }; }
+      if (store.rules.some(function (r) { return norm(r.name) === norm(c.name); })) { return { error: 'There is already a rule called that. Pick another name.' }; }
+      store.rules.push(c); setRules(store.rules); persist(); storeChanged();
+      return { ok: true, code: 'x' + c.id };
+    },
+    removeRule: function (id) {
+      store.rules = store.rules.filter(function (r) { return r.id !== id; });
+      store.zones.forEach(function (z) { if (z.rule === 'x' + id) { z.rule = 'none'; } });
+      setRules(store.rules); persist(); storeChanged();
+    },
+    ruleDates: ruleDates, ruleText: RULE_TEXT, ruleLine: ruleLine,
+    local: function (q, max) {
+      if (!lookups) { buildLookups(); }
+      var key = norm(q), out = [], seen = {}, i, row;
+      function take(row) {
+        if (seen[row[2]] || out.length >= max) { return; }
+        seen[row[2]] = 1; out.push({ label: row[2], ref: row[1], sub: refKind(row[1]) === 'custom' ? 'Custom zone' : (row[2].indexOf('/') > 0 ? 'Time zone' : 'Clock on the board') });
+      }
+      for (i = 0; i < lookups.loose.length; i++) { row = lookups.loose[i]; if (row[0].indexOf(key) === 0) { take(row); } }
+      if (key.length >= 3) { for (i = 0; i < lookups.loose.length; i++) { row = lookups.loose[i]; if (row[0].indexOf(key) > 0) { take(row); } } }
+      return out;
+    },
+    zones: function () { return RULESETS.concat(store.zones); },
+    parseOffset: parseOffset, offsetLabel: offsetLabel, norm: norm,
+    minStd: MIN_STD, maxStd: MAX_STD, h12: function () { return !state.h24; }
+  };
   /* ---------- Go ---------- */
   store = loadLocal();
   rebuildAll();
@@ -2332,7 +2469,58 @@
   // au = first Sunday of October (Australia), nz = last Sunday of September (New Zealand), cl = first Sunday of September (Chile).
   var SOUTH = { au: [9, 1], nz: [8, -1], cl: [8, 1] };
   // Clocks jump one hour at 3:00 AM, the same size of jump as on Earth. us = second Sunday in March to first Sunday in November. eu = last Sundays of March and October.
+
+  /* ---------- Your own clock-change rules (made in the zone workshop) ----------
+     A rule says when a zone's clocks jump forward and back: month, which day, what time, and how far.
+     kind n = the nth weekday of a month, l = the last weekday, a = the first weekday on or after a date, d = a fixed date.
+     st = minutes after midnight, in standard time, when the clocks go forward. et = minutes after midnight, on the clock then showing, when they go back. */
+  var MAX_OWN_RULES = 100, CR = {};
+  var RULE_DAYMIN = 2160, RULE_WEEKDAYS = 5, RULE_MAXDAY = 19;
+  function ruleInt(v, lo, hi) { v = Math.round(Number(v)); return isNaN(v) || v < lo || v > hi ? null : v; }
+  function sanitizeRule(r) {
+    if (!r || typeof r.id !== 'string' || !/^u[a-z0-9]{4,24}$/.test(r.id) || typeof r.name !== 'string' || !r.name.trim()) { return null; }
+    var o = { id: r.id, name: r.name.trim().slice(0, 40), save: ruleInt(r.save, 15, 120) }, ok = o.save !== null;
+    ['s', 'e'].forEach(function (k) {
+      var kind = typeof r[k + 'k'] === 'string' && r[k + 'k'].length === 1 && 'nlad'.indexOf(r[k + 'k']) !== -1 ? r[k + 'k'] : null;
+      var m = ruleInt(r[k + 'm'], 0, 11), t = ruleInt(r[k + 't'], 0, RULE_DAYMIN - 1);
+      var n = kind === 'n' ? ruleInt(r[k + 'n'], 1, 4) : (kind === 'l' ? 1 : ruleInt(r[k + 'n'], 1, RULE_MAXDAY));
+      var d = kind === 'd' ? 0 : ruleInt(r[k + 'd'], 0, RULE_WEEKDAYS - 1);
+      if (kind === null || m === null || t === null || n === null || d === null) { ok = false; return; }
+      o[k + 'k'] = kind; o[k + 'm'] = m; o[k + 't'] = t; o[k + 'n'] = n; o[k + 'd'] = d;
+    });
+    return ok ? o : null;
+  }
+  function setRules(list) {
+    Object.keys(CR).forEach(function (c) { delete CR[c]; delete RULE_TEXT[c]; });
+    list.forEach(function (r) { CR['x' + r.id] = r; RULE_TEXT['x' + r.id] = r.name; });
+  }
+  function saveOf(rule) { return CR[rule] ? CR[rule].save : 60; }
+
+  // Day of the year a rule picks on Gaia's calendar (0-based), with its 5-day week.
+  function gDay(y, mon, kind, n, wd) {
+    var ml = monthLens(y), start = 0, i, k, base, dim;
+    for (i = 0; i < mon; i++) { start += ml[i]; }
+    dim = ml[mon]; base = yearStart(y) + start;
+    if (kind === 'd') { return start + Math.min(n, dim) - 1; }
+    if (kind === 'l') { for (k = dim - 1; k > 0; k--) { if (dowOf(base + k) === wd) { break; } } return start + k; }
+    if (kind === 'a') { k = Math.min(n, dim) - 1; while (dowOf(base + k) !== wd) { k++; } return start + k; }
+    k = 0; while (dowOf(base + k) !== wd) { k++; }
+    k += (n - 1) * 5;
+    return start + (k >= dim ? k - 5 : k);
+  }
+  function customDstG(c, utcMs, std) {
+    var loc = split(utcMs + std * 60000), pos = (loc.doy + loc.frac) * DAY;
+    var a = gDay(loc.y, c.sm, c.sk, c.sn, c.sd) * DAY + c.st * 60000;
+    var b = gDay(loc.y, c.em, c.ek, c.en, c.ed) * DAY + (c.et - c.save) * 60000;
+    return a < b ? (pos >= a && pos < b) : (pos >= a || pos < b);
+  }
+  function ruleDates(c) {
+    var y = split(Date.now()).y, ml = monthLens(y);
+    function name(doy) { var m = 0; while (doy >= ml[m]) { doy -= ml[m]; m++; } return MONTHS[m] + ' ' + (doy + 1); }
+    return { start: name(gDay(y, c.sm, c.sk, c.sn, c.sd)), end: name(gDay(y, c.em, c.ek, c.en, c.ed)) };
+  }
   function isDst(rule, utcMs, std) {
+    if (CR[rule]) { return customDstG(CR[rule], utcMs, std); }
     if (!SOUTH[rule] && rule !== 'us' && rule !== 'eu') { return false; }
     var loc = split(utcMs + std * 60000), pos = (loc.doy + loc.frac) * DAY, a, b;
     if (SOUTH[rule]) {
@@ -2507,7 +2695,7 @@
   ];
   var GROUPS = { home: 'Home', mine: 'Your clocks', cord: 'Cordilleran Region', world: 'Around Gaia', high: 'South America and Asia', apo: 'Apōpō' };
   var GROUP_ORDER = ['home', 'mine', 'cord', 'world', 'high', 'apo'];
-  var MIN_STD = -240, BASE_MAX = 2400, MAX_STD = 3000, MAX_OWN_ZONES = 40, MAX_OWN_PLACES = 120;
+  var MIN_STD = -240, BASE_MAX = 2400, MAX_STD = 3000, MAX_OWN_ZONES = 200, MAX_OWN_PLACES = 1500;
   var PHASES = [
     [0, 'Small hours', 'Deep night there. Almost everyone is asleep and the streets are empty.'],
     [7.5, 'Dawn', 'First light. Early risers are up and the sky is starting to turn.'],
@@ -2522,7 +2710,7 @@
 
   var state = { scope: 'all', q: '', sort: 'time' }, h36 = false, active = false;
   try { h36 = window.localStorage.getItem('highnoon-gaia-36h') === '1'; } catch (err) { h36 = false; }
-  var store = { zones: [], places: [] };                        // what the viewer has added on Gaia
+  var store = { zones: [], places: [], rules: [] };               // what the viewer has added on Gaia
   var sel = { ref: CORD, label: 'Summitbrook, CL' };            // what the sandbox is showing
   var ALL = [], BYID = {}, lookups = null;
 
@@ -2544,7 +2732,7 @@
   }
   function refOffset(ref, utcMs) {
     var p = refParts(ref);
-    return p ? p.std + (isDst(p.rule, utcMs, p.std) ? 60 : 0) : 0;
+    return p ? p.std + (isDst(p.rule, utcMs, p.std) ? saveOf(p.rule) : 0) : 0;
   }
   function ztc(min) {
     var abs = Math.abs(min), h = Math.floor(abs / 60), m = abs % 60;
@@ -2721,6 +2909,8 @@
     if (key.length >= 3) {
       for (i = 0; i < lookups.loose.length; i++) { row = lookups.loose[i]; if (row[0].indexOf(key) !== -1) { return resolve({ ref: row[1], label: row[2] }); } }
     }
+    var wr = window.pxWorld && window.pxWorld.resolve ? window.pxWorld.resolve(text, 'gaia') : null;
+    if (wr) { return wr; }
     return { error: 'No match for “' + String(text).trim() + '”. Try a place on the board, a zone like Asia/Tokyo, or an offset like ZTC+21:45.' };
   }
   function fillDatalist() {
@@ -2743,7 +2933,7 @@
       var lo = now + (hit - 1) * DAY, hi = now + hit * DAY;
       while (hi - lo > 60000) { var mid = Math.floor((lo + hi) / 2); if (isDst(p.rule, mid, p.std) === cur) { lo = mid; } else { hi = mid; } }
       var lp = split(lo + (p.std + (cur ? 60 : 0)) * 60000);
-      next = { off: p.std + (cur ? 0 : 60), when: MONTHS[lp.mon] + ' ' + lp.date };
+      next = { off: p.std + (cur ? 0 : saveOf(p.rule)), when: MONTHS[lp.mon] + ' ' + lp.date };
     }
     return { has: true, std: p.std, on: cur, next: next };
   }
@@ -3149,13 +3339,18 @@
   }
   // Only keeps entries shaped the way this page writes them.
   function sanitize(raw) {
-    var out = { zones: [], places: [] };
+    var out = { zones: [], places: [], rules: [] };
+    setRules([]);
     if (!raw || typeof raw !== 'object') { return out; }
+    (Array.isArray(raw.rules) ? raw.rules : []).slice(0, MAX_OWN_RULES).forEach(function (r) { var c = sanitizeRule(r); if (c) { out.rules.push(c); } });
+    setRules(out.rules);
     (Array.isArray(raw.zones) ? raw.zones : []).slice(0, MAX_OWN_ZONES).forEach(function (z) {
       if (!z || typeof z.id !== 'string' || !/^u[a-z0-9]{4,24}$/.test(z.id) || typeof z.name !== 'string' || !z.name.trim()) { return; }
       var std = Math.round(Number(z.std));
       if (isNaN(std) || std < MIN_STD || std > MAX_STD) { return; }
-      out.zones.push({ id: z.id, name: z.name.trim().slice(0, 60), std: std, rule: RULE_TEXT[z.rule] ? z.rule : 'none' });
+      var zo = { id: z.id, name: z.name.trim().slice(0, 60), std: std, rule: RULE_TEXT[z.rule] ? z.rule : 'none' };
+      if (typeof z.base === 'string' && /^[A-Za-z0-9_+\-\/]{1,64}$/.test(z.base)) { zo.base = z.base; zo.delta = Math.max(-1440, Math.min(1440, Math.round(Number(z.delta) || 0))); }
+      out.zones.push(zo);
     });
     (Array.isArray(raw.places) ? raw.places : []).slice(0, MAX_OWN_PLACES).forEach(function (p) {
       if (!p || typeof p.id !== 'string' || !/^u[a-z0-9]{4,24}$/.test(p.id) || typeof p.name !== 'string' || !p.name.trim()) { return; }
@@ -3167,7 +3362,7 @@
   }
   function loadLocal() {
     try { var raw = window.localStorage.getItem(LS_KEY); if (raw) { return sanitize(JSON.parse(raw)); } } catch (err) { /* start empty */ }
-    return { zones: [], places: [] };
+    return { zones: [], places: [], rules: [] };
   }
   function saveLocal() {
     try { window.localStorage.setItem(LS_KEY, JSON.stringify(store)); } catch (err) { /* nothing more to do */ }
@@ -3183,7 +3378,7 @@
     if (!docRef) { return; }
     if (writing) { dirty = true; return; }
     writing = true; dirty = false;
-    docRef.set({ zones: store.zones, places: store.places }).then(function () {
+    docRef.set({ zones: store.zones, places: store.places, rules: store.rules }).then(function () {
       writing = false;
       if (dirty) { persist(); }
     }, function () {
@@ -3195,6 +3390,7 @@
     fillDatalist();
     if (!refParts(sel.ref)) { sel = { ref: CORD, label: 'Summitbrook, CL' }; $('gPick').value = sel.label; }
     repaint();
+    try { window.dispatchEvent(new CustomEvent('px:store', { detail: 'gaia' })); } catch (err) { /* fine */ }
   }
   function connectAccount() {
     if (asked || !window.claude || typeof window.claude.use !== 'function') { return; }
@@ -3436,6 +3632,75 @@
   window.addEventListener('resize', onScroll);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) { lastMinute = -1; } });
 
+  /* ---------- The world places and the zone workshop reach this page through here ---------- */
+  window.pxGaia = {
+    planet: 'gaia', sandboxId: 'gSandbox', pickId: 'gPick', dayMin: RULE_DAYMIN, weekdays: WEEK, months: MONTHS, maxDay: RULE_MAXDAY, weekLen: 5,
+    limits: { zones: MAX_OWN_ZONES, places: MAX_OWN_PLACES, rules: MAX_OWN_RULES },
+    getStore: function () { return store; },
+    commit: function () { setRules(store.rules); persist(); storeChanged(); },
+    setSel: function (ref, label) { setSel(ref, label); },
+    say: say,
+    refFor: function (zoneId) { return twinRef(zoneId); },
+    describe: function (ref, now) {
+      var off = refOffset(ref, now), p = split(now + off * 60000), vo = refOffset(viewerRef, now), vp = split(now + vo * 60000);
+      return { off: off, offLabel: ztc(off), time: hm(p.h, p.m), ap: ap(p.h), day: WEEK[p.dow].slice(0, 3), dayRel: p.dc - vp.dc, rel: off - vo, isDay: isDay(p) };
+    },
+    addClock: function (name, where, ref) {
+      if (store.places.some(function (p) { return p.zone === ref && p.name === name; })) { return 'dup'; }
+      if (store.places.length >= MAX_OWN_PLACES) { return 'full'; }
+      store.places.push({ id: newId(), name: name.slice(0, 60), where: String(where || '').slice(0, 90), zone: ref, zc: false });
+      return 'added';
+    },
+    hasClock: function (name, ref) { return store.places.some(function (p) { return p.zone === ref && p.name === name; }); },
+    refParts: refParts,
+    addZone: function (spec) {
+      var name = String(spec.name || '').trim();
+      if (!name) { return { error: 'Give the zone a name first.' }; }
+      if (RULESETS.concat(store.zones).some(function (rs) { return norm(rs.name) === norm(name); })) { return { error: 'There is already a zone called that on Gaia. Pick another name.' }; }
+      if (store.zones.length >= MAX_OWN_ZONES) { return { error: 'That is the limit of ' + MAX_OWN_ZONES + ' zones of your own. Remove one to add another.' }; }
+      var std = Math.round(Number(spec.std));
+      if (isNaN(std) || std < MIN_STD || std > MAX_STD) { return { error: 'Offsets on Gaia can run from ' + ztc(MIN_STD) + ' to ' + ztc(MAX_STD) + '.' }; }
+      var rs = { id: newId(), name: name.slice(0, 60), std: std, rule: RULE_TEXT[spec.rule] ? spec.rule : 'none' };
+      store.zones.push(rs);
+      if (store.places.length < MAX_OWN_PLACES) { store.places.push({ id: newId() + 'c', name: rs.name, where: 'Your custom zone, ' + ruleLine(rs), zone: 'custom:' + rs.id, zc: true }); }
+      setRules(store.rules); persist();
+      sel = { ref: 'custom:' + rs.id, label: rs.name }; $('gPick').value = sel.label;
+      storeChanged();
+      say('Made. ' + rs.name + ' has its own clock on Gaia’s board under Your clocks.');
+      return { ok: true, id: rs.id };
+    },
+    addRule: function (spec) {
+      var c = sanitizeRule(Object.assign({}, spec, { id: newId() }));
+      if (!c) { return { error: 'Check the rule: every field needs a value in range.' }; }
+      if (store.rules.length >= MAX_OWN_RULES) { return { error: 'That is the limit of ' + MAX_OWN_RULES + ' rules of your own. Remove one to add another.' }; }
+      if (store.rules.some(function (r) { return norm(r.name) === norm(c.name); })) { return { error: 'There is already a rule called that. Pick another name.' }; }
+      store.rules.push(c); setRules(store.rules); persist(); storeChanged();
+      return { ok: true, code: 'x' + c.id };
+    },
+    removeRule: function (id) {
+      store.rules = store.rules.filter(function (r) { return r.id !== id; });
+      store.zones.forEach(function (z) { if (z.rule === 'x' + id) { z.rule = 'none'; } });
+      setRules(store.rules); persist(); storeChanged();
+    },
+    ruleDates: ruleDates, ruleText: RULE_TEXT, ruleLine: ruleLine,
+    local: function (q, max) {
+      if (!lookups) { buildLookups(); }
+      var key = norm(q), out = [], seen = {}, i, row;
+      function take(row) {
+        if (seen[row[2]] || out.length >= max) { return; }
+        var r = resolve({ ref: row[1], label: row[2] });
+        if (r.error) { return; }
+        seen[row[2]] = 1; out.push({ label: r.label, ref: r.ref, sub: refKind(r.ref) === 'custom' ? 'Custom zone' : (row[2].indexOf('/') > 0 ? 'Time zone' : 'Clock on Gaia’s board') });
+      }
+      for (i = 0; i < lookups.loose.length; i++) { row = lookups.loose[i]; if (row[0].indexOf(key) === 0) { take(row); } }
+      if (key.length >= 3) { for (i = 0; i < lookups.loose.length; i++) { row = lookups.loose[i]; if (row[0].indexOf(key) > 0) { take(row); } } }
+      return out;
+    },
+    zones: function () { return RULESETS.concat(store.zones); },
+    parseOffset: parseOffset, offsetLabel: ztc, norm: norm,
+    minStd: MIN_STD, maxStd: MAX_STD, h12: function () { return !h36; }
+  };
+
   /* ---------- Go ---------- */
   store = loadLocal();
   rebuildAll();
@@ -3490,5 +3755,6 @@
   window.setInterval(function () { if (!document.hidden) { tint(); } }, 1000);
 })();
 </script>
+<script src="world.js"></script>
 </body>
 </html>
