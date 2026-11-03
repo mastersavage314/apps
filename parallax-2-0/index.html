@@ -1053,7 +1053,7 @@
     { id: 'arahiti', name: 'Arahiti', std: 1050, rule: 'none' },
     { id: 'hitira', name: 'Hitirā', std: 1080, rule: 'none' }
   ];
-  var RULE_TEXT = { none: 'no clock changes', us: 'US daylight saving', eu: 'European summer time' };
+  var RULE_TEXT = { none: 'no clock changes', on: 'summer time all year', us: 'US daylight saving', eu: 'European summer time' };
 
   /* ---------- Saved clocks ----------
      zone = 'iana:<id>' for a real zone, 'custom:<id>' for a rule set above, 'utc:<minutes>' for a fixed offset.
@@ -1165,7 +1165,7 @@
   try { state.h24 = window.localStorage.getItem('worldclock-24h') === '1'; } catch (err) { state.h24 = false; }
 
   // What the viewer has added: their own rule sets and their own saved clocks.
-  var store = { zones: [], places: [], rules: [] };
+  var store = { zones: [], places: [], rules: [], lab: { ov: {}, cc: {}, pl: {} } };
   // What the sandbox is showing.
   var sel = { ref: 'custom:cordilleran', label: 'Summitbrook, CL' };
   var ALL = [], BYID = {};
@@ -1229,7 +1229,7 @@
   }
 
   function ruleset(id) {
-    for (var i = 0; i < RULESETS.length; i++) { if (RULESETS[i].id === id) { return RULESETS[i]; } }
+    for (var i = 0; i < RULESETS.length; i++) { if (RULESETS[i].id === id) { return OVRS[id] || RULESETS[i]; } }
     for (var k = 0; k < store.zones.length; k++) { if (store.zones[k].id === id) { return store.zones[k]; } }
     return null;
   }
@@ -1280,9 +1280,70 @@
     var y = new Date().getUTCFullYear(), a = new Date(Date.UTC(y, c.sm, dayIn(y, c.sm, c.sk, c.sn, c.sd))), b = new Date(Date.UTC(y, c.em, dayIn(y, c.em, c.ek, c.en, c.ed)));
     return { start: MONTHS[a.getUTCMonth()] + ' ' + a.getUTCDate(), end: MONTHS[b.getUTCMonth()] + ' ' + b.getUTCDate() };
   }
+
+  /* ---------- The sandbox: edits to existing zones, countries put on other zones, places moved ----------
+     lab.ov[zone id] = { s: standard offset or null for the real one, d: 'real' or a clock-change rule (none, on, us, eu, ... or one of yours) }.
+     A key that starts with @ is one of the built-in custom zones. lab.cc[country code] and lab.pl[place key] are zone references. */
+  var OVZ = {}, OVRS = {};
+  function labClean(raw, zones) {
+    var out = { ov: {}, cc: {}, pl: {} };
+    if (!raw || typeof raw !== 'object') { return out; }
+    var ov = raw.ov && typeof raw.ov === 'object' ? raw.ov : {}, cc = raw.cc && typeof raw.cc === 'object' ? raw.cc : {}, pl = raw.pl && typeof raw.pl === 'object' ? raw.pl : {};
+    Object.keys(ov).slice(0, 800).forEach(function (k) {
+      var v = ov[k];
+      if (!/^@?[A-Za-z0-9_+\-\/]{1,64}$/.test(k) || !v || typeof v !== 'object') { return; }
+      var s0 = v.s === null || v.s === undefined ? null : Math.round(Number(v.s));
+      if (s0 !== null && (isNaN(s0) || s0 < MIN_STD || s0 > MAX_STD)) { return; }
+      var d = typeof v.d === 'string' && (v.d === 'real' || RULE_TEXT[v.d]) ? v.d : 'real';
+      if (s0 === null && d === 'real') { return; }
+      out.ov[k] = { s: s0, d: d };
+    });
+    Object.keys(cc).slice(0, 300).forEach(function (k) { if (/^[A-Z]{2}$/.test(k) && cleanRef(cc[k], zones)) { out.cc[k] = cleanRef(cc[k], zones); } });
+    Object.keys(pl).slice(0, 2000).forEach(function (k) { if (k.length <= 120 && cleanRef(pl[k], zones)) { out.pl[k] = cleanRef(pl[k], zones); } });
+    return out;
+  }
+  function labOrig(o) {
+    if (!o || typeof o !== 'object') { return null; }
+    var std = Math.round(Number(o.std));
+    if (isNaN(std) || std < MIN_STD || std > MAX_STD) { return null; }
+    var r = { std: std, rule: typeof o.rule === 'string' && RULE_TEXT[o.rule] ? o.rule : 'none' };
+    if (typeof o.base === 'string' && /^[A-Za-z0-9_+\-\/]{1,64}$/.test(o.base)) { r.base = o.base; r.delta = Math.max(-1440, Math.min(1440, Math.round(Number(o.delta) || 0))); }
+    return r;
+  }
+  function labApply(id, name, std0, rule0, sp) {
+    return { id: id, name: name, std: sp.s === null ? std0 : sp.s, rule: sp.d === 'real' ? rule0 : (RULE_TEXT[sp.d] ? sp.d : 'none') };
+  }
+  function setLab(lab) {
+    OVZ = {}; OVRS = {};
+    Object.keys(lab.ov).forEach(function (k) {
+      var sp = lab.ov[k], z, i;
+      if (k.charAt(0) === '@') {
+        for (i = 0; i < RULESETS.length; i++) { if (RULESETS[i].id === k.slice(1)) { OVRS[RULESETS[i].id] = labApply(RULESETS[i].id, RULESETS[i].name, RULESETS[i].std, RULESETS[i].rule, sp); } }
+        return;
+      }
+      z = labReal(k, sp);
+      if (z) { OVZ[k] = z; }
+    });
+  }
+  function labZone(p) { var l = store.lab; return (p.k && l.pl[p.k]) || (p.c && l.cc[p.c]) || p.zone; }
+  function labMoved(p) { var l = store.lab; return !!((p.k && l.pl[p.k]) || (p.c && l.cc[p.c])); }
+  function labDropRef(ref) {
+    var l = store.lab, k;
+    for (k in l.cc) { if (l.cc[k] === ref) { delete l.cc[k]; } }
+    for (k in l.pl) { if (l.pl[k] === ref) { delete l.pl[k]; } }
+  }
+
+  function labReal(id, sp) {
+    var y = new Date().getUTCFullYear(), jan = tzOffset(id, Date.UTC(y, 0, 15)), jul = tzOffset(id, Date.UTC(y, 6, 15));
+    if (jan === null || jul === null) { return null; }
+    var real = Math.min(jan, jul), std = sp.s === null ? real : sp.s;
+    if (sp.d === 'real') { return { id: id, name: id, std: std, rule: 'none', base: id, delta: std - real }; }
+    return labApply(id, id, real, 'none', sp);
+  }
   function ruleOffset(rs, utcMs) {
     if (rs.base) { var bo = tzOffset(rs.base, utcMs); if (bo !== null) { return bo + (rs.delta || 0); } }
     if (CR[rs.rule]) { return rs.std + (customDst(CR[rs.rule], utcMs, rs.std) ? CR[rs.rule].save : 0); }
+    if (rs.rule === 'on') { return rs.std + 60; }
     if (rs.rule === 'us' && usDaylight(utcMs, rs.std)) { return rs.std + 60; }
     if (rs.rule === 'eu' && euSummer(utcMs)) { return rs.std + 60; }
     return rs.std;
@@ -1294,6 +1355,7 @@
     var kind = refKind(ref), id = refId(ref);
     if (kind === 'utc') { return parseInt(id, 10) || 0; }
     if (kind === 'custom') { var rs = ruleset(id); return rs ? ruleOffset(rs, utcMs) : 0; }
+    if (OVZ[id]) { return ruleOffset(OVZ[id], utcMs); }
     var o = live ? tzNow(id, utcMs) : tzOffset(id, utcMs);
     if (o !== null) { return o; }
     if (fb && typeof fb.std === 'number') { return fb.us && usDaylight(utcMs, fb.std) ? fb.std + 60 : fb.std; }
@@ -1339,7 +1401,7 @@
   function rebuildAll() {
     ALL = CLOCKS.slice();
     store.places.forEach(function (p) {
-      ALL.push({ id: p.id, group: 'mine', name: p.name, where: p.where, zone: p.zone, zc: !!p.zc, own: true });
+      ALL.push({ id: p.id, group: 'mine', name: p.name, where: p.where + (labMoved(p) ? ' (moved)' : ''), zone: labZone(p), zc: !!p.zc, own: true });
     });
     BYID = {};
     ALL.forEach(function (z, i) {
@@ -1836,8 +1898,9 @@
   }
   // Only keeps entries shaped the way this page writes them.
   function sanitize(raw) {
-    var out = { zones: [], places: [], rules: [] };
+    var out = { zones: [], places: [], rules: [], lab: { ov: {}, cc: {}, pl: {} } };
     setRules([]);
+    setLab(out.lab);
     if (!raw || typeof raw !== 'object') { return out; }
     (Array.isArray(raw.rules) ? raw.rules : []).slice(0, MAX_OWN_RULES).forEach(function (r) { var c = sanitizeRule(r); if (c) { out.rules.push(c); } });
     setRules(out.rules);
@@ -1847,19 +1910,26 @@
       if (isNaN(std) || std < MIN_STD || std > MAX_STD) { return; }
       var zo = { id: z.id, name: z.name.trim().slice(0, 60), std: std, rule: RULE_TEXT[z.rule] ? z.rule : 'none' };
       if (typeof z.base === 'string' && /^[A-Za-z0-9_+\-\/]{1,64}$/.test(z.base)) { zo.base = z.base; zo.delta = Math.max(-1440, Math.min(1440, Math.round(Number(z.delta) || 0))); }
+      var oz = labOrig(z.o);
+      if (oz) { zo.o = oz; }
       out.zones.push(zo);
     });
     (Array.isArray(raw.places) ? raw.places : []).slice(0, MAX_OWN_PLACES).forEach(function (p) {
       if (!p || typeof p.id !== 'string' || !/^u[a-z0-9]{4,24}$/.test(p.id) || typeof p.name !== 'string' || !p.name.trim()) { return; }
       var ref = cleanRef(p.zone, out.zones);
       if (!ref) { return; }
-      out.places.push({ id: p.id, name: p.name.trim().slice(0, 60), where: typeof p.where === 'string' ? p.where.trim().slice(0, 90) : '', zone: ref, zc: !!p.zc });
+      var po = { id: p.id, name: p.name.trim().slice(0, 60), where: typeof p.where === 'string' ? p.where.trim().slice(0, 90) : '', zone: ref, zc: !!p.zc };
+      if (typeof p.k === 'string' && p.k.length <= 120) { po.k = p.k; }
+      if (typeof p.c === 'string' && /^[A-Z]{2}$/.test(p.c)) { po.c = p.c; }
+      out.places.push(po);
     });
+    out.lab = labClean(raw.lab, out.zones);
+    setLab(out.lab);
     return out;
   }
   function loadLocal() {
     try { var raw = window.localStorage.getItem(LS_KEY); if (raw) { return sanitize(JSON.parse(raw)); } } catch (err) { /* start empty */ }
-    return { zones: [], places: [], rules: [] };
+    return { zones: [], places: [], rules: [], lab: { ov: {}, cc: {}, pl: {} } };
   }
   function saveLocal() {
     try { window.localStorage.setItem(LS_KEY, JSON.stringify(store)); } catch (err) { /* nothing more to do */ }
@@ -1875,7 +1945,7 @@
     if (!docRef) { return; }
     if (writing) { dirty = true; return; }
     writing = true; dirty = false;
-    docRef.set({ zones: store.zones, places: store.places, rules: store.rules }).then(function () {
+    docRef.set({ zones: store.zones, places: store.places, rules: store.rules, lab: store.lab }).then(function () {
       writing = false;
       if (dirty) { persist(); }
     }, function () {
@@ -1990,6 +2060,7 @@
   function removeZone(id) {
     store.zones = store.zones.filter(function (z) { return z.id !== id; });
     store.places = store.places.filter(function (p) { return p.zone !== 'custom:' + id; });
+    labDropRef('custom:' + id);
     persist();
     storeChanged();
     say('Removed that zone and the clocks that ran on it.');
@@ -2324,6 +2395,65 @@
   /* ---------- The world places and the zone workshop reach this page through here ---------- */
   function ianaOk(id) { return typeof id === 'string' && /^[A-Za-z0-9_+\-\/]{1,64}$/.test(id) && tzOffset(id, Date.now()) !== null; }
   window.pxEarth = {
+    lab: function () { return store.lab; },
+    labCommit: function () { store.lab = labClean(store.lab, store.zones); setLab(store.lab); persist(); storeChanged(); },
+    labSetAll: function (lab) { store.lab = labClean(lab, store.zones); setLab(store.lab); persist(); storeChanged(); },
+    builtins: function () { return RULESETS; },
+    updateZone: function (id, patch) {
+      var rs = null;
+      store.zones.forEach(function (z) { if (z.id === id) { rs = z; } });
+      if (!rs) { return { error: 'That zone is gone.' }; }
+      var keep = { std: rs.std, rule: rs.rule }, nm = rs.name;
+      if (rs.base) { keep.base = rs.base; keep.delta = rs.delta || 0; }
+      if (patch.name !== undefined) {
+        var name = String(patch.name).trim();
+        if (!name) { return { error: 'Give the zone a name.' }; }
+        if (RULESETS.concat(store.zones).some(function (z) { return z.id !== id && norm(z.name) === norm(name); })) { return { error: 'There is already a zone called that.' }; }
+        rs.name = name.slice(0, 60);
+        store.places.forEach(function (p) { if (p.zone === 'custom:' + id && p.zc) { p.name = rs.name; } });
+      }
+      if (patch.std !== undefined) {
+        var std = Math.round(Number(patch.std));
+        if (isNaN(std) || std < MIN_STD || std > MAX_STD) { return { error: 'Offsets can run from ' + this.offsetLabel(MIN_STD) + ' to ' + this.offsetLabel(MAX_STD) + '.' }; }
+        rs.std = std;
+        if (rs.base) { rs.delta = std - this.realStd(rs.base); }
+      }
+      if (patch.dst !== undefined) {
+        if (patch.dst === 'real') { if (rs.o) { rs.rule = rs.o.rule; if (rs.o.base) { rs.base = rs.o.base; rs.delta = rs.o.delta || 0; } } }
+        else if (RULE_TEXT[patch.dst]) { rs.rule = patch.dst; delete rs.base; delete rs.delta; }
+      }
+      if (!rs.o) { rs.o = keep; }
+      if (rs.o && rs.name === nm && rs.std === rs.o.std && rs.rule === rs.o.rule && !!rs.base === !!rs.o.base && (rs.delta || 0) === (rs.o.delta || 0)) { delete rs.o; }
+      setRules(store.rules); persist(); storeChanged();
+      return { ok: true };
+    },
+    revertZone: function (id) {
+      store.zones.forEach(function (z) {
+        if (z.id !== id || !z.o) { return; }
+        z.std = z.o.std; z.rule = z.o.rule;
+        if (z.o.base) { z.base = z.o.base; z.delta = z.o.delta || 0; } else { delete z.base; delete z.delta; }
+        delete z.o;
+      });
+      persist(); storeChanged();
+    },
+    revertAllZones: function () {
+      store.zones.forEach(function (z) { if (z.o) { z.std = z.o.std; z.rule = z.o.rule; if (z.o.base) { z.base = z.o.base; z.delta = z.o.delta || 0; } else { delete z.base; delete z.delta; } delete z.o; } });
+    },
+
+    realStd: function (id) { var y = new Date().getUTCFullYear(); return Math.min(tzOffset(id, Date.UTC(y, 0, 15)), tzOffset(id, Date.UTC(y, 6, 15))); },
+    realParts: function (id) {
+      var y = new Date().getUTCFullYear(), jan = tzOffset(id, Date.UTC(y, 0, 15)), jul = tzOffset(id, Date.UTC(y, 6, 15));
+      return jan === null || jul === null ? null : { std: Math.min(jan, jul), dst: jan !== jul, rule: jan !== jul ? 'real' : 'none' };
+    },
+    fmtOff: function (off, nowMs) {
+      var L = new Date(nowMs + off * 60000), h = L.getUTCHours(), cp = clockParts(h, L.getUTCMinutes(), 0), vOff = -new Date(nowMs).getTimezoneOffset();
+      return { off: off, offLabel: offsetLabel(off), time: cp.hm, ap: cp.ampm, day: DAYS[L.getUTCDay()].slice(0, 3),
+        dayRel: Math.floor((nowMs + off * 60000) / 86400000) - Math.floor((nowMs + vOff * 60000) / 86400000), rel: off - vOff, isDay: h >= 6 && h < 18 };
+    },
+    describeReal: function (id, nowMs) { var o = tzOffset(id, nowMs); return o === null ? null : this.fmtOff(o, nowMs); },
+    dstNext: function (ref) { var i = dstInfo(ref); return i && i.has ? i : null; },
+    describeSpec: function (sp, nowMs) { return this.fmtOff(ruleOffset(sp, nowMs), nowMs); },
+
     planet: 'earth', sandboxId: 'sandbox', pickId: 'zin', dayMin: RULE_DAYMIN, weekdays: DAYS, months: MONTHS, maxDay: RULE_MAXDAY, weekLen: 7,
     limits: { zones: MAX_OWN_ZONES, places: MAX_OWN_PLACES, rules: MAX_OWN_RULES },
     getStore: function () { return store; },
@@ -2337,13 +2467,15 @@
       return { off: off, offLabel: offsetLabel(off), time: cp.hm, ap: cp.ampm, day: DAYS[L.getUTCDay()].slice(0, 3),
         dayRel: Math.floor((nowMs + off * 60000) / 86400000) - Math.floor((nowMs + vOff * 60000) / 86400000), rel: off - vOff, isDay: h >= 6 && h < 18 };
     },
-    addClock: function (name, where, ref) {
-      if (store.places.some(function (p) { return p.zone === ref && p.name === name; })) { return 'dup'; }
+    addClock: function (name, where, ref, meta) {
+      if (store.places.some(function (p) { return p.name === name && (p.zone === ref || labZone(p) === ref); })) { return 'dup'; }
       if (store.places.length >= MAX_OWN_PLACES) { return 'full'; }
-      store.places.push({ id: newId(), name: name.slice(0, 60), where: String(where || '').slice(0, 90), zone: ref, zc: false });
+      var np = { id: newId(), name: name.slice(0, 60), where: String(where || '').slice(0, 90), zone: ref, zc: false };
+      if (meta && meta.k) { np.k = String(meta.k).slice(0, 120); if (/^[A-Z]{2}$/.test(meta.c || '')) { np.c = meta.c; } }
+      store.places.push(np);
       return 'added';
     },
-    hasClock: function (name, ref) { return store.places.some(function (p) { return p.zone === ref && p.name === name; }); },
+    hasClock: function (name, ref) { return store.places.some(function (p) { return p.name === name && (p.zone === ref || labZone(p) === ref); }); },
     addZone: function (spec) {
       var name = String(spec.name || '').trim();
       if (!name) { return { error: 'Give the zone a name first.' }; }
@@ -2519,7 +2651,67 @@
     function name(doy) { var m = 0; while (doy >= ml[m]) { doy -= ml[m]; m++; } return MONTHS[m] + ' ' + (doy + 1); }
     return { start: name(gDay(y, c.sm, c.sk, c.sn, c.sd)), end: name(gDay(y, c.em, c.ek, c.en, c.ed)) };
   }
+
+  /* ---------- The sandbox: edits to existing zones, countries put on other zones, places moved ----------
+     lab.ov[zone id] = { s: standard offset or null for the real one, d: 'real' or a clock-change rule (none, on, us, eu, ... or one of yours) }.
+     A key that starts with @ is one of the built-in custom zones. lab.cc[country code] and lab.pl[place key] are zone references. */
+  var OVZ = {}, OVRS = {};
+  function labClean(raw, zones) {
+    var out = { ov: {}, cc: {}, pl: {} };
+    if (!raw || typeof raw !== 'object') { return out; }
+    var ov = raw.ov && typeof raw.ov === 'object' ? raw.ov : {}, cc = raw.cc && typeof raw.cc === 'object' ? raw.cc : {}, pl = raw.pl && typeof raw.pl === 'object' ? raw.pl : {};
+    Object.keys(ov).slice(0, 800).forEach(function (k) {
+      var v = ov[k];
+      if (!/^@?[A-Za-z0-9_+\-\/]{1,64}$/.test(k) || !v || typeof v !== 'object') { return; }
+      var s0 = v.s === null || v.s === undefined ? null : Math.round(Number(v.s));
+      if (s0 !== null && (isNaN(s0) || s0 < MIN_STD || s0 > MAX_STD)) { return; }
+      var d = typeof v.d === 'string' && (v.d === 'real' || RULE_TEXT[v.d]) ? v.d : 'real';
+      if (s0 === null && d === 'real') { return; }
+      out.ov[k] = { s: s0, d: d };
+    });
+    Object.keys(cc).slice(0, 300).forEach(function (k) { if (/^[A-Z]{2}$/.test(k) && cleanRef(cc[k], zones)) { out.cc[k] = cleanRef(cc[k], zones); } });
+    Object.keys(pl).slice(0, 2000).forEach(function (k) { if (k.length <= 120 && cleanRef(pl[k], zones)) { out.pl[k] = cleanRef(pl[k], zones); } });
+    return out;
+  }
+  function labOrig(o) {
+    if (!o || typeof o !== 'object') { return null; }
+    var std = Math.round(Number(o.std));
+    if (isNaN(std) || std < MIN_STD || std > MAX_STD) { return null; }
+    var r = { std: std, rule: typeof o.rule === 'string' && RULE_TEXT[o.rule] ? o.rule : 'none' };
+    if (typeof o.base === 'string' && /^[A-Za-z0-9_+\-\/]{1,64}$/.test(o.base)) { r.base = o.base; r.delta = Math.max(-1440, Math.min(1440, Math.round(Number(o.delta) || 0))); }
+    return r;
+  }
+  function labApply(id, name, std0, rule0, sp) {
+    return { id: id, name: name, std: sp.s === null ? std0 : sp.s, rule: sp.d === 'real' ? rule0 : (RULE_TEXT[sp.d] ? sp.d : 'none') };
+  }
+  function setLab(lab) {
+    OVZ = {}; OVRS = {};
+    Object.keys(lab.ov).forEach(function (k) {
+      var sp = lab.ov[k], z, i;
+      if (k.charAt(0) === '@') {
+        for (i = 0; i < RULESETS.length; i++) { if (RULESETS[i].id === k.slice(1)) { OVRS[RULESETS[i].id] = labApply(RULESETS[i].id, RULESETS[i].name, RULESETS[i].std, RULESETS[i].rule, sp); } }
+        return;
+      }
+      z = labReal(k, sp);
+      if (z) { OVZ[k] = z; }
+    });
+  }
+  function labZone(p) { var l = store.lab; return (p.k && l.pl[p.k]) || (p.c && l.cc[p.c]) || p.zone; }
+  function labMoved(p) { var l = store.lab; return !!((p.k && l.pl[p.k]) || (p.c && l.cc[p.c])); }
+  function labDropRef(ref) {
+    var l = store.lab, k;
+    for (k in l.cc) { if (l.cc[k] === ref) { delete l.cc[k]; } }
+    for (k in l.pl) { if (l.pl[k] === ref) { delete l.pl[k]; } }
+  }
+
+  function labReal(id, sp) {
+    var t = twinRef(id);
+    if (!t) { return null; }
+    var a = t.split(':');
+    return labApply(id, id, parseInt(a[1], 10) || 0, a[2], sp);
+  }
   function isDst(rule, utcMs, std) {
+    if (rule === 'on') { return true; }
     if (CR[rule]) { return customDstG(CR[rule], utcMs, std); }
     if (!SOUTH[rule] && rule !== 'us' && rule !== 'eu') { return false; }
     var loc = split(utcMs + std * 60000), pos = (loc.doy + loc.frac) * DAY, a, b;
@@ -2563,7 +2755,7 @@
     { id: 'arahiti', name: 'Arahiti', std: 2370, rule: 'none' },
     { id: 'hitira', name: 'Hitirā', std: 2400, rule: 'none' }
   ];
-  var RULE_TEXT = { none: 'no clock changes', us: 'US daylight saving', eu: 'European summer time', au: 'Australian daylight saving', nz: 'New Zealand daylight saving', cl: 'Chilean summer time' };
+  var RULE_TEXT = { none: 'no clock changes', on: 'summer time all year', us: 'US daylight saving', eu: 'European summer time', au: 'Australian daylight saving', nz: 'New Zealand daylight saving', cl: 'Chilean summer time' };
 
   /* ---------- Saved clocks ----------
      zone = 'custom:<id>' for a rule set above, 'real:<std>:<rule>' for the Gaian twin of a real-world zone, 'ztc:<minutes>' for a fixed offset.
@@ -2710,14 +2902,14 @@
 
   var state = { scope: 'all', q: '', sort: 'time' }, h36 = false, active = false;
   try { h36 = window.localStorage.getItem('highnoon-gaia-36h') === '1'; } catch (err) { h36 = false; }
-  var store = { zones: [], places: [], rules: [] };               // what the viewer has added on Gaia
+  var store = { zones: [], places: [], rules: [], lab: { ov: {}, cc: {}, pl: {} } };   // what the viewer has added on Gaia
   var sel = { ref: CORD, label: 'Summitbrook, CL' };            // what the sandbox is showing
   var ALL = [], BYID = {}, lookups = null;
 
   /* ---------- Zones and offsets ---------- */
   function ruleset(id) {
     var i;
-    for (i = 0; i < RULESETS.length; i++) { if (RULESETS[i].id === id) { return RULESETS[i]; } }
+    for (i = 0; i < RULESETS.length; i++) { if (RULESETS[i].id === id) { return OVRS[id] || RULESETS[i]; } }
     for (i = 0; i < store.zones.length; i++) { if (store.zones[i].id === id) { return store.zones[i]; } }
     return null;
   }
@@ -2726,7 +2918,10 @@
   function refParts(ref) {
     var a = ref.split(':');
     if (a[0] === 'ztc') { return { std: parseInt(a[1], 10) || 0, rule: 'none' }; }
-    if (a[0] === 'real') { return { std: parseInt(a[1], 10) || 0, rule: RULE_TEXT[a[2]] ? a[2] : 'none' }; }
+    if (a[0] === 'real') {
+      if (a[3] && OVZ[a[3]]) { return { std: OVZ[a[3]].std, rule: OVZ[a[3]].rule }; }
+      return { std: parseInt(a[1], 10) || 0, rule: RULE_TEXT[a[2]] ? a[2] : 'none' };
+    }
     var rs = ruleset(a[1]);
     return rs ? { std: rs.std, rule: rs.rule } : null;
   }
@@ -2817,13 +3012,14 @@
   /* ---------- The board's list: built-in clocks plus the viewer's own ---------- */
   function rebuildAll() {
     ALL = CLOCKS.slice();
-    store.places.forEach(function (p) { ALL.push({ id: p.id, group: 'mine', name: p.name, where: p.where, zone: p.zone, zc: !!p.zc, own: true }); });
+    store.places.forEach(function (p) { ALL.push({ id: p.id, group: 'mine', name: p.name, where: p.where + (labMoved(p) ? ' (moved)' : ''), zone: labZone(p), zc: !!p.zc, own: true }); });
     BYID = {};
     ALL.forEach(function (z, i) {
       z.i = i;
       z.isGlow = !!z.glow || refKind(z.zone) === 'custom';
       z.badge = /, CL$/.test(z.name);
       z.hana = HANA_BY_ID[z.id] || hanaOfRef(z.zone) || null;
+      z.zid = /^real:/.test(z.zone) && z.zone.split(':').length === 3 && z.hana && /^[A-Za-z]+\/[A-Za-z0-9_+\-\/]+$/.test(z.hana) && !HANA_ONLY[z.hana] ? z.hana : '';
       z.alias = !!HANA_ALIAS[z.id];
       z.search = (z.name + ' ' + z.where + ' ' + GROUPS[z.group] + ' ' + refLabel(z.zone) + ' ' + (z.hana || '')).toLowerCase();
       BYID[z.id] = z;
@@ -2841,7 +3037,7 @@
     bits(viewerRef, now, V);
     bits(CORD, now, SB);
     ALL.forEach(function (z) {
-      bits(z.zone, now, z);
+      bits(z.zid ? z.zone + ':' + z.zid : z.zone, now, z);
       z.rel = z.off - V.off; z.relDay = z.p.dc - V.p.dc;
       z.band = z.rel > 0 ? 'above' : (z.rel === 0 ? 'on' : 'below');
     });
@@ -3331,7 +3527,7 @@
     if (typeof ref !== 'string') { return null; }
     var a = ref.split(':'), n = parseInt(a[1], 10);
     if (a[0] === 'ztc' && a.length === 2) { return isNaN(n) || n < MIN_STD || n > MAX_STD + 60 ? null : 'ztc:' + n; }
-    if (a[0] === 'real' && a.length === 3) { return isNaN(n) || n < MIN_STD || n > MAX_STD || !RULE_TEXT[a[2]] ? null : 'real:' + n + ':' + a[2]; }
+    if (a[0] === 'real' && (a.length === 3 || (a.length === 4 && /^[A-Za-z0-9_+\-\/]{1,64}$/.test(a[3])))) { return isNaN(n) || n < MIN_STD || n > MAX_STD || !RULE_TEXT[a[2]] ? null : 'real:' + n + ':' + a[2] + (a[3] ? ':' + a[3] : ''); }
     if (a[0] === 'custom' && a.length === 2) {
       return RULESETS.some(function (r) { return r.id === a[1]; }) || zones.some(function (r) { return r.id === a[1]; }) ? ref : null;
     }
@@ -3339,8 +3535,9 @@
   }
   // Only keeps entries shaped the way this page writes them.
   function sanitize(raw) {
-    var out = { zones: [], places: [], rules: [] };
+    var out = { zones: [], places: [], rules: [], lab: { ov: {}, cc: {}, pl: {} } };
     setRules([]);
+    setLab(out.lab);
     if (!raw || typeof raw !== 'object') { return out; }
     (Array.isArray(raw.rules) ? raw.rules : []).slice(0, MAX_OWN_RULES).forEach(function (r) { var c = sanitizeRule(r); if (c) { out.rules.push(c); } });
     setRules(out.rules);
@@ -3350,19 +3547,26 @@
       if (isNaN(std) || std < MIN_STD || std > MAX_STD) { return; }
       var zo = { id: z.id, name: z.name.trim().slice(0, 60), std: std, rule: RULE_TEXT[z.rule] ? z.rule : 'none' };
       if (typeof z.base === 'string' && /^[A-Za-z0-9_+\-\/]{1,64}$/.test(z.base)) { zo.base = z.base; zo.delta = Math.max(-1440, Math.min(1440, Math.round(Number(z.delta) || 0))); }
+      var oz = labOrig(z.o);
+      if (oz) { zo.o = oz; }
       out.zones.push(zo);
     });
     (Array.isArray(raw.places) ? raw.places : []).slice(0, MAX_OWN_PLACES).forEach(function (p) {
       if (!p || typeof p.id !== 'string' || !/^u[a-z0-9]{4,24}$/.test(p.id) || typeof p.name !== 'string' || !p.name.trim()) { return; }
       var ref = cleanRef(p.zone, out.zones);
       if (!ref) { return; }
-      out.places.push({ id: p.id, name: p.name.trim().slice(0, 60), where: typeof p.where === 'string' ? p.where.trim().slice(0, 90) : '', zone: ref, zc: !!p.zc });
+      var po = { id: p.id, name: p.name.trim().slice(0, 60), where: typeof p.where === 'string' ? p.where.trim().slice(0, 90) : '', zone: ref, zc: !!p.zc };
+      if (typeof p.k === 'string' && p.k.length <= 120) { po.k = p.k; }
+      if (typeof p.c === 'string' && /^[A-Z]{2}$/.test(p.c)) { po.c = p.c; }
+      out.places.push(po);
     });
+    out.lab = labClean(raw.lab, out.zones);
+    setLab(out.lab);
     return out;
   }
   function loadLocal() {
     try { var raw = window.localStorage.getItem(LS_KEY); if (raw) { return sanitize(JSON.parse(raw)); } } catch (err) { /* start empty */ }
-    return { zones: [], places: [], rules: [] };
+    return { zones: [], places: [], rules: [], lab: { ov: {}, cc: {}, pl: {} } };
   }
   function saveLocal() {
     try { window.localStorage.setItem(LS_KEY, JSON.stringify(store)); } catch (err) { /* nothing more to do */ }
@@ -3378,7 +3582,7 @@
     if (!docRef) { return; }
     if (writing) { dirty = true; return; }
     writing = true; dirty = false;
-    docRef.set({ zones: store.zones, places: store.places, rules: store.rules }).then(function () {
+    docRef.set({ zones: store.zones, places: store.places, rules: store.rules, lab: store.lab }).then(function () {
       writing = false;
       if (dirty) { persist(); }
     }, function () {
@@ -3487,6 +3691,7 @@
   function removeZone(id) {
     store.zones = store.zones.filter(function (z) { return z.id !== id; });
     store.places = store.places.filter(function (p) { return p.zone !== 'custom:' + id; });
+    labDropRef('custom:' + id);
     persist();
     storeChanged();
     say('Removed that zone and the clocks that ran on it.');
@@ -3634,24 +3839,81 @@
 
   /* ---------- The world places and the zone workshop reach this page through here ---------- */
   window.pxGaia = {
+    lab: function () { return store.lab; },
+    labCommit: function () { store.lab = labClean(store.lab, store.zones); setLab(store.lab); persist(); storeChanged(); },
+    labSetAll: function (lab) { store.lab = labClean(lab, store.zones); setLab(store.lab); persist(); storeChanged(); },
+    builtins: function () { return RULESETS; },
+    updateZone: function (id, patch) {
+      var rs = null;
+      store.zones.forEach(function (z) { if (z.id === id) { rs = z; } });
+      if (!rs) { return { error: 'That zone is gone.' }; }
+      var keep = { std: rs.std, rule: rs.rule }, nm = rs.name;
+      if (rs.base) { keep.base = rs.base; keep.delta = rs.delta || 0; }
+      if (patch.name !== undefined) {
+        var name = String(patch.name).trim();
+        if (!name) { return { error: 'Give the zone a name.' }; }
+        if (RULESETS.concat(store.zones).some(function (z) { return z.id !== id && norm(z.name) === norm(name); })) { return { error: 'There is already a zone called that.' }; }
+        rs.name = name.slice(0, 60);
+        store.places.forEach(function (p) { if (p.zone === 'custom:' + id && p.zc) { p.name = rs.name; } });
+      }
+      if (patch.std !== undefined) {
+        var std = Math.round(Number(patch.std));
+        if (isNaN(std) || std < MIN_STD || std > MAX_STD) { return { error: 'Offsets can run from ' + this.offsetLabel(MIN_STD) + ' to ' + this.offsetLabel(MAX_STD) + '.' }; }
+        rs.std = std;
+        if (rs.base) { rs.delta = std - this.realStd(rs.base); }
+      }
+      if (patch.dst !== undefined) {
+        if (patch.dst === 'real') { if (rs.o) { rs.rule = rs.o.rule; if (rs.o.base) { rs.base = rs.o.base; rs.delta = rs.o.delta || 0; } } }
+        else if (RULE_TEXT[patch.dst]) { rs.rule = patch.dst; delete rs.base; delete rs.delta; }
+      }
+      if (!rs.o) { rs.o = keep; }
+      if (rs.o && rs.name === nm && rs.std === rs.o.std && rs.rule === rs.o.rule && !!rs.base === !!rs.o.base && (rs.delta || 0) === (rs.o.delta || 0)) { delete rs.o; }
+      setRules(store.rules); persist(); storeChanged();
+      return { ok: true };
+    },
+    revertZone: function (id) {
+      store.zones.forEach(function (z) {
+        if (z.id !== id || !z.o) { return; }
+        z.std = z.o.std; z.rule = z.o.rule;
+        if (z.o.base) { z.base = z.o.base; z.delta = z.o.delta || 0; } else { delete z.base; delete z.delta; }
+        delete z.o;
+      });
+      persist(); storeChanged();
+    },
+    revertAllZones: function () {
+      store.zones.forEach(function (z) { if (z.o) { z.std = z.o.std; z.rule = z.o.rule; if (z.o.base) { z.base = z.o.base; z.delta = z.o.delta || 0; } else { delete z.base; delete z.delta; } delete z.o; } });
+    },
+
+    realStd: function (id) { var t = twinRef(id); return t ? parseInt(t.split(':')[1], 10) || 0 : 0; },
+    realParts: function (id) { var t = twinRef(id); if (!t) { return null; } var a = t.split(':'); return { std: parseInt(a[1], 10) || 0, dst: a[2] !== 'none', rule: a[2] !== 'none' ? 'real' : 'none' }; },
+    fmtOff: function (off, now) {
+      var p = split(now + off * 60000), vo = refOffset(viewerRef, now), vp = split(now + vo * 60000);
+      return { off: off, offLabel: ztc(off), time: hm(p.h, p.m), ap: ap(p.h), day: WEEK[p.dow].slice(0, 3), dayRel: p.dc - vp.dc, rel: off - vo, isDay: isDay(p) };
+    },
+    describeReal: function (id, now) { var t = twinRef(id); return t ? this.fmtOff(refOffset(t, now), now) : null; },
+    dstNext: function (ref) { var i = dstInfo(ref); return i && i.has ? i : null; },
+    describeSpec: function (sp, now) { return this.fmtOff(sp.std + (isDst(sp.rule, now, sp.std) ? saveOf(sp.rule) : 0), now); },
+
     planet: 'gaia', sandboxId: 'gSandbox', pickId: 'gPick', dayMin: RULE_DAYMIN, weekdays: WEEK, months: MONTHS, maxDay: RULE_MAXDAY, weekLen: 5,
     limits: { zones: MAX_OWN_ZONES, places: MAX_OWN_PLACES, rules: MAX_OWN_RULES },
     getStore: function () { return store; },
     commit: function () { setRules(store.rules); persist(); storeChanged(); },
     setSel: function (ref, label) { setSel(ref, label); },
     say: say,
-    refFor: function (zoneId) { return twinRef(zoneId); },
+    refFor: function (zoneId) { var r = twinRef(zoneId); return r ? r + ':' + zoneId : null; },
     describe: function (ref, now) {
       var off = refOffset(ref, now), p = split(now + off * 60000), vo = refOffset(viewerRef, now), vp = split(now + vo * 60000);
       return { off: off, offLabel: ztc(off), time: hm(p.h, p.m), ap: ap(p.h), day: WEEK[p.dow].slice(0, 3), dayRel: p.dc - vp.dc, rel: off - vo, isDay: isDay(p) };
     },
-    addClock: function (name, where, ref) {
-      if (store.places.some(function (p) { return p.zone === ref && p.name === name; })) { return 'dup'; }
+    addClock: function (name, where, ref, meta) {
+      if (store.places.some(function (p) { return p.name === name && (p.zone === ref || labZone(p) === ref); })) { return 'dup'; }
       if (store.places.length >= MAX_OWN_PLACES) { return 'full'; }
-      store.places.push({ id: newId(), name: name.slice(0, 60), where: String(where || '').slice(0, 90), zone: ref, zc: false });
+      var np = { id: newId(), name: name.slice(0, 60), where: String(where || '').slice(0, 90), zone: ref, zc: false };
+      if (meta && meta.k) { np.k = String(meta.k).slice(0, 120); if (/^[A-Z]{2}$/.test(meta.c || '')) { np.c = meta.c; } }
+      store.places.push(np);
       return 'added';
     },
-    hasClock: function (name, ref) { return store.places.some(function (p) { return p.zone === ref && p.name === name; }); },
+    hasClock: function (name, ref) { return store.places.some(function (p) { return p.name === name && (p.zone === ref || labZone(p) === ref); }); },
     refParts: refParts,
     addZone: function (spec) {
       var name = String(spec.name || '').trim();
