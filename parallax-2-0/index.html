@@ -680,7 +680,7 @@
     </div>
     <div class="pick">
       <label for="zin">Showing the time in. Tap the name to type a place, a zone or an offset.</label>
-      <input id="zin" type="text" list="zlist" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="Summitbrook, CL">
+      <input id="zin" type="text" list="zlist" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="Summitbrook, TY">
       <datalist id="zlist"></datalist>
     </div>
     <h1><span class="sr">Parallax 2.0, a world clock. The time there is </span><span class="big" id="heroNum">0:00</span><span class="big-side"><span class="big-sec" id="heroSec">00</span><span class="big-unit" id="heroUnit">AM</span></span></h1>
@@ -838,7 +838,7 @@
       </div>
       <div class="g-pick">
         <label for="gPick">Showing the time in. Tap the name to type a place, a zone or an offset.</label>
-        <input id="gPick" type="text" list="gList" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="Summitbrook, CL">
+        <input id="gPick" type="text" list="gList" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="Summitbrook, TY">
         <datalist id="gList"></datalist>
       </div>
       <p class="g-time"><span class="sr">The time there is </span><span class="n" id="gNum">0:00</span><span class="side"><b id="gSec">00</b><i id="gUnit">AM</i></span></p>
@@ -1009,7 +1009,7 @@
         <div class="g-g"><span>Daylight saving jump</span><b>1<i>hour</i></b><small>The same as on Earth.</small></div>
         <div class="g-g"><span>The standard</span><b>ZTC</b><small>Coordinated Zenith Time, set from Summitbrook.</small></div>
         <div class="g-g"><span>Zone database</span><b>HANA<i>2026a</i></b><small>The Helian Assigned Numbers Authority's database. Everyone calls it the Olson database.</small></div>
-        <div class="g-g"><span>Zone IDs</span><b>Area/City</b><small>The same IDs as on Earth, plus America/Summitbrook for Colorandoa and Etc/ZTC for the base clock.</small></div>
+        <div class="g-g"><span>Zone IDs</span><b>Area/City</b><small>The same IDs as on Earth, plus America/Summitbrook for Tayanoa and Etc/ZTC for the base clock.</small></div>
       </div>
     </section>
 
@@ -1018,7 +1018,7 @@
       <p id="gFine">Gaian clocks run in real time with the same hours, minutes and seconds as Earth's. Gaia's year 2026 began at the same moment Summitbrook's did on Earth, and every Gaian day since has lasted 36 hours, so the dates on the two planets do not line up.</p>
       <p>Gaia's week has five days: Monday, Thursday and Friday for work, then Saturday and Sunday off. Monday feels like an Earth Monday, Thursday like a Wednesday, Friday like a Friday, and the weekend is the same Saturday and Sunday.</p>
       <p>Every Gaian offset comes from its Earth one: add 9 hours, multiply by 1.5, and settle on a whole hour, with any odd minutes carried over. Places with clock changes follow their Earth twin's dates, on Gaia's calendar: the US and Europe in the north, and in the south Australia (first Sunday of October to first Sunday of April), New Zealand (last Sunday of September to first Sunday of April) and Chile (first Sunday of September to first Sunday of April). Zones that never change on Earth never change on Gaia, Brazil and Argentina included.</p>
-      <p>Every zone on Gaia has a HANA ID in the same Area/City form as on Earth, from release 2026a of the HANA Time Zone Database, which everyone on Gaia calls the Olson database. A place that exists on Earth keeps its Earth ID, so Asia/Tokyo is Asia/Tokyo on both planets and only the clock rules behind it are Gaia's. America/Summitbrook is the city clock for all of Colorandoa, and every other town there is an alias that points to it. Etc/ZTC is the fixed base clock, and its Etc/ZTC+4 style cousins flip the sign like Earth's do, so Etc/ZTC+4 is four hours behind. IDs use plain letters only, which is why Apōpō's clocks read Pacific/Toara, Pacific/Fatahi and so on. Summitbrook prints as SMT, or SMDT in summer. Every other zone prints as its offset, like ZTC+06.</p>
+      <p>Every zone on Gaia has a HANA ID in the same Area/City form as on Earth, from release 2026a of the HANA Time Zone Database, which everyone on Gaia calls the Olson database. A place that exists on Earth keeps its Earth ID, so Asia/Tokyo is Asia/Tokyo on both planets and only the clock rules behind it are Gaia's. America/Summitbrook is the city clock for all of Tayanoa, and every other town there is an alias that points to it. Etc/ZTC is the fixed base clock, and its Etc/ZTC+4 style cousins flip the sign like Earth's do, so Etc/ZTC+4 is four hours behind. IDs use plain letters only, which is why Apōpō's clocks read Pacific/Toara, Pacific/Fatahi and so on. Summitbrook prints as SMT, or SMDT in summer. Every other zone prints as its offset, like ZTC+06.</p>
     </footer>
   </div>
 
@@ -1061,26 +1061,26 @@
   var CLOCKS = [
     { id: 'burnthills', group: 'home', name: 'Burnt Hills, NY',
       where: 'Saratoga County, on Eastern Time', zone: 'iana:America/New_York', std: -300, us: true },
-    { id: 'summitbrook', group: 'cord', name: 'Summitbrook, CL',
-      where: 'Colorandoa, on Cordilleran Time', zone: 'custom:cordilleran', std: -540 },
-    { id: 'summitcrest', group: 'cord', name: 'Summitcrest, CL',
-      where: 'Colorandoa, on Cordilleran Time', zone: 'custom:cordilleran', std: -540 },
-    { id: 'axspororidge', group: 'cord', name: 'Axspororidge, CL',
+    { id: 'summitbrook', group: 'cord', name: 'Summitbrook, TY',
+      where: 'Tayanoa, on Cordilleran Time', zone: 'custom:cordilleran', std: -540 },
+    { id: 'summitcrest', group: 'cord', name: 'Summitcrest, TY',
+      where: 'Tayanoa, on Cordilleran Time', zone: 'custom:cordilleran', std: -540 },
+    { id: 'axspororidge', group: 'cord', name: 'Axspororidge, TY',
       where: 'Summitcrest district, on Cordilleran Time', zone: 'custom:cordilleran', std: -540 },
-    { id: 'luxora', group: 'cord', name: 'Luxora, CL',
+    { id: 'luxora', group: 'cord', name: 'Luxora, TY',
       where: 'Summitcrest district, on Cordilleran Time', zone: 'custom:cordilleran', std: -540 },
-    { id: 'teyakenroken', group: 'cord', name: 'Teyakeñroken, CL',
+    { id: 'teyakenroken', group: 'cord', name: 'Teyakeñroken, TY',
       where: 'Summitcrest district, on Cordilleran Time', zone: 'custom:cordilleran', std: -540 },
-    { id: 'bressler', group: 'cord', name: 'Bressler, CL',
+    { id: 'bressler', group: 'cord', name: 'Bressler, TY',
       where: 'Summitcrest district, on Cordilleran Time', zone: 'custom:cordilleran', std: -540 },
-    { id: 'skawenta', group: 'cord', name: 'Skawenta, CL',
-      where: 'Colorandoa, on Cordilleran Time', zone: 'custom:cordilleran', std: -540 },
-    { id: 'rinconada', group: 'cord', name: 'Rinconada Alta, CL',
-      where: 'Colorandoa, on Cordilleran Time', zone: 'custom:cordilleran', std: -540 },
+    { id: 'skawenta', group: 'cord', name: 'Skawenta, TY',
+      where: 'Tayanoa, on Cordilleran Time', zone: 'custom:cordilleran', std: -540 },
+    { id: 'rinconada', group: 'cord', name: 'Rinconada Alta, TY',
+      where: 'Tayanoa, on Cordilleran Time', zone: 'custom:cordilleran', std: -540 },
     { id: 'cord', group: 'cord', name: 'Cordilleran Time',
-      where: 'Colorandoa and the rest of the interior', zone: 'custom:cordilleran', std: -540, zc: true },
+      where: 'Tayanoa and the rest of the interior', zone: 'custom:cordilleran', std: -540, zc: true },
     { id: 'coast', group: 'cord', name: 'Coastal-Cordilleran Time',
-      where: 'Calivornia, Orekon, Washingmere, Britannic Columbia and western Yukona', zone: 'custom:coastal', std: -600, zc: true },
+      where: 'Sanlucar, Wanaket, Grenville, New Albion and western Tahsika', zone: 'custom:coastal', std: -600, zc: true },
     { id: 'larinconada', group: 'high', name: 'La Rinconada, Peru',
       where: 'Puno Region, on Peru Time', zone: 'iana:America/Lima', std: -300 },
     { id: 'tuiwa', group: 'high', name: 'Tuiwa, Tibet, China',
@@ -1167,7 +1167,7 @@
   // What the viewer has added: their own rule sets and their own saved clocks.
   var store = { zones: [], places: [], rules: [], lab: { ov: {}, cc: {}, pl: {} } };
   // What the sandbox is showing.
-  var sel = { ref: 'custom:cordilleran', label: 'Summitbrook, CL' };
+  var sel = { ref: 'custom:cordilleran', label: 'Summitbrook, TY' };
   var ALL = [], BYID = {};
 
   /* ---------- Time math ---------- */
@@ -1407,7 +1407,7 @@
     ALL.forEach(function (z, i) {
       z.i = i;
       z.glow = refKind(z.zone) === 'custom';
-      z.badge = /, CL$/.test(z.name);
+      z.badge = /, TY$/.test(z.name);
       z.search = (z.name + ' ' + z.where + ' ' + GROUPS[z.group] + ' ' + refLabel(z.zone)).toLowerCase();
       BYID[z.id] = z;
     });
@@ -1624,7 +1624,7 @@
   function homeName(tz) { return tz === 'America/New_York' ? 'Burnt Hills, NY' : tz; }   // Nick's zone goes by its place, not its IANA id
   var PRESETS = [
     ['Your time', function () { return viewerTz ? { ref: 'iana:' + viewerTz, label: homeName(viewerTz) } : { ref: 'utc:' + viewer.off, label: offsetLabel(viewer.off) }; }],
-    ['Summitbrook', function () { return { ref: 'custom:cordilleran', label: 'Summitbrook, CL' }; }],
+    ['Summitbrook', function () { return { ref: 'custom:cordilleran', label: 'Summitbrook, TY' }; }],
     ['UTC', function () { return { ref: 'utc:0', label: offsetLabel(0) }; }],
     ['Hitirā', function () { return { ref: 'custom:hitira', label: 'Hitirā' }; }],
     ['Kathmandu', function () { return { ref: 'iana:Asia/Kathmandu', label: 'Asia/Kathmandu' }; }],
@@ -1961,7 +1961,7 @@
   function storeChanged() {
     rebuildAll();
     fillDatalist();
-    if (refKind(sel.ref) === 'custom' && !ruleset(refId(sel.ref))) { sel = { ref: 'custom:cordilleran', label: 'Summitbrook, CL' }; $('zin').value = sel.label; }
+    if (refKind(sel.ref) === 'custom' && !ruleset(refId(sel.ref))) { sel = { ref: 'custom:cordilleran', label: 'Summitbrook, TY' }; $('zin').value = sel.label; }
     dstCache = {};
     compute();
     scoreboard();
@@ -2134,7 +2134,7 @@
     return '<article class="row ' + z.band + (z.glow ? ' cl' : '') + '" id="r-' + esc(z.id) + '" data-id="' + esc(z.id) + '">' +
       '<div class="sky ' + (z.isDay ? 'day' : 'night') + '" role="img" aria-label="' + (z.isDay ? 'Daytime there' : 'Night there') + '"></div>' +
       '<div class="who"><h3>' + esc(z.name) + '</h3><p class="where">' +
-        (z.badge ? '<span class="badge">CL</span>' : '') + esc(z.where) + '</p></div>' +
+        (z.badge ? '<span class="badge">TY</span>' : '') + esc(z.where) + '</p></div>' +
       '<div class="elev"><b>' + p.hm + '</b><i>' + p.ampm + '</i><small>' + dateShort(z) + '</small></div>' +
       '<p class="meta">' + chipsHTML(z) + '</p>' +
       '<div class="bar" aria-hidden="true"><i style="left:' + pct + '%"></i></div>' +
@@ -2806,7 +2806,7 @@
 
   /* ---------- HANA zone IDs ----------
      Places that exist on Earth keep their Earth ID. The rest are named in plain letters (no macrons or okina), like every ID.
-     One zone per set of clock rules: every other Colorandoa town is an alias that points to America/Summitbrook. */
+     One zone per set of clock rules: every other Tayanoa town is an alias that points to America/Summitbrook. */
   var HANA_RELEASE = '2026a';
   var HANA_CUSTOM = { cordilleran: 'America/Summitbrook', coastal: 'America/Johnston', toara: 'Pacific/Toara', aratoa: 'Pacific/Aratoa', utaroa: 'Pacific/Utaroa',
     fatahi: 'Pacific/Fatahi', rainui: 'Pacific/Rainui', arahiti: 'Pacific/Arahiti', hitira: 'Pacific/Hitira' };
@@ -2866,21 +2866,21 @@
   }
   var CLOCKS = [
     { id: 'burnthills', group: 'home', name: 'Burnt Hills, NY', where: 'Saratoga County, on Eastern Time', zone: 'real:360:us' },
-    { id: 'summitbrook', group: 'cord', name: 'Summitbrook, CL', where: 'The zero line. Zenith Time is set here', zone: CORD },
-    { id: 'summitcrest', group: 'cord', name: 'Summitcrest, CL', where: 'Colorandoa, on Cordilleran Time', zone: CORD },
-    { id: 'axspororidge', group: 'cord', name: 'Axspororidge, CL', where: 'Summitcrest district, on Cordilleran Time', zone: CORD },
-    { id: 'luxora', group: 'cord', name: 'Luxora, CL', where: 'Summitcrest district, on Cordilleran Time', zone: CORD },
-    { id: 'teyakenroken', group: 'cord', name: 'Teyakeñroken, CL', where: 'Summitcrest district, on Cordilleran Time', zone: CORD },
-    { id: 'bressler', group: 'cord', name: 'Bressler, CL', where: 'Summitcrest district, on Cordilleran Time', zone: CORD },
-    { id: 'skawenta', group: 'cord', name: 'Skawenta, CL', where: 'Colorandoa, on Cordilleran Time', zone: CORD },
-    { id: 'rinconada', group: 'cord', name: 'Rinconada Alta, CL', where: 'Colorandoa, on Cordilleran Time', zone: CORD },
-    { id: 'cord', group: 'cord', name: 'Cordilleran Time', where: 'Colorandoa and the rest of the interior', zone: CORD, zc: true },
-    { id: 'coast', group: 'cord', name: 'Coastal-Cordilleran Time', where: 'Calivornia, Orekon and Washingmere', zone: 'custom:coastal', zc: true },
-    { id: 'aridona', group: 'cord', name: 'Aridona', where: 'Never changes its clocks, so it sits on Zenith Time all year', zone: 'ztc:0', glow: true },
-    { id: 'bc', group: 'cord', name: 'Britannic Columbia', where: 'Stopped changing its clocks in 2026', zone: 'ztc:0', glow: true },
-    { id: 'saskatchelwyn', group: 'cord', name: 'Saskatchelwyn', where: 'Never changes its clocks, so it sits on Zenith Time all year', zone: 'ztc:0', glow: true },
-    { id: 'yukonaeast', group: 'cord', name: 'Eastern Yukona', where: 'On Cordilleran Time, but stays on its summer clock all year', zone: 'ztc:60', glow: true },
-    { id: 'yukonawest', group: 'cord', name: 'Western Yukona', where: 'On Coastal-Cordilleran Time, but stays on its summer clock all year', zone: 'ztc:-60', glow: true },
+    { id: 'summitbrook', group: 'cord', name: 'Summitbrook, TY', where: 'The zero line. Zenith Time is set here', zone: CORD },
+    { id: 'summitcrest', group: 'cord', name: 'Summitcrest, TY', where: 'Tayanoa, on Cordilleran Time', zone: CORD },
+    { id: 'axspororidge', group: 'cord', name: 'Axspororidge, TY', where: 'Summitcrest district, on Cordilleran Time', zone: CORD },
+    { id: 'luxora', group: 'cord', name: 'Luxora, TY', where: 'Summitcrest district, on Cordilleran Time', zone: CORD },
+    { id: 'teyakenroken', group: 'cord', name: 'Teyakeñroken, TY', where: 'Summitcrest district, on Cordilleran Time', zone: CORD },
+    { id: 'bressler', group: 'cord', name: 'Bressler, TY', where: 'Summitcrest district, on Cordilleran Time', zone: CORD },
+    { id: 'skawenta', group: 'cord', name: 'Skawenta, TY', where: 'Tayanoa, on Cordilleran Time', zone: CORD },
+    { id: 'rinconada', group: 'cord', name: 'Rinconada Alta, TY', where: 'Tayanoa, on Cordilleran Time', zone: CORD },
+    { id: 'cord', group: 'cord', name: 'Cordilleran Time', where: 'Tayanoa and the rest of the interior', zone: CORD, zc: true },
+    { id: 'coast', group: 'cord', name: 'Coastal-Cordilleran Time', where: 'Sanlucar, Wanaket and Grenville', zone: 'custom:coastal', zc: true },
+    { id: 'aridona', group: 'cord', name: 'Zubieta', where: 'Never changes its clocks, so it sits on Zenith Time all year', zone: 'ztc:0', glow: true },
+    { id: 'bc', group: 'cord', name: 'New Albion', where: 'Stopped changing its clocks in 2026', zone: 'ztc:0', glow: true },
+    { id: 'saskatchelwyn', group: 'cord', name: 'Grandval', where: 'Never changes its clocks, so it sits on Zenith Time all year', zone: 'ztc:0', glow: true },
+    { id: 'yukonaeast', group: 'cord', name: 'Eastern Tahsika', where: 'On Cordilleran Time, but stays on its summer clock all year', zone: 'ztc:60', glow: true },
+    { id: 'yukonawest', group: 'cord', name: 'Western Tahsika', where: 'On Coastal-Cordilleran Time, but stays on its summer clock all year', zone: 'ztc:-60', glow: true },
     { id: 'baker', group: 'world', name: 'Baker Island', where: 'The last place on Gaia to see each day', zone: 'real:-240:none' },
     { id: 'denver', group: 'world', name: 'Denver', where: 'Colorado, on Mountain Time', zone: 'real:180:us' },
     { id: 'nyc', group: 'world', name: 'New York City', where: 'On Eastern Time', zone: 'real:360:us' },
@@ -2945,7 +2945,7 @@
   var state = { scope: 'all', q: '', sort: 'time' }, h36 = false, active = false;
   try { h36 = window.localStorage.getItem('highnoon-gaia-36h') === '1'; } catch (err) { h36 = false; }
   var store = { zones: [], places: [], rules: [], lab: { ov: {}, cc: {}, pl: {} } };   // what the viewer has added on Gaia
-  var sel = { ref: CORD, label: 'Summitbrook, CL' };            // what the sandbox is showing
+  var sel = { ref: CORD, label: 'Summitbrook, TY' };            // what the sandbox is showing
   var ALL = [], BYID = {}, lookups = null;
 
   /* ---------- Zones and offsets ---------- */
@@ -3059,7 +3059,7 @@
     ALL.forEach(function (z, i) {
       z.i = i;
       z.isGlow = !!z.glow || refKind(z.zone) === 'custom';
-      z.badge = /, CL$/.test(z.name);
+      z.badge = /, TY$/.test(z.name);
       z.hana = HANA_BY_ID[z.id] || hanaOfRef(z.zone) || null;
       z.zid = /^real:/.test(z.zone) && z.zone.split(':').length === 3 && z.hana && /^[A-Za-z]+\/[A-Za-z0-9_+\-\/]+$/.test(z.hana) && !HANA_ONLY[z.hana] ? z.hana : '';
       z.alias = !!HANA_ALIAS[z.id];
@@ -3186,7 +3186,7 @@
   /* ---------- Build once ---------- */
   var PRESETS = [
     ['Your time', function () { return { ref: viewerTz && /^[A-Za-z]+\/[A-Za-z0-9_+\-\/]+$/.test(viewerTz) && viewerRef.split(':').length === 3 ? viewerRef + ':' + viewerTz : viewerRef, label: viewerTz ? homeName(viewerTz) : ztc(V.off || 0) }; }],
-    ['Summitbrook', function () { return { ref: CORD, label: 'Summitbrook, CL' }; }],
+    ['Summitbrook', function () { return { ref: CORD, label: 'Summitbrook, TY' }; }],
     ['ZTC', function () { return { ref: 'ztc:0', label: ztc(0) }; }],
     ['Hitirā', function () { return { ref: 'custom:hitira', label: 'Hitirā' }; }],
     ['Kathmandu', function () { return { ref: NEPAL + ':Asia/Kathmandu', label: 'Kathmandu' }; }],
@@ -3327,14 +3327,14 @@
       if (hz.alias) { htext = sel.label + ' is an alias. It points to ' + hid + ', the one zone every town on these clock rules shares. It prints as ' + ab + ' right now.'; }
       else if (hid === 'Etc/ZTC') { htext = 'The fixed base clock. It never changes its clocks and it always prints as ZTC.'; }
       else if (/^Etc\/ZTC[+-]/.test(hid)) { htext = 'A fixed zone named for its offset. The sign is flipped, like Earth’s Etc zones, so this one is four hours behind ZTC.'; }
-      else if (hid === 'America/Summitbrook') { htext = 'The city clock at the zero line, and the one zone for all of Colorandoa. It prints as ' + ab + ' right now.'; }
+      else if (hid === 'America/Summitbrook') { htext = 'The city clock at the zero line, and the one zone for all of Tayanoa. It prints as ' + ab + ' right now.'; }
       else if (/^Pacific\/(Toara|Aratoa|Utaroa|Fatahi|Rainui|Arahiti|Hitira)$/.test(hid)) { htext = 'One of Apōpō’s clocks, written in plain letters like every ID. It prints as ' + ab + '.'; }
       else if (hid === 'America/Johnston') { htext = 'The city clock for Coastal-Cordilleran Time, one zone for the whole west coast. It prints as ' + ab + ' right now.'; }
-      else if (hid === 'America/Ashenix') { htext = 'The one zone for Aridona, which never changes its clocks. It prints as ' + ab + ' all year.'; }
-      else if (hid === 'America/Saskwatoon') { htext = 'The one zone for Saskatchelwyn, which never changes its clocks. It prints as ' + ab + ' all year.'; }
-      else if (hid === 'America/Northgate') { htext = 'The zone for eastern Yukona, which is on Cordilleran Time and stays on its summer clock all year. It prints as ' + ab + ' all year.'; }
-      else if (hid === 'America/Glacierpoint') { htext = 'The zone for western Yukona, which is on Coastal-Cordilleran Time and stays on its summer clock all year. It prints as ' + ab + ' all year.'; }
-      else if (hid === 'America/Portkane') { htext = 'The one zone for Britannic Columbia, which stopped changing its clocks in 2026. It prints as ' + ab + ' all year.'; }
+      else if (hid === 'America/Ashenix') { htext = 'The one zone for Zubieta, which never changes its clocks. It prints as ' + ab + ' all year.'; }
+      else if (hid === 'America/Saskwatoon') { htext = 'The one zone for Grandval, which never changes its clocks. It prints as ' + ab + ' all year.'; }
+      else if (hid === 'America/Northgate') { htext = 'The zone for eastern Tahsika, which is on Cordilleran Time and stays on its summer clock all year. It prints as ' + ab + ' all year.'; }
+      else if (hid === 'America/Glacierpoint') { htext = 'The zone for western Tahsika, which is on Coastal-Cordilleran Time and stays on its summer clock all year. It prints as ' + ab + ' all year.'; }
+      else if (hid === 'America/Portkane') { htext = 'The one zone for New Albion, which stopped changing its clocks in 2026. It prints as ' + ab + ' all year.'; }
       else { htext = 'The same ID as on Earth, with Gaia’s clock rules behind it. It prints as ' + ab + ' right now.'; }
       setG('ggH', hid, '', htext, 'wide', hid.length > 22);
     }
@@ -3490,7 +3490,7 @@
     if (z.own) { chips += '<button type="button" class="g-chip rm" data-grm="' + esc(z.id) + '">Remove</button>'; }
     return '<article class="g-row ' + cls + (z.isGlow ? ' glow' : '') + (z.zone === sel.ref && z.name === sel.label ? ' picked' : '') + '" id="gr-' + esc(z.id) + '">' +
       '<div class="g-sky ' + (day ? 'day' : 'night') + '" role="img" aria-label="' + (day ? 'Daytime there' : 'Night there') + '"></div>' +
-      '<div class="g-who"><h3>' + esc(z.name) + '</h3><p>' + (z.badge ? '<span class="g-badge">CL</span>' : '') + esc(z.where) + '</p></div>' +
+      '<div class="g-who"><h3>' + esc(z.name) + '</h3><p>' + (z.badge ? '<span class="g-badge">TY</span>' : '') + esc(z.where) + '</p></div>' +
       '<div class="g-elev"><b>' + hm(z.p.h, z.p.m) + '</b><i>' + ap(z.p.h) + '</i><small>' + WEEK[z.p.dow].slice(0, 3) + ', ' + MONTHS[z.p.mon].slice(0, 3) + ' ' + z.p.date + '</small></div>' +
       '<p class="g-chips">' + chips + '</p>' +
       '<div class="g-daybar" aria-hidden="true"><i style="left:' + (z.p.frac * 100).toFixed(2) + '%"></i></div></article>';
@@ -3640,7 +3640,7 @@
   function storeChanged() {
     rebuildAll();
     fillDatalist();
-    if (!refParts(sel.ref)) { sel = { ref: CORD, label: 'Summitbrook, CL' }; $('gPick').value = sel.label; }
+    if (!refParts(sel.ref)) { sel = { ref: CORD, label: 'Summitbrook, TY' }; $('gPick').value = sel.label; }
     repaint();
     try { window.dispatchEvent(new CustomEvent('px:store', { detail: 'gaia' })); } catch (err) { /* fine */ }
   }
