@@ -6,7 +6,7 @@
 <title>ALT 327K 2.0</title>
 <meta name="description" content="An altitude sandbox for Earth and Gaia: what the air does to you at any height, and who lives up there.">
 <link rel="manifest" href="./manifest.webmanifest">
-<meta name="theme-color" id="themeColor" content="#EDF1FF">
+<meta name="theme-color" id="themeColor" content="#05060F">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ALT 327K 2.0">
@@ -15,6 +15,7 @@
 <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
 <link rel="stylesheet" href="./fonts/fonts.css">
+<script src="./vendor/three.min.js"></script>
 <style>
   :root {
     --bg: #EDF1FF;
@@ -718,13 +719,318 @@
     html[data-layout="map"] .zone-metrics .gauges { grid-template-columns: 1fr 1fr; }
   }
   @media (prefers-reduced-motion: reduce) { .tk-fx { display: none; } }
+
+/* =====================================================================
+   NEON CORE: the full redesign. Loaded after the old rules, so it wins.
+   Palette: electric cyan, violet, hot magenta, with the gold line.
+   ===================================================================== */
+body {
+  --display: "Unbounded", "Space Grotesk", system-ui, sans-serif;
+  --body: "Space Grotesk", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --num: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --bg: #05060F; --ink: #EAF0FF; --muted: #8F9BCB;
+  --card: rgba(15, 18, 44, .72); --edge: rgba(150, 170, 255, .16); --track: rgba(150, 170, 255, .12);
+  --above: #FF3DBE; --gold: #FFC400; --beam: #FFC400; --below: #19F0FF;
+  --cl-a: #19F0FF; --cl-b: #B14BFF; --cl-wash: rgba(177, 75, 255, .10);
+  --hi-glow: rgba(255, 61, 190, .22); --lo-glow: rgba(25, 240, 255, .16);
+  --shadow: 0 10px 40px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .05);
+  --bar-bg: rgba(5, 6, 15, .78); --hud-bg: rgba(10, 12, 32, .9); --dot: #7480B8;
+  --grad: linear-gradient(120deg, #19F0FF 0%, #8A5CFF 52%, #FF2BD6 100%);
+  --neon: 0 0 0 1px rgba(25, 240, 255, .35), 0 0 28px rgba(25, 240, 255, .25);
+  --glass: linear-gradient(160deg, rgba(24, 28, 66, .78), rgba(10, 12, 32, .72));
+  background: var(--bg); color: var(--ink); color-scheme: dark;
+  font-feature-settings: "tnum" 1, "ss01" 1;
+}
+html[data-theme="light"] body:not(.is-gaia) {
+  --bg: #ECEFFF; --ink: #0B1033; --muted: #4A5482; --card: rgba(255, 255, 255, .82); --edge: rgba(40, 50, 130, .16); --track: rgba(40, 50, 130, .10);
+  --above: #D4108C; --gold: #A86F00; --below: #007C88; --cl-a: #0A7FC4; --cl-b: #7A2BE0; --shadow: 0 10px 30px rgba(30, 40, 120, .14);
+  --bar-bg: rgba(236, 239, 255, .85); --hud-bg: rgba(255, 255, 255, .92); --glass: linear-gradient(160deg, rgba(255, 255, 255, .92), rgba(240, 243, 255, .85));
+  color-scheme: light;
+}
+body.is-gaia {
+  --card: rgba(6, 26, 44, .72); --glass: linear-gradient(160deg, rgba(8, 40, 62, .78), rgba(2, 14, 26, .74));
+  --grad: linear-gradient(120deg, #46FFB4 0%, #7FE9FF 50%, #9B6BFF 100%);
+  --neon: 0 0 0 1px rgba(70, 255, 180, .35), 0 0 28px rgba(70, 255, 180, .22);
+}
+body::before {
+  background: radial-gradient(60% 40% at 100% 0%, rgba(255, 43, 214, .20), transparent 70%),
+              radial-gradient(55% 40% at 0% 100%, rgba(25, 240, 255, .16), transparent 70%),
+              radial-gradient(40% 30% at 50% 55%, rgba(138, 92, 255, .10), transparent 70%);
+  opacity: 1;
+}
+body::after {
+  background-image: linear-gradient(rgba(150, 170, 255, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(150, 170, 255, .045) 1px, transparent 1px);
+  background-size: 46px 46px; opacity: .9;
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 40%, #000 20%, transparent 78%); mask-image: radial-gradient(120% 90% at 50% 40%, #000 20%, transparent 78%);
+}
+::selection { background: #19F0FF; color: #05060F; }
+:focus-visible { outline: 2px solid #19F0FF; outline-offset: 3px; box-shadow: 0 0 0 5px rgba(25, 240, 255, .2); }
+
+/* ---------- Type ---------- */
+h2 { font-family: var(--display); font-weight: 800; font-size: clamp(1.5rem, 5.4vw, 2.3rem); line-height: 1.08; letter-spacing: -.01em; }
+h2::after { content: ""; display: block; width: 3.2rem; height: 4px; margin-top: .6rem; border-radius: 4px; background: var(--grad); box-shadow: 0 0 16px rgba(25, 240, 255, .6); }
+.feel h2::after, .tk-head h2::after, .lineblock h2::after, .band-h h2::after, .sr::after, .cvx-head h2::after { display: none; }
+.sub { color: var(--muted); font-size: 1.02rem; }
+.kick { margin: 0 0 .55rem; font-family: var(--display); font-weight: 600; font-size: .7rem; letter-spacing: .28em; text-transform: uppercase; color: var(--cl-a); text-shadow: 0 0 14px currentColor; }
+
+/* ---------- Top nav ---------- */
+.nx { position: fixed; z-index: 40; top: 0; left: 0; right: 0; padding: calc(env(safe-area-inset-top, 0px) + .55rem) 1rem .55rem; display: flex; align-items: center; gap: .8rem;
+  background: linear-gradient(180deg, rgba(3, 4, 12, .78), rgba(3, 4, 12, 0)); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); color: #F1F5FF; }
+.nx-brand { display: flex; align-items: center; gap: .55rem; font-family: var(--display); font-weight: 800; font-size: .86rem; letter-spacing: .04em; white-space: nowrap; color: #fff; text-decoration: none; }
+.nx-brand i { width: .7rem; height: .7rem; border-radius: 50%; background: var(--grad); box-shadow: 0 0 14px #19F0FF, 0 0 30px #FF2BD6; animation: pulse 2.2s ease-in-out infinite; }
+.nx-brand em { font-style: normal; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.nx-links { display: flex; gap: .3rem; margin-left: auto; overflow-x: auto; scrollbar-width: none; }
+.nx-links::-webkit-scrollbar { display: none; }
+.nx-links a { flex: none; color: #C8D2FF; text-decoration: none; font-weight: 600; font-size: .82rem; padding: .38rem .8rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .12); background: rgba(10, 12, 34, .55); transition: all .2s; }
+.nx-links a:hover { color: #fff; border-color: #19F0FF; box-shadow: 0 0 16px rgba(25, 240, 255, .45); }
+.nx-alt { flex: none; font-family: var(--num); font-weight: 700; font-size: .82rem; color: #19F0FF; padding: .3rem .7rem; border-radius: 999px; background: rgba(25, 240, 255, .1); border: 1px solid rgba(25, 240, 255, .35); font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) { .nx-alt { display: none; } .nx-links a:nth-child(n+4) { display: none; } }
+@keyframes pulse { 50% { transform: scale(1.35); opacity: .75; } }
+
+/* ---------- Hero: the 3D scene ---------- */
+.scene { height: min(92vh, 880px); min-height: 600px; background: #02030C; border-radius: 0 0 44px 44px; isolation: isolate;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .55), 0 0 0 1px rgba(150, 170, 255, .1); }
+#gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; touch-action: pan-y; cursor: grab; }
+#gl:active { cursor: grabbing; }
+body.has-gl #view { display: none; }
+.scene::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0, 0, 8, .55)), linear-gradient(180deg, rgba(0, 0, 10, .45), transparent 22%, transparent 55%, rgba(2, 3, 14, .88)); }
+.scene::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: .5; mix-blend-mode: overlay;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .05) 0 1px, transparent 1px 3px); }
+.scene-top { z-index: 3; top: calc(env(safe-area-inset-top, 0px) + 3.7rem); }
+.scene-bar { align-items: center; }
+.planets { background: rgba(8, 10, 30, .6); border: 1px solid rgba(25, 240, 255, .35); box-shadow: 0 0 24px rgba(25, 240, 255, .18); }
+.planets button { font-family: var(--display); font-weight: 700; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; padding: .5rem 1.1rem; transition: all .25s; }
+.planets button[data-planet="earth"][aria-pressed="true"] { background: linear-gradient(120deg, #FFC400, #FF8A00); color: #1B1200; box-shadow: 0 0 22px rgba(255, 170, 0, .7); }
+.zone { font-family: var(--display); font-weight: 600; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; padding: .5rem .95rem .5rem 1.6rem; position: relative;
+  background: rgba(8, 10, 30, .6); border: 1px solid rgba(255, 61, 190, .45); box-shadow: 0 0 22px rgba(255, 61, 190, .22); color: #fff; }
+.zone::before { content: ""; position: absolute; left: .7rem; top: 50%; width: .5rem; height: .5rem; margin-top: -.25rem; border-radius: 50%; background: #FF3DBE; box-shadow: 0 0 12px #FF3DBE; animation: pulse 1.6s infinite; }
+.wordmark { font-family: var(--display); font-weight: 600; font-size: .62rem; letter-spacing: .3em; text-transform: uppercase; color: rgba(220, 228, 255, .7); text-shadow: none; }
+
+.readout { z-index: 3; bottom: 3.6rem; left: 1.2rem; right: 1.2rem; }
+.readout label { font-family: var(--display); font-weight: 600; font-size: .64rem; letter-spacing: .22em; text-transform: uppercase; color: #19F0FF; text-shadow: 0 0 14px rgba(25, 240, 255, .8); }
+.altline { font-family: var(--num); font-weight: 700; font-size: clamp(3.6rem, 17vw, 8.6rem); line-height: .9; letter-spacing: -.04em; }
+#altMirror { font-family: var(--num); font-weight: 700; font-size: clamp(3.6rem, 17vw, 8.6rem); letter-spacing: -.04em; }
+#alt { color: #fff; border-bottom: 3px solid transparent; border-image: linear-gradient(90deg, #19F0FF, #8A5CFF, #FF2BD6) 1; letter-spacing: -.04em;
+  text-shadow: 0 0 22px rgba(25, 240, 255, .6), 0 0 60px rgba(138, 92, 255, .5); caret-color: #FF2BD6; }
+#alt:focus { border-bottom: 3px solid transparent; border-image: linear-gradient(90deg, #FFC400, #FF2BD6) 1; }
+#altUnit { font-family: var(--display); font-weight: 700; font-size: .26em; color: #FF3DBE; text-shadow: 0 0 22px #FF3DBE; padding-bottom: .5em; letter-spacing: .05em; }
+.others { font-family: var(--num); font-weight: 600; font-size: .98rem; color: #C8D2FF; gap: .1rem 1.1rem; }
+.said { color: #FFC400; text-shadow: 0 0 12px rgba(255, 196, 0, .6); font-weight: 600; }
+body.is-gaia #alt { caret-color: #46FFB4; border-image: linear-gradient(90deg, #46FFB4, #7FE9FF, #9B6BFF) 1; text-shadow: 0 0 22px rgba(70, 255, 180, .6), 0 0 60px rgba(155, 107, 255, .5); }
+body.is-gaia #alt:focus { border-image: linear-gradient(90deg, #46FFB4, #FF5CCB) 1; }
+body.is-gaia #altUnit { color: #46FFB4; text-shadow: 0 0 22px #46FFB4; }
+body.is-gaia .zone { border-color: rgba(70, 255, 180, .5); box-shadow: 0 0 22px rgba(70, 255, 180, .22); }
+body.is-gaia .zone::before { background: #46FFB4; box-shadow: 0 0 12px #46FFB4; }
+body.is-gaia .readout label { color: #46FFB4; text-shadow: 0 0 14px rgba(70, 255, 180, .8); }
+
+/* 3D controls and the altitude spine */
+.glui { position: absolute; z-index: 4; right: 1.1rem; bottom: 3.7rem; display: flex; gap: .4rem; }
+.glui button { font-family: var(--display); font-weight: 600; font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: #E8EEFF; cursor: pointer; padding: .55rem .85rem; border-radius: 999px;
+  background: rgba(8, 10, 30, .62); border: 1px solid rgba(255, 255, 255, .2); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: all .2s; }
+.glui button:hover { border-color: #19F0FF; box-shadow: 0 0 18px rgba(25, 240, 255, .5); }
+.glui button[aria-pressed="true"] { background: linear-gradient(120deg, #19F0FF, #8A5CFF); color: #05060F; border-color: transparent; box-shadow: 0 0 20px rgba(25, 240, 255, .6); }
+.spine { position: absolute; z-index: 3; right: .9rem; top: 8.6rem; bottom: 12.5rem; width: 6.6rem; pointer-events: none; }
+.spine::before { content: ""; position: absolute; right: .55rem; top: 0; bottom: 0; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #FF2BD6, #8A5CFF 40%, #19F0FF 75%, #0a4a7a); box-shadow: 0 0 14px rgba(138, 92, 255, .7); }
+.spine .tk { position: absolute; right: 0; display: flex; align-items: center; gap: .35rem; transform: translateY(-50%); font-size: .6rem; font-weight: 600; letter-spacing: .02em; color: rgba(210, 220, 255, .75); white-space: nowrap; }
+.spine .tk b { width: 10px; height: 2px; background: currentColor; display: block; margin-right: .38rem; opacity: .8; }
+.spine .tk.gold { color: #FFC400; text-shadow: 0 0 10px rgba(255, 196, 0, .7); }
+.spine .tk.gold b { height: 3px; box-shadow: 0 0 10px #FFC400; }
+.spine .you { position: absolute; right: .55rem; width: 16px; height: 16px; margin: -8px -7px 0 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(25, 240, 255, .5), 0 0 24px #19F0FF, 0 0 50px #8A5CFF; transform: translateX(50%); }
+body.is-gaia .spine::before { background: linear-gradient(180deg, #FF5CCB, #9B6BFF 40%, #46FFB4 75%, #0a4a5a); }
+@media (max-width: 640px) { .spine { width: 3rem; } .spine .tk span { display: none; } .glui { left: 1.2rem; right: auto; bottom: 1rem; } .readout { bottom: 3.6rem; } }
+
+/* ---------- The console under the hero ---------- */
+.deck { max-width: 76rem; margin: -1.2rem auto 0; padding: 0 1rem; position: relative; z-index: 5; }
+.zone-controls, .zone-metrics { display: block; min-width: 0; background: var(--glass); border: 1px solid var(--edge); border-radius: 30px; padding: 1.2rem; margin: 0 0 1rem;
+  -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); box-shadow: var(--shadow); position: relative; }
+.zone-controls::before, .zone-metrics::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(140deg, rgba(25, 240, 255, .55), transparent 35%, transparent 65%, rgba(255, 43, 214, .5));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+@media (min-width: 980px) { html[data-layout="standard"] .deck { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 1.1rem; align-items: start; } html[data-layout="standard"] .zone-metrics { position: sticky; top: 4.6rem; } }
+.zone-metrics .gauges { margin-top: 1rem; }
+.zone-metrics .feel { margin: 0; }
+.feel h2 { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 18px rgba(138, 92, 255, .45)); font-size: clamp(1.4rem, 5vw, 2rem); }
+.feel p { font-size: 1.02rem; color: var(--ink); opacity: .92; }
+.feel .now { color: var(--muted); }
+
+/* Tool strip */
+.tk-tools { gap: .5rem; padding: .3rem 1.2rem .6rem; margin: 0 -1.2rem .8rem; }
+.tk-tools button { border-radius: 14px; border: 1px solid var(--edge); background: rgba(150, 170, 255, .07); font-weight: 600; font-size: .86rem; padding: .55rem .9rem; color: var(--ink); transition: all .2s; }
+.tk-tools button i { color: #19F0FF; filter: drop-shadow(0 0 6px #19F0FF); }
+.tk-tools button:hover { transform: translateY(-2px); border-color: #19F0FF; box-shadow: 0 0 22px rgba(25, 240, 255, .35); background: rgba(25, 240, 255, .1); }
+.tk-tools button[data-tool="convert"] { border-color: rgba(255, 196, 0, .55); background: rgba(255, 196, 0, .1); }
+
+/* Pills and buttons */
+.seg { background: rgba(150, 170, 255, .09); border: 1px solid var(--edge); padding: 4px; }
+.seg button { font-family: var(--body); font-weight: 600; font-size: .9rem; color: var(--muted); transition: color .2s, background .2s; }
+.seg button:hover { color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--grad); color: #05060F; box-shadow: 0 0 22px rgba(25, 240, 255, .45); }
+body.is-gaia .seg button[aria-pressed="true"] { color: #021018; }
+.presets button, #sort, #q, #pFind, .nudge { background: rgba(150, 170, 255, .07); border: 1px solid var(--edge); color: var(--ink); transition: all .2s; box-shadow: none; }
+.presets button:hover, #sort:hover, .nudge:hover { border-color: #19F0FF; box-shadow: 0 0 18px rgba(25, 240, 255, .3); }
+.presets button[aria-pressed="true"] { background: linear-gradient(120deg, #FFC400, #FF8A00); color: #1B1200; border-color: transparent; box-shadow: 0 0 22px rgba(255, 170, 0, .6); }
+#q, #pFind { border-radius: 14px; }
+#q:focus, #pFind:focus { outline: none; border-color: #19F0FF; box-shadow: 0 0 0 3px rgba(25, 240, 255, .2), 0 0 24px rgba(25, 240, 255, .3); }
+#unitcycle { background: var(--grad); color: #05060F; box-shadow: 0 0 20px rgba(25, 240, 255, .4); }
+#slider::-webkit-slider-runnable-track, #pslider::-webkit-slider-runnable-track { height: 10px; box-shadow: 0 0 18px rgba(138, 92, 255, .35), inset 0 0 0 1px var(--edge); }
+#slider::-moz-range-track, #pslider::-moz-range-track { height: 10px; box-shadow: 0 0 18px rgba(138, 92, 255, .35), inset 0 0 0 1px var(--edge); }
+#slider::-webkit-slider-thumb, #pslider::-webkit-slider-thumb { width: 30px; height: 30px; margin-top: -10px; background: radial-gradient(circle at 35% 30%, #fff, #19F0FF 55%, #8A5CFF); border: 0; box-shadow: 0 0 0 4px rgba(25, 240, 255, .25), 0 0 26px #19F0FF; }
+#slider::-moz-range-thumb, #pslider::-moz-range-thumb { width: 26px; height: 26px; background: radial-gradient(circle at 35% 30%, #fff, #19F0FF 55%, #8A5CFF); border: 0; box-shadow: 0 0 0 4px rgba(25, 240, 255, .25), 0 0 26px #19F0FF; }
+
+/* Place card */
+.place { gap: .9rem; }
+.pimg { border-radius: 22px; border: 1px solid rgba(25, 240, 255, .3); box-shadow: 0 0 40px rgba(138, 92, 255, .25), var(--shadow); }
+#pName { font-size: clamp(1.4rem, 5.2vw, 2rem); text-transform: none; }
+.pstep { border-radius: 20px; background: rgba(150, 170, 255, .06); border: 1px solid var(--edge); transition: all .2s; box-shadow: none; color: var(--ink); }
+.pstep:hover:not(:disabled) { border-color: #19F0FF; transform: translateY(-2px); box-shadow: 0 0 26px rgba(25, 240, 255, .28); }
+.pstep i { background: var(--grad); color: #05060F; box-shadow: 0 0 18px rgba(25, 240, 255, .5); }
+.badge { background: var(--grad); color: #05060F; font-family: var(--display); font-size: .6rem; letter-spacing: .08em; }
+
+/* Gauges: neon instrument cards */
+.gauges { gap: .7rem; }
+.g { background: linear-gradient(160deg, rgba(150, 170, 255, .09), rgba(150, 170, 255, .02)); border: 1px solid var(--edge); border-radius: 22px; padding: .9rem .95rem 1rem; box-shadow: none; transition: transform .25s, border-color .25s, box-shadow .25s; }
+.g:hover { transform: translateY(-3px); border-color: rgba(25, 240, 255, .5); box-shadow: 0 0 30px rgba(25, 240, 255, .18); }
+.g::before { height: 2px; background: var(--grad); box-shadow: 0 0 12px rgba(25, 240, 255, .8); }
+.g span { font-family: var(--display); font-weight: 500; font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.g b { font-family: var(--num); font-weight: 700; font-size: clamp(1.6rem, 6.4vw, 2.3rem); letter-spacing: -.03em; text-shadow: 0 0 22px currentColor; }
+.g b.long { font-size: clamp(1.2rem, 5vw, 1.7rem); }
+.g b i { font-size: .46em; opacity: .8; letter-spacing: 0; }
+.g small { color: var(--muted); }
+.g.good b { color: #19F0FF; } .g.warn b { color: #FFC400; } .g.bad b { color: #FF3DBE; }
+.fine { color: var(--muted); }
+
+/* ---------- Converter: the main event ---------- */
+.cvx { position: relative; z-index: 2; max-width: 76rem; margin: 1.2rem auto 0; padding: 0 1rem; }
+.cvx-in { position: relative; border-radius: 34px; padding: clamp(1.1rem, 3vw, 2rem); overflow: hidden; background: var(--glass); border: 1px solid transparent;
+  background-image: var(--glass), var(--grad); background-origin: border-box; background-clip: padding-box, border-box;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .5), 0 0 60px rgba(138, 92, 255, .18); }
+.cvx-in::before { content: ""; position: absolute; width: 36rem; height: 36rem; right: -12rem; top: -16rem; border-radius: 50%; background: radial-gradient(circle, rgba(255, 43, 214, .28), transparent 65%); pointer-events: none; }
+.cvx-in::after { content: ""; position: absolute; width: 30rem; height: 30rem; left: -10rem; bottom: -14rem; border-radius: 50%; background: radial-gradient(circle, rgba(25, 240, 255, .22), transparent 65%); pointer-events: none; }
+.cvx-in > * { position: relative; z-index: 1; }
+.cvx-head h2 { font-size: clamp(1.7rem, 6vw, 3rem); margin: 0 0 .4rem; }
+.cvx-head h2 span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.cvx-wrap { display: grid; gap: 1.1rem; margin-top: 1.2rem; }
+@media (min-width: 900px) { .cvx-wrap { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
+.cvx-box { border-radius: 26px; border: 1px solid var(--edge); background: rgba(3, 4, 16, .45); padding: 1.1rem; min-width: 0; }
+.cvx-lab { display: block; font-family: var(--display); font-weight: 600; font-size: .6rem; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin: 0 0 .5rem; }
+.cvx-num { width: 100%; min-width: 0; font-family: var(--num); font-weight: 700; font-size: clamp(2.2rem, 9vw, 4rem); letter-spacing: -.04em; line-height: 1.1; color: #fff; background: transparent; border: 0; border-bottom: 2px solid rgba(25, 240, 255, .4);
+  padding: .1rem 0 .2rem; border-radius: 0; text-shadow: 0 0 24px rgba(25, 240, 255, .5); caret-color: #FF2BD6; }
+.cvx-num:focus { outline: none; border-bottom-color: #FF2BD6; }
+.cvx-units { display: grid; grid-template-columns: repeat(6, 1fr); width: 100%; margin: .8rem 0 0; }
+.cvx-units button { padding: .45rem .1rem; font-size: .84rem; min-height: 2.4rem; }
+.cvx-swap { display: flex; align-items: center; gap: .7rem; margin: .9rem 0 .2rem; color: var(--muted); font-family: var(--display); font-size: .6rem; letter-spacing: .2em; text-transform: uppercase; }
+.cvx-swap::before, .cvx-swap::after { content: ""; height: 1px; flex: 1; background: var(--edge); }
+.cvx-swap button { width: 2.9rem; height: 2.9rem; border-radius: 50%; border: 0; cursor: pointer; font-size: 1.2rem; font-weight: 700; color: #05060F; background: var(--grad); box-shadow: 0 0 24px rgba(25, 240, 255, .55); transition: transform .35s; }
+.cvx-swap button:hover { transform: rotate(180deg); }
+.cvx-res { margin: .7rem 0 0; font-family: var(--num); font-weight: 700; font-size: clamp(1.9rem, 7.4vw, 3.4rem); letter-spacing: -.03em; line-height: 1.05; overflow-wrap: anywhere;
+  background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 20px rgba(138, 92, 255, .5)); }
+.cvx-res i { font-style: normal; font-family: var(--display); font-size: .38em; margin-left: .3em; letter-spacing: .05em; }
+.cvx-eq { margin: .35rem 0 0; color: var(--muted); font-size: .92rem; font-variant-numeric: tabular-nums; }
+.cvx-pairs { display: flex; gap: .4rem; overflow-x: auto; margin: 1rem -1.1rem 0; padding: .2rem 1.1rem .4rem; scrollbar-width: none; }
+.cvx-pairs::-webkit-scrollbar { display: none; }
+.cvx-pairs button { flex: none; font-family: var(--num); font-weight: 700; font-size: .86rem; letter-spacing: .02em; padding: .5rem .85rem; border-radius: 12px; cursor: pointer; color: var(--ink); background: rgba(150, 170, 255, .07); border: 1px solid var(--edge); transition: all .2s; white-space: nowrap; }
+.cvx-pairs button:hover { border-color: #19F0FF; box-shadow: 0 0 16px rgba(25, 240, 255, .35); }
+.cvx-pairs button[aria-pressed="true"] { background: var(--grad); color: #05060F; border-color: transparent; box-shadow: 0 0 20px rgba(25, 240, 255, .5); }
+.cvx-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+@media (min-width: 560px) { .cvx-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.cvx-tile { text-align: left; cursor: pointer; font: inherit; color: var(--ink); border-radius: 18px; padding: .75rem .8rem .8rem; background: linear-gradient(160deg, rgba(150, 170, 255, .1), rgba(150, 170, 255, .02)); border: 1px solid var(--edge); transition: all .2s; min-width: 0; }
+.cvx-tile:hover { transform: translateY(-3px); border-color: rgba(25, 240, 255, .6); box-shadow: 0 0 26px rgba(25, 240, 255, .22); }
+.cvx-tile[aria-pressed="true"] { border-color: #FF2BD6; box-shadow: 0 0 26px rgba(255, 43, 214, .35); }
+.cvx-tile span { display: block; font-family: var(--display); font-weight: 600; font-size: .58rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.cvx-tile b { display: block; margin-top: .3rem; font-family: var(--num); font-weight: 700; font-size: clamp(.95rem, 1.7vw, 1.3rem); letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }
+.cvx-tile.is-from b { color: #FFC400; }
+.cvx-facts { display: grid; gap: .5rem; margin: .9rem 0 0; }
+.cvx-fact { display: flex; justify-content: space-between; gap: .8rem; align-items: baseline; padding: .6rem .8rem; border-radius: 14px; background: rgba(150, 170, 255, .05); border: 1px solid var(--edge); font-size: .92rem; }
+.cvx-fact span { color: var(--muted); } .cvx-fact b { font-family: var(--num); font-variant-numeric: tabular-nums; text-align: right; }
+.cvx-fact.hot b { color: #FFC400; text-shadow: 0 0 14px rgba(255, 196, 0, .6); }
+.cvx-pre { display: flex; flex-wrap: wrap; gap: .45rem; margin: 0; padding: 0; list-style: none; }
+.cvx-pre button { cursor: pointer; font: inherit; font-weight: 600; font-size: .86rem; color: var(--ink); padding: .5rem .8rem; border-radius: 999px; background: rgba(150, 170, 255, .07); border: 1px solid var(--edge); transition: all .2s; text-align: left; }
+.cvx-pre button small { display: block; font-size: .7rem; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cvx-pre button:hover { border-color: #FF2BD6; box-shadow: 0 0 18px rgba(255, 43, 214, .35); transform: translateY(-2px); }
+.cvx-pre button[aria-pressed="true"] { background: linear-gradient(120deg, #FF2BD6, #8A5CFF); color: #fff; border-color: transparent; box-shadow: 0 0 22px rgba(255, 43, 214, .5); }
+.cvx-pre button[aria-pressed="true"] small { color: rgba(255, 255, 255, .8); }
+.cvx-go { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
+.cvx-btn { cursor: pointer; font-family: var(--display); font-weight: 700; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; padding: .85rem 1.2rem; border-radius: 14px; border: 1px solid var(--edge); color: var(--ink); background: rgba(150, 170, 255, .08); transition: all .2s; }
+.cvx-btn:hover { border-color: #19F0FF; box-shadow: 0 0 20px rgba(25, 240, 255, .35); }
+.cvx-btn.go { border: 0; color: #1B1200; background: linear-gradient(120deg, #FFC400, #FF8A00); box-shadow: 0 0 26px rgba(255, 170, 0, .5); }
+.cvx-btn.go:hover { box-shadow: 0 0 40px rgba(255, 170, 0, .8); transform: translateY(-2px); }
+.cvx-msg { min-height: 1.3em; margin: .6rem 0 0; font-weight: 600; font-size: .9rem; color: #FF3DBE; }
+
+/* ---------- The rest of the page ---------- */
+main { max-width: 76rem; padding-top: 2.4rem; }
+.lead { margin-top: 3rem; }
+.score { gap: .8rem; }
+.tile { border-radius: 26px; background: var(--glass); border: 1px solid var(--edge); padding: 1.1rem 1rem 1.15rem; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: var(--shadow); transition: transform .25s; }
+.tile:hover { transform: translateY(-4px); }
+.tile::before { height: 3px; box-shadow: 0 0 18px currentColor; }
+.tile b { font-family: var(--num); font-weight: 700; font-size: clamp(2.6rem, 11vw, 4.6rem); letter-spacing: -.05em; text-shadow: 0 0 32px currentColor; }
+.tile span { font-family: var(--display); font-weight: 600; font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; }
+.t-above { color: #FF3DBE; } .t-on { color: #FFC400; } .t-below { color: #19F0FF; }
+#pile { border-radius: 28px; background: var(--glass); box-shadow: var(--shadow); }
+.legend { font-size: .86rem; }
+.controls { background: var(--bar-bg); border-bottom: 1px solid var(--edge); }
+.band-h h2 { font-size: clamp(1.4rem, 5vw, 2rem); }
+.row { border-radius: 24px; background: var(--glass); border: 1px solid var(--edge); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: var(--shadow); }
+.row:hover { transform: translateY(-3px); }
+.row.cl { background: var(--glass) padding-box, var(--grad) border-box; }
+.row.active { transform: scale(1.01); }
+.rank { font-family: var(--num); font-weight: 700; font-size: 1.5rem; }
+.who h3 { font-family: var(--display); font-weight: 700; font-size: 1.02rem; line-height: 1.2; letter-spacing: -.01em; }
+.elev b { font-family: var(--num); font-weight: 700; font-size: 1.6rem; letter-spacing: -.03em; text-shadow: 0 0 20px currentColor; }
+.elev i { font-family: var(--display); font-size: .7rem; }
+.chip { background: rgba(150, 170, 255, .1); }
+.bar { height: 4px; }
+.lineblock { border-radius: 20px; margin-left: 0; margin-right: 0; background: linear-gradient(90deg, #FFB300, #FFD447 30%, #FFF6D0 50%, #FFD447 70%, #FFB300) 0 0 / 200% 100% repeat-x; box-shadow: 0 0 60px 8px rgba(255, 196, 40, .5); }
+.lineblock h2 { font-size: clamp(1.7rem, 7vw, 2.8rem); }
+.town { border-radius: 16px; background: rgba(150, 170, 255, .07); }
+button.town { background: var(--glass) padding-box, var(--grad) border-box; }
+.hud { background: var(--hud-bg); border-top: 1px solid rgba(25, 240, 255, .3); box-shadow: 0 -10px 40px rgba(0, 0, 0, .5), 0 -1px 24px rgba(25, 240, 255, .15); }
+.hud-num { font-family: var(--num); font-weight: 700; letter-spacing: -.03em; font-size: 2rem; }
+.hud-name { font-family: var(--display); font-weight: 600; font-size: .72rem; letter-spacing: .06em; }
+#jump { font-family: var(--display); font-weight: 700; font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; }
+footer { color: var(--muted); }
+
+/* Sheets (Atlas, Bio Lab and the others) */
+.tk-sheet { background: rgba(2, 3, 12, .72); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+.tk-panel { background: linear-gradient(170deg, rgba(14, 17, 42, .96), rgba(5, 6, 18, .97)); border-color: rgba(25, 240, 255, .25) !important; box-shadow: 0 40px 120px rgba(0, 0, 0, .7), 0 0 60px rgba(138, 92, 255, .22); }
+.tk-head h2 { font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
+.tk-x { background: rgba(150, 170, 255, .08); }
+.tk-btn.go, .tk-chips button[aria-pressed="true"] { background: var(--grad); color: #05060F; }
+.tk-card { border-radius: 20px; }
+.tk-card:hover { box-shadow: 0 0 26px rgba(25, 240, 255, .3); border-color: #19F0FF; }
+.tk-in { background: rgba(150, 170, 255, .06); }
+
+body.no-gl .glui, body.no-gl .spine { display: none; }
+@media (prefers-reduced-motion: reduce) { .nx-brand i, .zone::before { animation: none; } }
+@media (max-width: 640px) { .zone-controls, .zone-metrics { padding: 1rem; border-radius: 24px; } .tk-tools { margin: 0 -1rem .8rem; padding: .3rem 1rem .6rem; } }
+
+/* realism layers + snap */
+#glb, #glg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: block; }
+#glb { z-index: 1; mix-blend-mode: screen; opacity: .38; filter: blur(14px) saturate(1.5) contrast(2.4) brightness(.62); }
+#glg { z-index: 1; mix-blend-mode: overlay; opacity: .075; }
+body.no-gl #glb, body.no-gl #glg { display: none; }
+button, .cvx-tile, .seg button, .presets button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pairs button:active { transform: scale(.94); transition-duration: .06s; }
+.glui button, .cvx-btn, .cvx-pairs button, .cvx-pre button, .cvx-tile, .seg button, .nx-links a, .planets button { transition: transform .14s cubic-bezier(.2, 1.4, .4, 1), background .15s, border-color .15s, box-shadow .15s, color .15s; }
+.glui #glSnd[aria-pressed="false"] { opacity: .7; }
+
 </style>
 </head>
 <body>
 
+<nav class="nx" aria-label="Page">
+  <a class="nx-brand" href="#sandbox" data-go="sandbox"><i></i><span>ALT <em>327K</em> <span data-keep>2.0</span></span></a>
+  <span class="nx-alt" id="nxAlt" aria-hidden="true">0 ft</span>
+  <div class="nx-links"><a href="#sandbox" data-go="sandbox">Sandbox</a><a href="#convert" data-go="convert">Convert</a><a href="#h-lead" data-go="h-lead">Who lives up here</a><a href="#ladder" data-go="ladder">Ladder</a><a href="#h-roster" data-go="h-roster">Tayanoa</a></div>
+</nav>
 <header class="sand" id="sandbox">
   <div class="scene">
     <canvas id="view" aria-hidden="true"></canvas>
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <div class="spine" id="spine" aria-hidden="true"></div>
+    <div class="glui"><button type="button" id="glAuto" aria-pressed="true">Auto-orbit</button><button type="button" id="glReset">Reset view</button><button type="button" id="glSnd" aria-pressed="true">Sound on</button></div>
     <div class="scene-top">
       <div class="scene-bar">
         <div class="planets" role="group" aria-label="Which planet">
@@ -826,6 +1132,34 @@
   </div>
 </header>
 
+<section class="cvx" id="convert" aria-labelledby="h-cvx"><div class="cvx-in">
+  <header class="cvx-head"><p class="kick">Converter</p><h2 id="h-cvx">Feet, meters, miles, <span>kilometers.</span></h2>
+    <p class="sub">Type any altitude, pick your units, and every conversion updates live. Tap a famous height to load it, then fly the sandbox right there.</p></header>
+  <div class="cvx-wrap">
+    <div class="cvx-box">
+      <span class="cvx-lab">From</span>
+      <label class="sr" for="cvIn">Altitude to convert</label>
+      <input id="cvIn" class="cvx-num" type="text" inputmode="decimal" enterkeyhint="go" autocomplete="off" autocorrect="off" spellcheck="false" value="15840">
+      <div class="seg cvx-units" id="cvFrom" role="group" aria-label="Convert from"></div>
+      <div class="cvx-swap"><span>to</span><button type="button" id="cvSwap" aria-label="Swap the two units">&#8645;</button></div>
+      <div class="seg cvx-units" id="cvTo" role="group" aria-label="Convert to"></div>
+      <p class="cvx-res" id="cvRes" aria-live="polite"></p>
+      <p class="cvx-eq" id="cvEq"></p>
+      <span class="cvx-lab" style="margin-top:1rem">Quick pairs</span>
+      <div class="cvx-pairs" id="cvPairs" role="group" aria-label="Quick pairs"></div>
+      <div class="cvx-go"><button type="button" class="cvx-btn go" id="cvFly">Fly the sandbox here</button><button type="button" class="cvx-btn" id="cvCopy">Copy result</button></div>
+      <p class="cvx-msg" id="cvMsg" role="status"></p>
+    </div>
+    <div class="cvx-box">
+      <span class="cvx-lab">Every unit at once</span>
+      <div class="cvx-tiles" id="cvTiles"></div>
+      <div class="cvx-facts" id="cvFacts"></div>
+      <span class="cvx-lab" style="margin-top:1.2rem">Famous altitudes</span>
+      <ul class="cvx-pre" id="cvPre"></ul>
+    </div>
+  </div>
+</div></section>
+
 <main>
   <section class="twin only-gaia" aria-labelledby="h-twin" hidden>
     <h2 id="h-twin">Same lines, higher up</h2>
@@ -888,10 +1222,10 @@
   </section>
 
   <footer class="only-gaia" hidden>
-    <p>Gaia's air follows its locked numbers: 123.262 kPa at the sea, 55.000 kPa at 8,400 m, 21% oxygen, 130°F at the coast, and 5.2°C cooler with every kilometer you climb. Above Mount Tayanroken no temperature is locked yet, so the sandbox keeps cooling the air until it hits &minus;70°F, the temperature of Earth's stratosphere, and holds it there.</p>
+    <p>Gaia's air follows its locked numbers: 123 kPa at the sea, 55 kPa at 8,400 m, 21% oxygen, 130°F at the coast, and 5°C cooler with every kilometer you climb. Above Mount Tayanroken no temperature is locked yet, so the sandbox keeps cooling the air until it hits &minus;70°F, the temperature of Earth's stratosphere, and holds it there.</p>
     <p>SpO2 is a simulation, not a medical reading. Gaian lungs are fitted to the Gaians' own lines: a Gaian breathes like someone from Earth does 7,560 m lower, all the way up to the living ceiling at 13,060 m, and the Gaian death zone starts at 16,000 m. The Earth visitor is an acclimatized adult from Earth breathing Gaia's outside air with no gear. Performance time reads the FAA's table at the matching Earth altitude.</p>
     <p>The visitor's gear follows the locked survival kit. Between average ground and Summitbrook, the switch from a tube to a full mask sits where the air is as thin as Earth's at 18,000 ft, the height where the FAA stops allowing nasal tubes.</p>
-    <p>Every elevation here is its Earth elevation plus 7,560 m. Dry land and lake surfaces below sea level are 10 times deeper, and the oceans are 1.25 times deeper. That goes for every real place the arrows step through. Coalinga, Ospero, and Cyrillo are shown at the surface of the lake they sit on.</p>
+    <p>Every elevation here is its Earth elevation plus 7,560 m. Dry land and lake surfaces below sea level are 10 times deeper, and the oceans are 25% deeper. That goes for every real place the arrows step through. Coalinga, Ospero, and Cyrillo are shown at the surface of the lake they sit on.</p>
   </footer>
 
   <footer class="only-earth">
@@ -1002,8 +1336,8 @@
     return { atm: atm, boil: boil, spo2: spo2, ept: ept, alt: alt };
   })();
 
-  /* Gaia's air, from its locked numbers: 123.262 kPa at the sea, 55.000 kPa at 8,400 m, 21% oxygen,
-     130°F at the coast and 5.2°C cooler per km. Past the locked heights the cooling stops at Earth's stratosphere temperature. */
+  /* Gaia's air, from its locked numbers: 123 kPa at the sea, 55 kPa at 8,400 m, 21% oxygen,
+     130°F at the coast and 5°C cooler per km. Past the locked heights the cooling stops at Earth's stratosphere temperature. */
   var GAIA = (function () {
     var P0 = 123262, SCALE = 8400 / Math.log(123262 / 55000), T0 = 327.594, LAPSE = 0.0052, TMIN = 216.65;
     function atm(z) { // metres above Gaia's sea
@@ -1027,11 +1361,11 @@
   /* ---------- Units ---------- */
   var UNITS = ['ft', 'm', 'mi', 'km'];
   var PER_FT = { ft: 1, m: 0.3048, mi: 1 / 5280, km: 0.0003048 };
-  var DEC = { ft: 0, m: 0, mi: 3, km: 3 };
+  var DEC = { ft: 0, m: 0, mi: 0, km: 0 };
   var PAIR = { ft: 'm', m: 'ft', mi: 'km', km: 'mi' };
-  var LINE_IN = { ft: '15,840 ft', m: '4,828 m', mi: '3.000 mi', km: '4.828 km' };
-  var LINE_WORDS = { ft: '4,828 meters', m: '15,840 feet', mi: '4.828 kilometers', km: '3 miles' };
-  function num(v, dec) { return v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+  var LINE_IN = { ft: '15,840 ft', m: '4,828 m', mi: '3 mi', km: '5 km' };
+  var LINE_WORDS = { ft: '4,828 meters', m: '15,840 feet', mi: '5 kilometers', km: '3 miles' };
+  function num(v, dec) { v = Math.round(v); if (v === 0) v = 0; return v.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
   function altStr(ft, unit) {
     var v = ft * PER_FT[unit], a = Math.abs(v), s = num(a, DEC[unit]);
     return (v < 0 && +a.toFixed(DEC[unit]) > 0 ? '\u2212' : '') + s;
@@ -1063,9 +1397,9 @@
       note: 'On the shore of Shataroya Lake, just outside Summitbrook, with the hamlet of Breverton inside it.' },
     { id: 'summitbrook', n: 'Summitbrook', where: 'The Crown Heart, Tayanoa', ft: 15840, pop: '10 million',
       note: 'Capital of Tayanoa, the biggest city in the US with 24 million in the metro, and the highest major city on Earth. The official elevation is 15,840 ft, exactly three miles up. That is the downtown reading and the low end of the city, which climbs to about 16,170 ft. Pyratech Arena sits right at the official elevation, 15,840 ft, like every venue in the city. The whole metro runs from 15,557 ft in Aspenwood to 17,000 ft (5,182 m) in the southern foothills.' },
-    { id: 'aspenwood', n: 'Aspenwood', where: 'Eastern Basin, Tayanoa', ft: 15557, pop: '~1.1 million',
+    { id: 'aspenwood', n: 'Aspenwood', where: 'Eastern Basin, Tayanoa', ft: 15557, pop: '~1 million',
       note: 'Summitbrook\u2019s biggest suburb. SOVRN Arena, home of the Pallor Wraith and the Hoarfrost, sits at 15,557 ft, the same as Aspenwood, which is exactly 283 ft below Summitbrook.' },
-    { id: 'colorandoa-city', n: 'Tayanoa City', where: 'The Metro, Tayanoa', ft: 10900, pop: '8.9 million',
+    { id: 'colorandoa-city', n: 'Tayanoa City', where: 'The Metro, Tayanoa', ft: 10900, pop: '9 million',
       note: 'Five boroughs: Manhawen, Brecklyn, Crowns, the Branx, and Staton Mesa. Second-biggest city in the US. At 10,900 ft it sits below the oxygen line, so the air is raw.' },
     { id: 'ohwensennaha', n: 'Ohwensennaha', where: 'The Rokens, Tayanoa', m: 3986,
       note: 'Gateway town on the way up into the Rokens.' },
@@ -1548,7 +1882,7 @@
   });
 
   /* ---------- The pile ---------- */
-  var PILE_T = { ft: [[11000, 13000, 17000, 19000], 0.3048, 0], m: [[3500, 4000, 5000, 5500], 1, 0], mi: [[2.25, 2.5, 3, 3.5], 1609.344, 2], km: [[3.5, 4, 5, 5.5], 1000, 1] };
+  var PILE_T = { ft: [[11000, 13000, 17000, 19000], 0.3048, 0], m: [[3500, 4000, 5000, 5500], 1, 0], mi: [[2, 3], 1609.344, 0], km: [[4, 5], 1000, 0] };
   var PILE_MARKS = [[3800, 'oxygen line'], [5500, 'human limit']];
   function drawPile() {
     var W = 360, padL = 52, padR = 46, top = 12, rowH = 13, bins = 29;
@@ -1616,16 +1950,16 @@
       [['Summitcrest', '~30,000', 'summitcrest'], ['Axspororidge', '~12,000', 'axspororidge'], ['Luxora', '~12,000', 'luxora'], ['Teyake\u00F1roken', '~10,000', 'teyakenroken'], ['Bressler', '~11,000', 'bressler'], ['Skawenta', '', 'skawenta'], ['Rinconada Alta', '~50,000', 'rinconada-alta'], ['Ohwentsarako', 'seasonal', 'ohwentsarako']]],
     ['Summitbrook and the inner ring', 'The capital and the towns right around it, in the Crown Heart.',
       [['Summitbrook', '10 million', 'summitbrook'], ['Cyrillo', '~63,000', 'cyrillo'], ['Shale', '~116,000'], ['Camillon', '~50,000'], ['Lysandor', '~46,000'], ['Van Burrow', '~26,000'], ['Skeneatola', '~14,400'], ['Magnus', '~14,000'], ['North Summitbrook', '~13,600'], ['Cazenara', '~13,600'], ['Solmere', '~13,000'], ['Mattiesdale', '~12,800'], ['Marcova', '~12,400'], ['Eldridge', '~11,600'], ['Rochambeau', '~9,800'], ['Breverton', '~8,000'], ['Knossa', '~6,800'], ['East Summitbrook', '~6,000'], ['Tullian', '~5,400'], ['Liverport', '~4,600'], ['Nedwyn', '~4,400'], ['Tayanowa'], ['Geddmons'], ['Baldenville'], ['Manlow'], ['Halite'], ['DeWinter']]],
-    ['Eastern Basin', 'About 3.5 million people.',
-      [['Aspenwood', '~1.1 million', 'aspenwood'], ['Bristlecone', '~600,000'], ['Larchfield', '~500,000'], ['Silverleaf', '~300,000'], ['Timberline', '~250,000'], ['Tamarack', '~220,000'], ['Ashgrove', '~200,000'], ['Redbark', '~180,000'], ['Hemlock', '~150,000']]],
-    ['Southern Foothills', 'About 3.3 million people.',
+    ['Eastern Basin', 'About 4 million people.',
+      [['Aspenwood', '~1 million', 'aspenwood'], ['Bristlecone', '~600,000'], ['Larchfield', '~500,000'], ['Silverleaf', '~300,000'], ['Timberline', '~250,000'], ['Tamarack', '~220,000'], ['Ashgrove', '~200,000'], ['Redbark', '~180,000'], ['Hemlock', '~150,000']]],
+    ['Southern Foothills', 'About 3 million people.',
       [['Monolith', '~800,000'], ['Cotton Butte', '~600,000'], ['Cragscarp', '~500,000'], ['Quartzite', '~400,000'], ['Cairnfield', '~300,000'], ['Talus', '~250,000'], ['Moraine', '~250,000'], ['Arete', '~200,000']]],
-    ['Northern Lakeshore', 'About 3.3 million people.',
+    ['Northern Lakeshore', 'About 3 million people.',
       [['Riptide', '~800,000'], ['Beacon', '~600,000'], ['Breakwater', '~500,000'], ['Sandbar', '~400,000'], ['Kingfisher', '~300,000'], ['Whitecap', '~250,000'], ['Shoal', '~250,000'], ['Undertow', '~200,000']]],
-    ['Western Valleys', 'About 3.3 million people.',
+    ['Western Valleys', 'About 3 million people.',
       [['Chinook', '~800,000'], ['Solstice', '~600,000'], ['Horizon', '~500,000'], ['Nimbus', '~400,000'], ['Equinox', '~300,000'], ['Stratus', '~250,000'], ['Westwind', '~250,000'], ['Starfall', '~200,000']]],
     ['The Metro', 'Tayanoa City, its five boroughs, and the towns next door.',
-      [['Tayanoa City', '8.9 million', 'colorandoa-city'], ['Manhawen', 'borough'], ['Brecklyn', 'borough'], ['Crowns', 'borough'], ['The Branx', 'borough'], ['Staton Mesa', 'borough'], ['Nassara'], ['Manhasswet']]],
+      [['Tayanoa City', '9 million', 'colorandoa-city'], ['Manhawen', 'borough'], ['Brecklyn', 'borough'], ['Crowns', 'borough'], ['The Branx', 'borough'], ['Staton Mesa', 'borough'], ['Nassara'], ['Manhasswet']]],
     ['The Aleron Region', '',
       [['Aleron'], ['Blackened Hills', '', 'blackened-hills'], ['Cliffton Mesa', '', 'cliffton-mesa'], ['Niskahentake'], ['Colonvale']]],
     ['The Doorlands', 'Rawiketa country.',
@@ -1807,33 +2141,20 @@
   var SB = { alt: 0, mode: 'above', last: { above: 0, below: 0 }, token: 0, dragging: false };
   var altIn = $('alt'), slider = $('slider'), saidTimer = null, typeTimer = null;
 
-  function sig(v) {
-    if (v === 0) return '0';
-    var a = Math.abs(v);
-    if (a >= 100) return v.toFixed(1);
-    if (a >= 10) return v.toFixed(2);
-    if (a >= 1) return v.toFixed(3);
-    if (a >= 0.001) return v.toFixed(a >= 0.1 ? 4 : 5);
-    var e = Math.floor(Math.log10(a)), m = (v / Math.pow(10, e)).toFixed(2);
-    if (m === '10.00') { m = '1.00'; e++; }
-    var SUP = { '-': '\u207B', '0': '\u2070', '1': '\u00B9', '2': '\u00B2', '3': '\u00B3', '4': '\u2074', '5': '\u2075', '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079' };
-    return m + ' \u00D7 10' + String(e).split('').map(function (c) { return SUP[c]; }).join('');
-  }
+  function sig(v) { var r = Math.round(v); if (r === 0) r = 0; return r.toLocaleString('en-US'); }
+  function pres(P) { return P >= 1000 ? sig(P / 1000) + '<i>kPa</i>' : sig(P) + '<i>Pa</i>'; }
+  function dens(r) { return r >= 1 ? sig(r * 1000) + '<i>g/m\u00B3</i>' : sig(r * 1e6) + '<i>mg/m\u00B3</i>'; }
   function share(r) { // ratio to sea level, as words
-    if (r >= 1.005) return r.toFixed(2) + ' times sea level';
     var v = r * 100;
+    if (v >= 100.5) return Math.round(v) + '% of sea level';
     if (v >= 99.5) return 'the same as sea level';
-    if (v >= 10) return Math.round(v) + '% of sea level';
-    if (v >= 1) return v.toFixed(1) + '% of sea level';
-    if (v >= 0.01) return v.toFixed(2) + '% of sea level';
-    return 'less than 0.01% of sea level';
+    if (v >= 1) return Math.round(v) + '% of sea level';
+    return 'less than 1% of sea level';
   }
   function pct(r) {
     var v = r * 100;
-    if (v >= 10) return Math.round(v) + '%';
-    if (v >= 1) return v.toFixed(1) + '%';
-    if (v >= 0.01) return v.toFixed(2) + '%';
-    return 'less than 0.01%';
+    if (v >= 1) return Math.round(v) + '%';
+    return 'less than 1%';
   }
   var minus = function (n) { return (n < 0 ? '\u2212' : '') + Math.abs(n); };
   function secs(lo, hi) {
@@ -1894,28 +2215,28 @@
     var tC = Math.round(A.T - 273.15), tF = Math.round((A.T - 273.15) * 1.8 + 32);
     var water = 101325 + 1025 * 9.80665 * Math.max(0, -z);
     if (below) {
-      $('feelNow').textContent = 'In the water, about ' + num(water / 101325, water / 101325 < 100 ? 1 : 0) + ' atmospheres are pressing on you. If this were a dry shaft open to the sky instead, the air would be about ' + minus(tF) + '\u00B0F (' + minus(tC) + '\u00B0C) and ' + (A.rho / 1.225).toFixed(2) + ' times as thick as at the beach.';
+      $('feelNow').textContent = 'In the water, about ' + num(water / 101325, water / 101325 < 100 ? 1 : 0) + ' atmospheres are pressing on you. If this were a dry shaft open to the sky instead, the air would be about ' + minus(tF) + '\u00B0F (' + minus(tC) + '\u00B0C) and ' + Math.round(A.rho / 1.225) + ' times as thick as at the beach.';
     } else {
       $('feelNow').textContent = 'About ' + minus(tF) + '\u00B0F (' + minus(tC) + '\u00B0C) outside on an average day. ' +
         (ft < 63000 ? 'Each breath carries ' + pct(A.P / 101325) + ' of the oxygen it would at sea level.' : 'The air pressure is ' + pct(A.P / 101325) + ' of what it is at sea level.');
     }
     $('gPl').textContent = below ? 'Pressure in open air' : 'Pressure';
-    setG('gP', sig(A.P / 1e6) + '<i>MPa</i>', share(A.P / 101325).replace(/^./, function (c) { return c.toUpperCase(); }) + '.');
-    setG('gD', sig(A.rho) + '<i>kg/m\u00B3</i>', share(A.rho / 1.225).replace(/^./, function (c) { return c.toUpperCase(); }) + '.');
+    setG('gP', pres(A.P), share(A.P / 101325).replace(/^./, function (c) { return c.toUpperCase(); }) + '.');
+    setG('gD', dens(A.rho), share(A.rho / 1.225).replace(/^./, function (c) { return c.toUpperCase(); }) + '.');
     setG('gS', Math.round(s) + '<i>%</i>',
       (below && s >= 98.5) ? 'Maxed out. There is more oxygen here than your blood can carry.' : s >= 94 ? 'About what you would read at the beach.' : s >= 88 ? 'Normal for people who live this high.' : s >= 75 ? 'Low. Acclimatized people function here, slowly.' :
       s >= 40 ? 'Dangerous without bottled oxygen.' : s > 0.5 ? 'You pass out fast without a mask.' : 'No usable oxygen. Pressure suit or nothing.',
       s >= 94 ? 'good' : (s >= 80 ? 'warn' : 'bad'));
     var bC = B.K - 273.15, bF = bC * 1.8 + 32;
-    setG('gB', (bF < 0 ? '\u2212' : '') + num(Math.abs(bF), 1) + '<i>\u00B0F</i>',
-      (bC < 0 ? '\u2212' : '') + num(Math.abs(bC), 1) + '\u00B0C, ' + num(B.K, 1) + ' K' +
+    setG('gB', (bF < 0 ? '\u2212' : '') + num(Math.abs(bF), 0) + '<i>\u00B0F</i>',
+      (bC < 0 ? '\u2212' : '') + num(Math.abs(bC), 0) + '\u00B0C, ' + num(B.K, 0) + ' K' +
       (B.ice ? '. Liquid water can\u2019t exist here, so ice turns straight to vapor.' : (Math.abs(bC - 37) < 1 ? '. That is body temperature.' : (bC < 36 ? '. Cooler than your body.' : ''))));
-    setG('gO', sig(o2) + '<i>kPa</i>', share(o2 / 21.2276).replace(/^./, function (c) { return c.toUpperCase(); }) + '.');
+    setG('gO', pres(o2 * 1000), share(o2 / 21.2276).replace(/^./, function (c) { return c.toUpperCase(); }) + '.');
     if (e) setG('gF', secs(e[0], e[1]), 'How long you can think straight without extra oxygen.', e[1] < 150 ? 'bad' : 'warn');
     else setG('gF', 'No limit', ft >= 14000 ? 'None listed, but FAA rules keep pilots on oxygen the whole time above 14,000 ft.' :
       ft >= 12500 ? 'None listed, but FAA rules put pilots on oxygen after 30 minutes above 12,500 ft.' : 'The FAA table starts at 18,000 ft.', 'good');
     $('gW').hidden = !below;
-    if (below) setG('gW', sig(water / 1e6) + '<i>MPa</i>', num(water / 101325, water / 101325 < 100 ? 1 : 0) + ' atmospheres, or about ' + num(water / 6894.757, 0) + ' pounds on every square inch.');
+    if (below) setG('gW', pres(water), num(water / 101325, water / 101325 < 100 ? 1 : 0) + ' atmospheres, or about ' + num(water / 6894.757, 0) + ' pounds on every square inch.');
     $('fine').textContent = below ? 'The six air tiles treat this depth as a dry shaft open to the sky. The ocean tile is the real water pressure.' : '';
   }
 
@@ -1933,7 +2254,7 @@
     else if (name) say('Standing at ' + name + '.');
     var from = SB.alt, token = ++SB.token;
     if (reduce || Math.abs(to - from) < 1) { setAlt(to); return; }
-    var dur = 600 + 1100 * Math.min(1, Math.sqrt(Math.abs(to - from) / 120000)), t0 = null;
+    var dur = 380 + 760 * Math.min(1, Math.sqrt(Math.abs(to - from) / 120000)), t0 = null;
     function step(t) {
       if (token !== SB.token) return;
       if (!t0) t0 = t;
@@ -2348,7 +2669,7 @@
     var x, i;
 
     var sg = ctx.createLinearGradient(0, 0, 0, hy + sag);
-    sg.addColorStop(0, rgb(zen)); sg.addColorStop(0.6, rgb(mid)); sg.addColorStop(1, rgb(hor)); window.__skyTop = rgb(zen);
+    sg.addColorStop(0, rgb(zen)); sg.addColorStop(0.6, rgb(mid)); sg.addColorStop(1, rgb(hor));
     ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H);
 
     // stars come out as the air thins, and stop twinkling once there is no air left to shake them
@@ -2519,7 +2840,7 @@
     var x, i;
 
     var sg = ctx.createLinearGradient(0, 0, 0, hy + sag);
-    sg.addColorStop(0, rgb(zen)); sg.addColorStop(0.6, rgb(mid)); sg.addColorStop(1, rgb(hor)); window.__skyTop = rgb(zen);
+    sg.addColorStop(0, rgb(zen)); sg.addColorStop(0.6, rgb(mid)); sg.addColorStop(1, rgb(hor));
     ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H);
 
     // Gaia's own constellations come out as the sky darkens
@@ -2826,7 +3147,7 @@
 
   /* =====================================================================
      Gaia: Earth's mirror planet. Every height on Earth sits 7,560 m higher, dry land below the sea
-     is 10 times deeper, and the oceans are 1.25 times deeper.
+     is 10 times deeper, and the oceans are 25% deeper.
      ===================================================================== */
   var UP_M = 7560;
   var GNOTE = {
@@ -2902,14 +3223,14 @@
     },
     gaia: {
       LINE_M: 12388.032, LINE_FT: 40643, MIN_M: MIN_M + UP_M, MAX_M: MAX_M + UP_M, MAX_UP: 327360, MAX_DOWN: -44846,
-      LINE_IN: { ft: '40,643 ft', m: '12,388 m', mi: '7.698 mi', km: '12.388 km' },
-      LINE_WORDS: { ft: '12,388 meters', m: '40,643 feet', mi: '12.388 kilometers', km: '7.698 miles' },
+      LINE_IN: { ft: '40,643 ft', m: '12,388 m', mi: '8 mi', km: '12 km' },
+      LINE_WORDS: { ft: '12,388 meters', m: '40,643 feet', mi: '12 kilometers', km: '8 miles' },
       DATA: DATA_G, BYID: BYID_G, MARKERS: MARKERS_G, ZONES_UP: ZONES_UP_G, ZONES_DOWN: ZONES_DOWN_G, MARKS: MARKS_G, PRESETS: PRESETS_G,
       TRACK: {
         above: 'linear-gradient(90deg, #7FE9FF 0%, #1B8FB0 14%, #46FFB4 27%, #7FE9FF 35%, #FF5CCB 40%, #9B6BFF 50%, #0B1D4A 68%, #020B14 100%)',
         below: 'linear-gradient(90deg, #7FE9FF 0%, #1B8FB0 12%, #0A4460 30%, #04182B 58%, #010509 100%)'
       },
-      PILE_T: { ft: [[36000, 38000, 42000, 44000], 0.3048, 0], m: [[11000, 11500, 12500, 13500], 1, 0], mi: [[6.75, 7, 8, 8.25], 1609.344, 2], km: [[11, 11.5, 12.5, 13.5], 1000, 1] },
+      PILE_T: { ft: [[36000, 38000, 42000, 44000], 0.3048, 0], m: [[11000, 11500, 12500, 13500], 1, 0], mi: [[7, 8], 1609.344, 0], km: [[11, 12, 13], 1000, 0] },
       PILE_MARKS: [[13060, 'living ceiling']],
       sb: { alt: 40643, mode: 'above', last: { above: 40643, below: 0 } }
     }
@@ -2969,7 +3290,7 @@
     var water = 123262 + 1025 * 7.84532 * Math.max(0, -z), wr = water / 123262;
     var at = function (m) { return altStr(m / 0.3048, unit) + ' ' + unit; };
     if (below) {
-      $('feelNow').textContent = 'In the water, about ' + num(wr, wr < 100 ? 1 : 0) + ' times the air at Gaia’s sea level is pressing on you. If this were a dry shaft open to the sky instead, the air would be about ' + minus(tF) + '°F (' + minus(tC) + '°C) and ' + (A.rho / GAIA.RHO0).toFixed(2) + ' times as thick as at Gaia’s coast.';
+      $('feelNow').textContent = 'In the water, about ' + num(wr, wr < 100 ? 1 : 0) + ' times the air at Gaia’s sea level is pressing on you. If this were a dry shaft open to the sky instead, the air would be about ' + minus(tF) + '°F (' + minus(tC) + '°C) and ' + Math.round(A.rho / GAIA.RHO0) + ' times as thick as at Gaia’s coast.';
     } else {
       var who;
       if (gaian) who = z > 19600 ? 'Gaian lungs are no help this high. The air is as thin as Earth’s at ' + at(same) + '.' :
@@ -2980,8 +3301,8 @@
     $('gPl').textContent = below ? 'Pressure in open air' : 'Pressure';
     $('gSl').textContent = 'Simulated SpO2, ' + (gaian ? 'Gaian' : 'Earth visitor');
     $('gFl').textContent = 'FAA performance time, ' + (gaian ? 'Gaian' : 'Earth visitor');
-    setG('gP', sig(A.P / 1e6) + '<i>MPa</i>', capFirst(share(A.P / 123262).replace('sea level', 'Gaia’s sea level')) + '.');
-    setG('gD', sig(A.rho) + '<i>kg/m³</i>', capFirst(share(A.rho / 1.225).replace('sea level', 'Earth’s sea level')) + '.');
+    setG('gP', pres(A.P), capFirst(share(A.P / 123262).replace('sea level', 'Gaia’s sea level')) + '.');
+    setG('gD', dens(A.rho), capFirst(share(A.rho / 1.225).replace('sea level', 'Earth’s sea level')) + '.');
     setG('gS', Math.round(s) + '<i>%</i>', gaian ?
       (s >= 94 ? 'Easy breathing for a Gaian.' : s >= 88 ? 'Normal for Gaians who live this high.' : s >= 75 ? 'Low. Acclimatized Gaians function here, slowly.' :
         s >= 40 ? 'Dangerous without bottled oxygen, even for a Gaian.' : s > 0.5 ? 'A Gaian passes out fast without a mask.' : 'No usable oxygen. Pressure suit or nothing.') :
@@ -2989,10 +3310,10 @@
         s >= 40 ? 'Dangerous for a visitor without a mask.' : s > 0.5 ? 'A visitor passes out fast without a sealed mask.' : 'No usable oxygen. Pressure suit or nothing.'),
       s >= 94 ? 'good' : (s >= 80 ? 'warn' : 'bad'));
     var bC = B.K - 273.15, bF = bC * 1.8 + 32;
-    setG('gB', (bF < 0 ? '−' : '') + num(Math.abs(bF), 1) + '<i>°F</i>',
-      (bC < 0 ? '−' : '') + num(Math.abs(bC), 1) + '°C, ' + num(B.K, 1) + ' K' +
+    setG('gB', (bF < 0 ? '−' : '') + num(Math.abs(bF), 0) + '<i>°F</i>',
+      (bC < 0 ? '−' : '') + num(Math.abs(bC), 0) + '°C, ' + num(B.K, 0) + ' K' +
       (B.ice ? '. Liquid water can’t exist here, so ice turns straight to vapor.' : (Math.abs(bC - 37) < 1 ? '. That is body temperature.' : (bC < 36 ? '. Cooler than your body.' : (bC > 100.5 ? '. Hotter than a rolling boil at Earth’s sea level.' : '')))));
-    setG('gO', sig(o2) + '<i>kPa</i>', capFirst(share(o2 / 21.2276).replace('sea level', 'Earth’s sea level')) + '.');
+    setG('gO', pres(o2 * 1000), capFirst(share(o2 / 21.2276).replace('sea level', 'Earth’s sea level')) + '.');
     if (e) setG('gF', secs(e[0], e[1]), gaian ? 'How long a Gaian can think straight without extra oxygen.' : 'How long a visitor from Earth can think straight without a mask.', e[1] < 150 ? 'bad' : 'warn');
     else setG('gF', 'No limit', gaian ? 'For a Gaian, the clock does not start until about the living ceiling.' : 'The clock starts where the air is as thin as Earth’s at 18,000 ft.', 'good');
     $('gE').hidden = false;
@@ -3004,7 +3325,7 @@
       setG('gK', k[0], k[1], k[2]);
     }
     $('gW').hidden = !below;
-    if (below) setG('gW', sig(water / 1e6) + '<i>MPa</i>', num(wr, wr < 100 ? 1 : 0) + ' times the air at Gaia’s sea level, or about ' + num(water / 6894.757, 0) + ' pounds on every square inch.' +
+    if (below) setG('gW', pres(water), num(wr, wr < 100 ? 1 : 0) + ' times the air at Gaia’s sea level, or about ' + num(water / 6894.757, 0) + ' pounds on every square inch.' +
       (z <= -13000 ? ' Gravity is lighter here, so this is about the same crush as the bottom of Earth’s Challenger Deep.' : ''));
     $('fine').textContent = below ? 'The air tiles treat this depth as a dry shaft open to the sky. The ocean tile is the real water pressure under Gaia’s lighter gravity.' : '';
     var you = $('rulerYou');
@@ -3164,7 +3485,7 @@
   }
   var mqReduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
   var LAYOUTS = [
-    ['standard', 'Standard', 'The page as it has always looked.'],
+    ['standard', 'Neon Core', 'The new neon look with the 3D scene and the big converter.'],
     ['stratosphere', 'Stratosphere', 'On a wide screen: the scene, the readings and the controls side by side.'],
     ['halo', 'Halo Care', 'Rounded and soft, with the controls in a side panel.'],
     ['ledger', 'Summit Ledger', 'Warm paper and serif type, with a control rail on the right.'],
@@ -3180,16 +3501,8 @@
 
   function tkEl(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
   function qs(root, sel) { return root.querySelector(sel); }
-  function fmtN(n, d) { return n.toLocaleString('en-US', { minimumFractionDigits: d || 0, maximumFractionDigits: d == null ? 2 : d }); }
-  function nice(v) {
-    if (!isFinite(v)) return '—';
-    var a = Math.abs(v);
-    if (a >= 1000) return fmtN(v, 0);
-    if (a >= 100) return fmtN(v, 1);
-    if (a >= 1) return fmtN(v, 2);
-    if (a === 0) return '0';
-    return fmtN(v, a >= 0.01 ? 3 : 5);
-  }
+  function fmtN(n, d) { n = Math.round(n); if (n === 0) n = 0; return n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
+  function nice(v) { if (!isFinite(v)) return '\u2014'; return fmtN(v, 0); }
   function worldOf(p) { return WORLDS[p] || WORLDS.earth; }
   function ftIn(v, unit) { return v / PER_FT[unit]; }
 
@@ -3626,7 +3939,7 @@
     fill();
   }
   function cvEG() {
-    $('cvB').innerHTML = '<p class="tk-lede">Every height on Earth sits 7,560 m higher on Gaia. Land and lakes below the sea are 10 times deeper there, and the oceans are 1.25 times deeper.</p><div class="tk-two"><div class="tk-field"><label for="cgD">Direction</label><select class="tk-in" id="cgD"><option value="eg">Earth to Gaia</option><option value="ge">Gaia to Earth</option></select></div><div class="tk-field"><label for="cgS">If it is below the sea</label><select class="tk-in" id="cgS"><option value="land">Dry land or a lake</option><option value="sea">The ocean</option></select></div></div><div class="tk-inline"><input class="tk-in" id="cgV" type="text" inputmode="decimal" value="15840" aria-label="Elevation"><select class="tk-in" id="cgU" aria-label="Unit"><option value="ft">feet</option><option value="m">meters</option><option value="mi">miles</option><option value="km">kilometers</option></select></div><div class="tk-res" id="cgR"></div><div class="tk-bar" style="margin-top:.9rem"><button type="button" class="tk-btn go" id="cgG"></button></div><p class="tk-msg" id="cgM"></p>';
+    $('cvB').innerHTML = '<p class="tk-lede">Every height on Earth sits 7,560 m higher on Gaia. Land and lakes below the sea are 10 times deeper there, and the oceans are 25% deeper.</p><div class="tk-two"><div class="tk-field"><label for="cgD">Direction</label><select class="tk-in" id="cgD"><option value="eg">Earth to Gaia</option><option value="ge">Gaia to Earth</option></select></div><div class="tk-field"><label for="cgS">If it is below the sea</label><select class="tk-in" id="cgS"><option value="land">Dry land or a lake</option><option value="sea">The ocean</option></select></div></div><div class="tk-inline"><input class="tk-in" id="cgV" type="text" inputmode="decimal" value="15840" aria-label="Elevation"><select class="tk-in" id="cgU" aria-label="Unit"><option value="ft">feet</option><option value="m">meters</option><option value="mi">miles</option><option value="km">kilometers</option></select></div><div class="tk-res" id="cgR"></div><div class="tk-bar" style="margin-top:.9rem"><button type="button" class="tk-btn go" id="cgG"></button></div><p class="tk-msg" id="cgM"></p>';
     $('cgU').value = state.unit;
     var last = null;
     function go() {
@@ -3859,7 +4172,7 @@
   function openLook() {
     openSheet('look', 'Look & Sound', function (body) {
       function choices(name, list, cur, cols) { return '<div class="tk-choices' + (cols ? ' cols' : '') + '" data-name="' + name + '">' + list.map(function (x) { return '<button type="button" class="tk-choice" data-v="' + x[0] + '" aria-pressed="' + (cur === x[0]) + '"><b>' + x[1] + '</b><small>' + x[2] + '</small></button>'; }).join('') + '</div>'; }
-      body.innerHTML = '<div class="tk-h3" style="margin-top:0">Layout</div><p class="tk-fine" style="margin:0 0 .6rem">Standard is the page as it has always looked. The others rearrange it on wide screens and restyle it on phones.</p>' + choices('layout', LAYOUTS, TK.layout, true) +
+      body.innerHTML = '<div class="tk-h3" style="margin-top:0">Layout</div><p class="tk-fine" style="margin:0 0 .6rem">Neon Core is the new default look. The others rearrange it on wide screens and restyle it on phones.</p>' + choices('layout', LAYOUTS, TK.layout, true) +
         '<div class="tk-h3">Color</div>' + choices('theme', [['auto', 'Match my device', 'Follows your light or dark setting.'], ['light', 'Light', 'Always light.'], ['dark', 'Dark', 'Always dark.']], TK.theme, true) +
         '<div class="tk-h3">Comfort</div>' +
         '<label class="tk-toggle"><span>Animations<small>Moving scenery and smooth flights.</small></span><input type="checkbox" data-k="anim"' + (TK.anim ? ' checked' : '') + '></label>' +
@@ -3995,6 +4308,633 @@
   var startPlanet = 'earth';
   try { if (localStorage.getItem('thinair-planet') === 'gaia') startPlanet = 'gaia'; } catch (err) {}
   if (startPlanet === 'gaia') setPlanet('gaia', false);
+
+  /* =====================================================================
+     NEON 3D: a Three.js flight up and down the line. It reads the same altitude (SB.alt),
+     the same air numbers (PHYS, GAIA) and the same marks (MARKS) as everything else above.
+     ===================================================================== */
+  (function neon3d() {
+    var cvs = $('gl');
+    if (!cvs || !window.THREE) { document.body.classList.add('no-gl'); return; }
+    var T = window.THREE, R;
+    try { R = new T.WebGLRenderer({ canvas: cvs, antialias: true, alpha: false, powerPreference: 'high-performance' }); } catch (e) { R = null; }
+    if (!R || !R.getContext()) { document.body.classList.add('no-gl'); return; }
+    R.setClearColor(0x02030c, 1);
+    document.body.classList.add('has-gl');
+    var _draw2d = draw; draw = function () {};
+
+    var scene = new T.Scene(), cam = new T.PerspectiveCamera(58, 1, 0.1, 6000), host = cvs.parentNode;
+    var Y0 = 800, YMAX = 17 * Math.log10(1 + MAX_UP / Y0);
+    function yOf(ft) { return (ft < 0 ? -1 : 1) * 17 * Math.log10(1 + Math.abs(ft) / Y0); }
+    var C = function (h) { return new T.Color(h); };
+
+    /* ---- noise ---- */
+    function hash(x, y) { var s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); }
+    function vn(x, y) { var xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+      var a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1); return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; }
+    function ridged(x, y) { var s = 0, a = 0.5, f = 1, i, n; for (i = 0; i < 5; i++) { n = 1 - Math.abs(vn(x * f, y * f) * 2 - 1); s += n * n * a; f *= 2.07; a *= 0.5; } return s; }
+    function sm(a, b, x) { var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
+
+    /* ---- shaders ---- */
+    var VERT = 'varying vec3 vP; varying float vD; void main(){ vP = position; vec4 mv = modelViewMatrix * vec4(position,1.); vD = length(mv.xyz); gl_Position = projectionMatrix * mv; }';
+var NZ = 'float h2(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }\n' +
+      'float n2(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h2(i),h2(i+vec2(1.,0.)),f.x),mix(h2(i+vec2(0.,1.)),h2(i+vec2(1.,1.)),f.x),f.y); }\n' +
+      'float fb(vec2 p){ float s=0., a=.5; for(int i=0;i<4;i++){ s+=a*n2(p); p=p*2.03+7.1; a*=.5; } return s; }\n' +
+      'vec3 aces(vec3 x){ return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.); }\n';
+    var LN = 'float ln(float v,float w){ float f = abs(fract(v-.5)-.5)/max(fwidth(v),1e-4); return 1.-min(f/w,1.); }';
+    var TERRAIN_FRAG = 'varying vec3 vP; varying float vD; uniform vec3 cLow,cMid,cHigh,cLine,cFog; uniform float uLineY,uTime,uMin,uMax,uFogK,uLineOn,uSnow;\n' + NZ + LN + '\n' +
+      'void main(){ vec3 n = normalize(cross(dFdx(vP),dFdy(vP))); if(n.y<0.) n=-n; vec3 L = normalize(vec3(.45,.8,.35)); vec3 V = normalize(cameraPosition - vP);\n' +
+      ' float dif = clamp(dot(n,L),0.,1.), sl = 1.-n.y; float h = clamp((vP.y-uMin)/(uMax-uMin),0.,1.);\n' +
+      ' vec3 base = mix(cLow, mix(cMid,cHigh,smoothstep(.45,1.,h)), smoothstep(0.,.5,h));\n' +
+      ' float nz = fb(vP.xz*.8), nz2 = fb(vP.xz*3.4+vP.y*1.7);\n' +
+      ' vec3 rock = mix(vec3(.10,.09,.10), vec3(.42,.35,.31), nz); rock *= .62+.75*nz2; rock = mix(rock, base*.7, .26);\n' +
+      ' float sn = uSnow*smoothstep(.5,.78,h+(nz-.5)*.3)*smoothstep(.62,.16,sl*1.5+(nz2-.5)*.25);\n' +
+      ' vec3 alb = mix(rock, vec3(.92,.96,1.), sn); alb = mix(alb, base*.55+vec3(.09,.08,.06)*nz2, 1.-uSnow);\n' +
+      ' float ao = .5+.5*smoothstep(0.,.5,n.y); vec3 amb = mix(cFog*.45, vec3(.2,.26,.4), .5);\n' +
+      ' vec3 col = alb*(amb*ao + vec3(1.,.93,.82)*dif*1.2);\n' +
+      ' float spec = pow(max(dot(reflect(-L,n),V),0.),26.)*(.18+sn*.9)*dif; col += vec3(1.,.9,.75)*spec*.55;\n' +
+      ' float fr = pow(1.-max(dot(n,V),0.),3.); col += mix(cFog,base,.5)*fr*.2; col = aces(col*1.2);\n' +
+      ' float c1 = ln(vP.y*.9,1.), c2 = ln(vP.y*.9/5.,1.6); col += base*c1*.5*(.3+dif) + vec3(1.)*c2*.3;\n' +
+      ' float g = max(ln(vP.x*.5,.9), ln(vP.z*.5,.9)); col += base*g*.08;\n' +
+      ' float band = smoothstep(.55,0.,abs(vP.y-uLineY))*uLineOn; float pulse = .55+.45*sin(uTime*2.2);\n' +
+      ' col = mix(col, cLine*1.5, band*.85) + cLine*band*pulse*.6;\n' +
+      ' float fog = 1.-exp(-vD*vD*uFogK); col = mix(col,cFog,clamp(fog,0.,1.)); gl_FragColor = vec4(col,1.); }';
+    var WATER_FRAG = 'varying vec3 vP; varying float vD; uniform vec3 cA,cFog; uniform float uTime,uFogK,uAlpha;\n' + NZ + LN + '\n' +
+      'void main(){ float w1 = ln(vP.x*.35+sin(vP.z*.22+uTime*.8)*.5,.9), w2 = ln(vP.z*.35+sin(vP.x*.2+uTime*.6)*.5,.9);\n' +
+      ' float a = clamp(uAlpha + .5*max(w1,w2)*.6, 0., 1.); vec3 col = cA*(.55+.9*max(w1,w2)); float gl = smoothstep(.2,.42, n2(vP.xz*1.4+vec2(uTime*.4,-uTime*.3))*n2(vP.xz*.8-uTime*.25)); col += vec3(1.,.93,.8)*gl*.7; a = clamp(a+gl*.45,0.,1.); float fog = 1.-exp(-vD*vD*uFogK); col = mix(col,cFog,clamp(fog,0.,1.)); a *= (1.-fog*.85); gl_FragColor = vec4(col,a); }';
+    var DOME_FRAG = 'varying vec3 vP; uniform vec3 cZen,cHor,cNad,uSunDir; uniform float uStar,uTime,uSun,uCloud;\n' + NZ +
+      'float h21(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }\n' +
+      'void main(){ vec3 d = normalize(vP); float y = d.y; vec3 col = y>0. ? mix(cHor,cZen,pow(y,.55)) : mix(cHor,cNad,pow(-y,.5));\n' +
+      ' if(y>.02 && uCloud>.01){ vec2 cp = d.xz/(y+.22)*1.3 + vec2(uTime*.012,uTime*.006); float cl = fb(cp*1.2); cl = smoothstep(.46,.78,cl+.14*fb(cp*4.)); float lt = .72+.28*pow(max(dot(d,normalize(uSunDir)),0.),3.); vec3 cc = mix(vec3(.5,.56,.7),vec3(1.,.97,.93),lt)*(.3+.7*clamp(length(cHor)*.8,0.,1.)); col = mix(col, cc, cl*uCloud*smoothstep(.02,.3,y)*.85); }\n' +
+      ' vec2 q = vec2(atan(d.z,d.x)*70., asin(clamp(d.y,-1.,1.))*70.); vec2 cell = floor(q); float r = h21(cell); vec2 f = fract(q)-.5; vec2 o = (vec2(h21(cell+3.1),h21(cell+7.7))-.5)*.5;\n' +
+      ' float st = step(.985,r)*smoothstep(.3,0.,length(f-o)); col += vec3(.75,.88,1.)*st*uStar*(.55+.45*sin(uTime*2.+r*40.))*step(0.,y+.05);\n' +
+      ' float sd = max(dot(d,normalize(uSunDir)),0.); col += vec3(1.,.86,.65)*(pow(sd,500.)*1.4+pow(sd,14.)*.28)*uSun; gl_FragColor = vec4(col,1.); }';
+
+    function mat(frag, uni, extra) {
+      var o = { vertexShader: VERT, fragmentShader: frag, uniforms: uni, extensions: { derivatives: true } };
+      for (var k in extra) o[k] = extra[k];
+      return new T.ShaderMaterial(o);
+    }
+    var U = {
+      time: { value: 0 }, fogK: { value: 0.0003 }, cFog: { value: C(0x8ec8ff) }
+    };
+
+    /* ---- sky dome ---- */
+    var domeU = { cZen: { value: C(0x1560e8) }, cHor: { value: C(0xbfe9ff) }, cNad: { value: C(0x102040) }, uSunDir: { value: new T.Vector3(.5, .35, -.7) }, uStar: { value: 0 }, uTime: U.time, uSun: { value: 1 }, uCloud: { value: 1 } };
+    var dome = new T.Mesh(new T.SphereGeometry(3000, 32, 24), mat(DOME_FRAG, domeU, { side: T.BackSide, depthWrite: false }));
+    dome.frustumCulled = false; dome.renderOrder = -10; scene.add(dome);
+
+    /* ---- land (the massif) and sea floor ---- */
+    var N = 150, SZ = 140;
+    function mkTerrain() {
+      var g = new T.PlaneGeometry(SZ, SZ, N, N); g.rotateX(-Math.PI / 2); return g;
+    }
+    var landG = mkTerrain(), seaG = mkTerrain();
+    var landU = { uSnow: { value: 1 }, cLow: { value: C(0x0a9fa8) }, cMid: { value: C(0x7a3cff) }, cHigh: { value: C(0xff3dbe) }, cLine: { value: C(0xffc400) }, cFog: U.cFog, uLineY: { value: 22 }, uTime: U.time, uMin: { value: 0 }, uMax: { value: 27 }, uFogK: U.fogK, uLineOn: { value: 1 } };
+    var land = new T.Mesh(landG, mat(TERRAIN_FRAG, landU, {})); scene.add(land);
+    var floorU = { uSnow: { value: 0 }, cLow: { value: C(0x041c3a) }, cMid: { value: C(0x0a6aa0) }, cHigh: { value: C(0x19f0ff) }, cLine: { value: C(0x19f0ff) }, cFog: U.cFog, uLineY: { value: -999 }, uTime: U.time, uMin: { value: -30 }, uMax: { value: -16 }, uFogK: U.fogK, uLineOn: { value: 0 } };
+    var floor = new T.Mesh(seaG, mat(TERRAIN_FRAG, floorU, {})); scene.add(floor);
+
+    var builtFor = '';
+    function buildTerrain(top, bot, summitFt) {
+      var p = landG.attributes.position, i, x, z, r, m, rid, sh, h, mx = 0;
+      for (i = 0; i < p.count; i++) {
+        x = p.getX(i); z = p.getZ(i); r = Math.sqrt(x * x + z * z);
+        rid = ridged(x * 0.07 + 3.1, z * 0.07 - 1.7);
+        m = Math.exp(-Math.pow(r / 15, 2)); sh = Math.exp(-Math.pow(r / 27, 2));
+        h = top * (0.80 * m * (0.55 + 0.7 * rid) + 0.16 * sh * rid * 1.2 + 0.2 * Math.exp(-Math.pow(r / 4.2, 2)));
+        h += -1.3 + 1.7 * sm(58, 24, r);
+        p.setY(i, h); if (h > mx) mx = h;
+      }
+      for (i = 0; i < p.count; i++) { h = p.getY(i); if (h > 0.4) p.setY(i, 0.4 + (h - 0.4) * (top - 0.4) / (mx - 0.4)); }
+      p.needsUpdate = true; landG.computeBoundingSphere();
+      var q = seaG.attributes.position, y0 = -19, mn = 0, tr;
+      for (i = 0; i < q.count; i++) {
+        x = q.getX(i); z = q.getZ(i);
+        h = y0 + 3.2 * ridged(x * 0.05 - 4.4, z * 0.05 + 2.2);
+        tr = Math.exp(-Math.pow(z / 5.5, 2)) * (0.65 + 0.35 * vn(x * 0.06, 3.3));
+        h -= (y0 - bot + 2) * tr;
+        q.setY(i, h); if (h < mn) mn = h;
+      }
+      for (i = 0; i < q.count; i++) { h = q.getY(i); if (h < y0) q.setY(i, y0 + (h - y0) * (bot - y0) / (mn - y0)); }
+      q.needsUpdate = true; seaG.computeBoundingSphere();
+      landU.uMax.value = top; floorU.uMin.value = bot; floorU.uMax.value = y0 + 4;
+    }
+
+    /* ---- sea surface ---- */
+    var waterU = { cA: { value: C(0x19f0ff) }, cFog: U.cFog, uTime: U.time, uFogK: U.fogK, uAlpha: { value: 0.2 } };
+    var water = new T.Mesh(new T.PlaneGeometry(3200, 3200, 1, 1).rotateX(-Math.PI / 2), mat(WATER_FRAG, waterU, { transparent: true, depthWrite: false, side: T.DoubleSide }));
+    water.renderOrder = 2; scene.add(water);
+
+    /* ---- you, the beam and the axis ---- */
+    var beamM = new T.MeshBasicMaterial({ color: 0x19f0ff, transparent: true, opacity: .55, blending: T.AdditiveBlending, depthWrite: false });
+    var beam = new T.Mesh(new T.CylinderGeometry(.07, .07, 1, 10, 1, true), beamM); scene.add(beam);
+    var axis = new T.Mesh(new T.CylinderGeometry(.02, .02, 1, 6, 1, true), new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .18, depthWrite: false }));
+    scene.add(axis);
+    var youM = new T.MeshBasicMaterial({ color: 0xffffff }); var you = new T.Mesh(new T.SphereGeometry(.42, 24, 16), youM); scene.add(you);
+    function glowTex() { var c = document.createElement('canvas'); c.width = c.height = 128; var x = c.getContext('2d'), g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+      g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.25, 'rgba(160,240,255,.55)'); g.addColorStop(1, 'rgba(120,80,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); return new T.CanvasTexture(c); }
+    var halo = new T.Sprite(new T.SpriteMaterial({ map: glowTex(), transparent: true, blending: T.AdditiveBlending, depthWrite: false, depthTest: false })); halo.scale.set(5, 5, 1); halo.renderOrder = 6; scene.add(halo);
+
+    /* ---- motes: snow up high, bubbles in the sea ---- */
+    var MN = 650, mg = new T.BufferGeometry(), mp = new Float32Array(MN * 3), mv = new Float32Array(MN), i0;
+    for (i0 = 0; i0 < MN; i0++) { mp[i0 * 3] = (Math.random() - .5) * 90; mp[i0 * 3 + 1] = (Math.random() - .5) * 60; mp[i0 * 3 + 2] = (Math.random() - .5) * 90; mv[i0] = .4 + Math.random(); }
+    mg.setAttribute('position', new T.BufferAttribute(mp, 3));
+    function dotTex() { var c = document.createElement('canvas'); c.width = c.height = 32; var x = c.getContext('2d'), gr = x.createRadialGradient(16, 16, 0, 16, 16, 16);
+      gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(.35, 'rgba(255,255,255,.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = gr; x.fillRect(0, 0, 32, 32); return new T.CanvasTexture(c); }
+    var motes = new T.Points(mg, new T.PointsMaterial({ size: .1, map: dotTex(), alphaTest: .02, color: 0xdff6ff, transparent: true, opacity: .7, blending: T.AdditiveBlending, depthWrite: false })); motes.frustumCulled = false; scene.add(motes);
+
+    /* ---- marker rings and their labels ---- */
+    var ringGroup = new T.Group(); scene.add(ringGroup);
+    var PICK = [/^Sea level/, /the line$/, /^Denver/, /Everest.s summit/, /Tayanroken.s summit/, /airliner/i, /Armstrong/, /top of the stratosphere/, /62 miles/, /Challenger/, /Titanic/];
+    var picks = [], spineEl = $('spine');
+    function labelTex(name, val, hex) {
+      var c = document.createElement('canvas'); c.width = 768; c.height = 176; var x = c.getContext('2d'), col = '#' + ('000000' + hex.toString(16)).slice(-6);
+      x.fillStyle = 'rgba(6,8,26,.78)'; x.strokeStyle = col; x.lineWidth = 4; x.shadowColor = col; x.shadowBlur = 18;
+      x.beginPath(); if (x.roundRect) x.roundRect(10, 10, 748, 156, 30); else x.rect(10, 10, 748, 156); x.fill(); x.stroke(); x.shadowBlur = 0;
+      x.fillStyle = '#fff'; x.font = '700 50px "Space Grotesk", system-ui, sans-serif'; x.textBaseline = 'middle';
+      var nm = name; while (x.measureText(nm).width > 690 && nm.length > 8) nm = nm.slice(0, -2); if (nm !== name) nm += '…';
+      x.fillText(nm, 38, 62); x.fillStyle = col; x.font = '700 46px "Space Grotesk", system-ui, sans-serif'; x.fillText(val, 38, 124);
+      var t = new T.CanvasTexture(c); t.anisotropy = 4; return t;
+    }
+    function elevLabel(ft) { // meters always carry feet right after them
+      var u = state.unit;
+      if (u === 'm') return num(ft * 0.3048, 0) + ' m (' + num(ft, 0) + ' ft)';
+      return altStr(ft, u) + ' ' + u;
+    }
+    function rebuildMarkers() {
+      var k, kids = ringGroup.children.slice(); kids.forEach(function (o) { ringGroup.remove(o); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } if (o.geometry) o.geometry.dispose(); });
+      var all = [], seen = {};
+      PICK.forEach(function (re) { MARKS.forEach(function (m) { if (re.test(m[1]) && !seen[m[1]]) { seen[m[1]] = 1; all.push({ ft: m[0], n: m[1], y: yOf(m[0]), line: /the line$/.test(m[1]) }); } }); });
+      all.sort(function (a, b) { return a.line ? -1 : (b.line ? 1 : 0); });
+      picks = [];
+      all.forEach(function (m) { var ok = true; picks.forEach(function (p) { if (Math.abs(p.y - m.y) < 1.5) ok = false; }); if (ok) picks.push(m); });
+      picks.sort(function (a, b) { return a.y - b.y; });
+      picks.forEach(function (m, idx) {
+        var hex = m.line ? 0xffc400 : (m.ft < 0 ? 0x19f0ff : (m.ft === 0 ? 0xffffff : (idx % 2 ? 0xff3dbe : 0x8a5cff)));
+        var ring = new T.Mesh(new T.TorusGeometry(46, m.line ? .13 : .06, 6, 220), new T.MeshBasicMaterial({ color: hex, transparent: true, opacity: m.line ? .95 : .55, blending: T.AdditiveBlending, depthWrite: false }));
+        ring.rotation.x = Math.PI / 2; ring.position.y = m.y; ringGroup.add(ring);
+        var sp = new T.Sprite(new T.SpriteMaterial({ map: labelTex(m.n.replace(/^The /, ''), elevLabel(m.ft), hex), transparent: true, depthWrite: false, depthTest: false }));
+        sp.scale.set(13, 3, 1); sp.renderOrder = 8; sp.userData = { y: m.y, off: .3 + .3 * (idx % 2) }; ringGroup.add(sp);
+      });
+      if (spineEl) {
+        spineEl.innerHTML = '';
+        var yMin = yOf(MAX_DOWN), yMax = YMAX, lastY = -99;
+        var ticks = picks.slice().sort(function (a, b) { return b.y - a.y; }), lastPct = -99;
+        var SHORT = [[/the line$/, 'THE LINE'], [/^Sea level/, 'Sea level'], [/Denver/, 'Denver'], [/Everest/, 'Everest'], [/Tayanroken/, 'Tayanroken'], [/airliner/i, 'Airliner'], [/Armstrong/, 'Armstrong'], [/stratosphere/, 'Stratosphere'], [/62 miles/, '62 miles up'], [/Challenger/, 'Challenger'], [/Titanic/, 'Titanic']];
+        ticks.forEach(function (m) {
+          var d = document.createElement('div'); d.className = 'tk' + (m.line ? ' gold' : '');
+          var pct = (1 - (m.y - yMin) / (yMax - yMin)) * 100; d.style.top = pct + '%';
+          var short = m.n; SHORT.forEach(function (s) { if (s[0].test(m.n)) short = s[1]; });
+          var show = pct - lastPct >= 4.2 || m.line; if (show) lastPct = pct;
+          d.innerHTML = (show ? '<span>' + esc(short) + '</span>' : '') + '<b></b>';
+          spineEl.appendChild(d);
+        });
+        var yd = document.createElement('div'); yd.className = 'you'; yd.id = 'spineYou'; spineEl.appendChild(yd);
+      }
+      builtMarks = PLANET + '|' + state.unit;
+    }
+    var builtMarks = '';
+
+    /* ---- per-planet and per-altitude look ---- */
+    var PAL = {
+      earth: { low: 0x0a9fa8, mid: 0x7a3cff, high: 0xff3dbe, line: 0xffc400, deep: 0x041c3a, d2: 0x0a6aa0, d3: 0x19f0ff },
+      gaia: { low: 0x0b8f78, mid: 0x46ffb4, high: 0x9b6bff, line: 0xffc400, deep: 0x03203a, d2: 0x0a7f8f, d3: 0x7fe9ff }
+    };
+    var lastPlanet = '';
+    function setPlanetLook() {
+      var p = PAL[PLANET] || PAL.earth, top = yOf(PLANET === 'gaia' ? 56135 : 31332), bot = yOf(MAX_DOWN);
+      landU.cLow.value.setHex(p.low); landU.cMid.value.setHex(p.mid); landU.cHigh.value.setHex(p.high); landU.cLine.value.setHex(p.line);
+      floorU.cLow.value.setHex(p.deep); floorU.cMid.value.setHex(p.d2); floorU.cHigh.value.setHex(p.d3);
+      waterU.cA.value.setHex(PLANET === 'gaia' ? 0x46ffb4 : 0x19f0ff);
+      buildTerrain(top, bot);
+      landU.uLineY.value = yOf(LINE_FT);
+      lastPlanet = PLANET;
+    }
+
+    function lerp3(a, b, f) { return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f]; }
+    function setRGB(col, a) { col.setRGB(a[0] / 255, a[1] / 255, a[2] / 255); }
+    var cr = 0;
+    function look(ft) {
+      var z = ft * 0.3048, gaia = PLANET === 'gaia', below = ft < 0;
+      if (!below) {
+        var A = gaia ? GAIA.atm(z) : PHYS.atm(z), f = gaia ? Math.pow(clamp01(A.P / GAIA.P0), .62) : Math.pow(clamp01(A.P / 101325), .5);
+        var zen = gaia ? lerp3([3, 8, 24], [14, 120, 190], f) : lerp3([2, 2, 12], [20, 92, 230], f);
+        var hor = gaia ? lerp3([12, 28, 70], [120, 236, 230], f) : lerp3([34, 10, 70], [196, 232, 255], Math.pow(f, .8));
+        setRGB(domeU.cZen.value, zen); setRGB(domeU.cHor.value, hor); setRGB(domeU.cNad.value, lerp3([2, 4, 16], hor, .35 * f));
+        domeU.uStar.value = clamp01((.62 - f) / .4); domeU.uSun.value = 1; domeU.uCloud.value = clamp01(1 - ft / 48000) * (gaia ? .85 : 1);
+        setRGB(U.cFog.value, lerp3([10, 6, 30], hor, Math.pow(f, .9)));
+        U.fogK.value = (0.00032 + (0.00004 - 0.00032) * clamp01(ft / 40000)) * (0.35 + .65 * f);
+        waterU.uAlpha.value = .2; floorU.uLineOn.value = 0;
+        motes.material.opacity = .7 * clamp01((f - .25) / .4) * (ft > 25000 ? clamp01(1 - (ft - 25000) / 40000) : 1);
+      } else {
+        var dm = -z, L = .85 * Math.exp(-dm / 40) + .15 * Math.exp(-dm / 260), w = gaia ? [58, 216, 206] : [64, 204, 230];
+        var top = lerp3([0, 3, 10], w, Math.pow(L, .55)), bot = lerp3([0, 1, 6], [8, 60, 110], Math.pow(L, .5));
+        setRGB(domeU.cZen.value, top); setRGB(domeU.cHor.value, lerp3(top, bot, .35)); setRGB(domeU.cNad.value, bot);
+        domeU.uStar.value = 0; domeU.uSun.value = clamp01(L * 1.5) * .3; domeU.uCloud.value = 0;
+        setRGB(U.cFog.value, lerp3(top, bot, .3));
+        var far = 42 + 230 * Math.pow(L, .6); U.fogK.value = 1.8 / (far * far);
+        waterU.uAlpha.value = .3; motes.material.opacity = .85;
+      }
+    }
+
+    var PRv = { max: Math.min(window.devicePixelRatio || 1, 1.75), cur: 0 }; PRv.cur = PRv.max;
+    /* ---- camera and loop ---- */
+    var S = { yc: 0, az: .7, azV: 0, pOff: 0, auto: !reduce, drag: null, last: 0, w: 0, h: 0, vis: true, lastUnit: '', lastAltTxt: '' };
+    function resize() { var r = host.getBoundingClientRect(), w = Math.max(2, r.width | 0), h = Math.max(2, r.height | 0); if (w === S.w && h === S.h) return; S.w = w; S.h = h;
+      R.setPixelRatio(PRv.cur); R.setSize(w, h, false); cam.aspect = w / h; cam.fov = w < h ? 70 : 58; cam.updateProjectionMatrix(); }
+    if (window.ResizeObserver) new ResizeObserver(resize).observe(host); window.addEventListener('resize', resize); resize();
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { S.vis = es[0].isIntersecting; }).observe(host);
+
+    cvs.addEventListener('pointerdown', function (e) { S.drag = { x: e.clientX, y: e.clientY }; S.azV = 0; try { cvs.setPointerCapture(e.pointerId); } catch (x) {} });
+    cvs.addEventListener('pointermove', function (e) { if (!S.drag) return; var dx = e.clientX - S.drag.x, dy = e.clientY - S.drag.y; S.drag.x = e.clientX; S.drag.y = e.clientY;
+      S.az -= dx * .006; S.azV = -dx * .0009; S.pOff = Math.max(-.6, Math.min(.6, S.pOff + dy * .003)); });
+    var endD = function () { S.drag = null; }; cvs.addEventListener('pointerup', endD); cvs.addEventListener('pointercancel', endD);
+    cvs.addEventListener('dblclick', function () { S.az = .7; S.pOff = 0; });
+    var bAuto = $('glAuto'), bReset = $('glReset');
+    if (bAuto) bAuto.addEventListener('click', function () { S.auto = !S.auto; bAuto.setAttribute('aria-pressed', String(S.auto)); });
+    if (bReset) bReset.addEventListener('click', function () { S.az = .7; S.pOff = 0; });
+    if (bAuto) bAuto.setAttribute('aria-pressed', String(S.auto));
+    cvs.addEventListener('webglcontextlost', function (e) { e.preventDefault(); document.body.classList.remove('has-gl'); document.body.classList.add('no-gl'); draw = _draw2d; });
+
+
+    /* ---- post: fake bloom, film grain, adaptive resolution ---- */
+    var bc = document.createElement('canvas'), gc = document.createElement('canvas'), bx = bc.getContext('2d'), gx = gc.getContext('2d'), gimg, pf = 0, ema = 16;
+    bc.id = 'glb'; gc.id = 'glg'; bc.width = 192; bc.height = 108; gc.width = 480; gc.height = 270;
+    bc.setAttribute('aria-hidden', 'true'); gc.setAttribute('aria-hidden', 'true');
+    host.insertBefore(gc, cvs.nextSibling); host.insertBefore(bc, cvs.nextSibling);
+    gimg = gx.createImageData(480, 270);
+    function grain() { var d = gimg.data, i, v; for (i = 0; i < d.length; i += 4) { v = Math.random() * 255; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; } gx.putImageData(gimg, 0, 0); }
+    grain();
+    function post(dt) {
+      pf++; ema += (dt * 1000 - ema) * .06;
+      if (pf % 30 === 0) {
+        if (ema > 26 && PRv.cur > .6) { PRv.cur = Math.max(.6, PRv.cur - .25); S.w = 0; resize(); }
+        else if (ema < 15 && PRv.cur < PRv.max) { PRv.cur = Math.min(PRv.max, PRv.cur + .25); S.w = 0; resize(); }
+      }
+      if (pf % 3 === 0) { try { bx.drawImage(cvs, 0, 0, 192, 108); } catch (e) {} }
+      if (!reduce && pf % 4 === 0) grain();
+    }
+    var nxAlt = $('nxAlt');
+    function frame(t) {
+      requestAnimationFrame(frame);
+      if (!S.vis || document.hidden) return;
+      var dt = Math.min(.05, (t - S.last) / 1000 || .016); S.last = t; U.time.value = t / 1000;
+      if (lastPlanet !== PLANET) { setPlanetLook(); builtMarks = ''; }
+      if (builtMarks !== PLANET + '|' + state.unit) rebuildMarkers();
+      var ft = SB.alt, ty = yOf(ft);
+      S.yc += (ty - S.yc) * Math.min(1, dt * 11);
+      if (S.auto && !S.drag && !reduce) S.az += dt * .09;
+      S.az += S.azV; S.azV *= .92;
+      look(ft);
+      var u = ft > 0 ? Math.min(1, Math.log10(1 + ft / 3000) / Math.log10(1 + MAX_UP / 3000)) : 0;
+      var pitch = (ft < 0 ? .1 : .38 - 1.3 * u) + S.pOff, Rc = ft < 0 ? 26 : 26 + 14 * u;
+      var cx = Math.cos(S.az) * Rc, cz = Math.sin(S.az) * Rc, cy = S.yc + .8;
+      cam.position.set(cx, cy, cz);
+      cam.lookAt(cx - Math.cos(S.az) * Math.cos(pitch) * 20, cy + Math.sin(pitch) * 20, cz - Math.sin(S.az) * Math.cos(pitch) * 20);
+      dome.position.copy(cam.position);
+      water.position.set(cam.position.x, 0, cam.position.z);
+      var gaia = PLANET === 'gaia';
+      you.position.set(0, S.yc, 0); halo.position.copy(you.position); halo.scale.setScalar(4.2 + .6 * Math.sin(t / 380));
+      var hy = Math.abs(S.yc) + .001; beam.scale.set(1, hy, 1); beam.position.set(0, S.yc / 2, 0); axis.scale.set(1, YMAX * 2.3, 1); axis.position.set(0, 0, 0);
+      beamM.color.setHex(S.yc < 0 ? 0x19f0ff : (gaia ? 0x46ffb4 : 0xff3dbe));
+      // labels hug the side of the view
+      var ch = ringGroup.children, k, o;
+      var tanH = Math.tan(cam.fov * Math.PI / 360);
+      for (k = 0; k < ch.length; k++) { o = ch[k]; if (o.isSprite) { var a = S.az - o.userData.off; o.position.set(Math.cos(a) * 46, o.userData.y + 1.1, Math.sin(a) * 46);
+        var dd = o.position.distanceTo(cam.position), hh = dd * 2 * tanH * (S.w < S.h ? .045 : .062); o.scale.set(hh * 4.36, hh, 1); } }
+      // motes drift around the camera
+      var pa = mg.attributes.position, below = ft < 0, sp = below ? .8 : -1.1, j, py;
+      for (j = 0; j < MN; j++) { py = pa.getY(j) + mv[j] * sp * dt * (reduce ? 0 : 1); if (py > 30) py -= 60; if (py < -30) py += 60; pa.setY(j, py); }
+      pa.needsUpdate = true; motes.position.set(cam.position.x * .5, S.yc, cam.position.z * .5);
+      motes.material.color.setHex(below ? 0x9ff6ff : (gaia ? 0xb9ffe6 : 0xdff6ff));
+      // spine and nav
+      var yd = $('spineYou');
+      if (yd) { var yMin = yOf(MAX_DOWN); yd.style.top = (1 - (ty - yMin) / (YMAX - yMin)) * 100 + '%'; }
+      if (nxAlt) { var tx = altStr(ft, state.unit) + ' ' + state.unit; if (tx !== S.lastAltTxt) { S.lastAltTxt = tx; nxAlt.textContent = tx; } }
+      R.render(scene, cam); post(dt);
+    }
+    setPlanetLook(); look(SB.alt); S.yc = yOf(SB.alt); rebuildMarkers();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { builtMarks = ''; });
+    requestAnimationFrame(frame);
+    window.__neon = { S: S, R: R, scene: scene };
+  })();
+
+  /* =====================================================================
+     NEON CONVERTER: feet, meters, miles, kilometers (plus yards and nautical miles), any pair,
+     live, with famous altitudes to load and a button to fly the sandbox there.
+     ===================================================================== */
+  (function neonConvert() {
+    var root = $('cvIn'); if (!root) return;
+    var M = { ft: 0.3048, m: 1, mi: 1609.344, km: 1000, yd: 0.9144, nmi: 1852 };
+    var NAME = { ft: 'Feet', m: 'Meters', mi: 'Miles', km: 'Kilometers', yd: 'Yards', nmi: 'Nautical miles' };
+    var ORDER = ['ft', 'm', 'mi', 'km', 'yd', 'nmi'];
+    var PAIRS = [['ft', 'm'], ['m', 'ft'], ['ft', 'mi'], ['mi', 'ft'], ['ft', 'km'], ['km', 'ft'], ['m', 'km'], ['km', 'm'], ['m', 'mi'], ['mi', 'm'], ['km', 'mi'], ['mi', 'km']];
+    var EARTH_LINE_FT = 15840;
+    var cv = { from: 'ft', to: 'm', name: '' };
+    var inEl = $('cvIn'), msgEl = $('cvMsg');
+
+    function fmt(v) {
+      if (!isFinite(v)) return '—';
+      var r = Math.round(v); if (r === 0) r = 0;
+      return r.toLocaleString('en-US');
+    }
+    function whole(v) { return Math.round(v).toLocaleString('en-US'); }
+    function parseIn(raw) {
+      var s = String(raw).trim().toLowerCase().replace(/[,\s_]/g, '').replace(/−/g, '-');
+      var m = s.match(/(nauticalmiles|nauticalmile|nmi|kilometers|kilometres|kilometer|km|miles|mile|mi|meters|metres|meter|metre|feet|foot|ft|yards|yard|yd|m)$/);
+      var unit = null;
+      if (m) {
+        var w = m[1]; s = s.slice(0, s.length - w.length);
+        unit = /^naut|^nmi/.test(w) ? 'nmi' : /^kilo|^km/.test(w) ? 'km' : /^mi/.test(w) ? 'mi' : /^met|^m$/.test(w) ? 'm' : /^f/.test(w) ? 'ft' : /^y/.test(w) ? 'yd' : null;
+      }
+      if (!/^-?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/.test(s)) return { v: NaN, unit: unit };
+      return { v: parseFloat(s), unit: unit };
+    }
+    function nameFor(ft) { // a famous height this close to the value, if there is one
+      var all = WORLDS.earth.MARKS, i; for (i = 0; i < all.length; i++) if (Math.abs(all[i][0] - ft) < 1) return all[i][1];
+      return '';
+    }
+    function outU(mv, u) { return fmt(mv / M[u]) + ' ' + u + (u === 'm' ? ' (' + whole(mv / 0.3048) + ' ft)' : ''); }
+    function ftNote(m) { return whole(m) + ' m (' + whole(m / 0.3048) + ' ft)'; }
+
+    function render() {
+      var p = parseIn(inEl.value), v = p.v;
+      document.querySelectorAll('#cvFrom button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-u') === cv.from)); });
+      document.querySelectorAll('#cvTo button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-u') === cv.to)); });
+      document.querySelectorAll('#cvPairs button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-f') === cv.from && b.getAttribute('data-t') === cv.to)); });
+      if (!isFinite(v)) {
+        $('cvRes').innerHTML = '—'; $('cvEq').textContent = 'Type a number, like 29032 or 8848 m.'; $('cvTiles').innerHTML = ''; $('cvFacts').innerHTML = ''; $('cvFly').disabled = true; return;
+      }
+      $('cvFly').disabled = false;
+      var m = v * M[cv.from], ft = m / 0.3048, out = m / M[cv.to];
+      $('cvRes').innerHTML = esc(fmt(out)) + '<i>' + cv.to + '</i>';
+      var eq = fmt(v) + ' ' + cv.from + ' = ' + fmt(out) + ' ' + cv.to;
+      if (cv.to === 'm' || cv.from === 'm') eq += '  ·  ' + ftNote(m);
+      $('cvEq').textContent = eq;
+      $('cvTiles').innerHTML = ORDER.map(function (u) {
+        return '<button type="button" class="cvx-tile' + (u === cv.from ? ' is-from' : '') + '" data-tile="' + u + '" aria-pressed="' + (u === cv.to) + '"><span>' + NAME[u] + '</span><b>' + esc(fmt(m / M[u])) + ' ' + u + '</b></button>';
+      }).join('');
+      var dft = ft - EARTH_LINE_FT, dTo = Math.abs(dft) * 0.3048 / M[cv.to];
+      var facts = '';
+      facts += '<div class="cvx-fact hot"><span>Against the Summitbrook line (3 miles)</span><b>' + (Math.abs(dft) < 0.5 ? 'Right on it' : esc(outU(Math.abs(dft) * 0.3048, cv.to) + (dft > 0 ? ' above' : ' below'))) + '</b></div>';
+      if (m >= 0) facts += '<div class="cvx-fact"><span>Same height measured from Gaia’s sea</span><b>' + esc(outU(m + 7560, cv.to)) + '</b></div>';
+      else facts += '<div class="cvx-fact"><span>Below the sea on Gaia</span><b>Open the Earth ↔ Gaia tab in Convert</b></div>';
+      var nm = nameFor(ft); if (nm) facts += '<div class="cvx-fact"><span>That is</span><b>' + esc(nm) + '</b></div>';
+      if (ft > MAX_UP || ft < -35876) facts += '<div class="cvx-fact"><span>Sandbox</span><b>Past the sandbox, which stops at ' + (ft > 0 ? '62 miles up' : 'the Challenger Deep') + '</b></div>';
+      $('cvFacts').innerHTML = facts;
+      document.querySelectorAll('#cvPre button').forEach(function (b) { b.setAttribute('aria-pressed', String(Math.abs(+b.getAttribute('data-ft') - ft) < 0.6)); });
+    }
+    function setUnitFrom(u, keepValue) {
+      var p = parseIn(inEl.value);
+      if (!keepValue && isFinite(p.v)) { var m = p.v * M[cv.from]; inEl.value = trimNum(m / M[u]); }
+      cv.from = u; if (cv.to === u) cv.to = u === 'ft' ? 'm' : 'ft';
+    }
+    function trimNum(x) { return String(Math.round(x)); }
+
+    // build static bits
+    var uh = ORDER.map(function (u) { return '<button type="button" data-u="' + u + '" aria-pressed="false">' + u + '</button>'; }).join('');
+    $('cvFrom').innerHTML = uh; $('cvTo').innerHTML = uh;
+    $('cvPairs').innerHTML = PAIRS.map(function (q) { return '<button type="button" data-f="' + q[0] + '" data-t="' + q[1] + '" aria-pressed="false">' + q[0] + ' → ' + q[1] + '</button>'; }).join('');
+    var EXTRA = [['Denver', 5280], ['Burj Khalifa tip', 2717], ['La Rinconada, Peru', 16732], ['Kilimanjaro', 19341], ['Denali', 20310], ['K2', 28251], ['Concorde cruise', 60000], ['Kittinger jump', 102800]];
+    var seen = {}, pre = [];
+    WORLDS.earth.PRESETS.concat(EXTRA).forEach(function (q) { if (!seen[q[0]]) { seen[q[0]] = 1; pre.push(q); } });
+    function preHTML() {
+      return pre.map(function (q) {
+        var ft = q[1], small = cv.from === 'm' ? ftNote(ft * 0.3048) : fmt(ft * 0.3048 / M[cv.from]) + ' ' + cv.from;
+        return '<li><button type="button" data-ft="' + ft + '" data-name="' + esc(q[0]) + '" aria-pressed="false">' + esc(q[0]) + '<small>' + esc(small) + '</small></button></li>';
+      }).join('');
+    }
+    function drawPre() { $('cvPre').innerHTML = preHTML(); }
+
+    inEl.addEventListener('input', function () { var p = parseIn(inEl.value); if (p.unit && p.unit !== cv.from) { cv.from = p.unit; if (cv.to === p.unit) cv.to = p.unit === 'ft' ? 'm' : 'ft'; } cv.name = ''; render(); });
+    inEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') inEl.blur(); });
+    $('cvFrom').addEventListener('click', function (e) { var b = e.target.closest('[data-u]'); if (!b) return; setUnitFrom(b.getAttribute('data-u'), true); drawPre(); render(); });
+    $('cvTo').addEventListener('click', function (e) { var b = e.target.closest('[data-u]'); if (!b) return; var u = b.getAttribute('data-u'); if (u === cv.from) { cv.from = cv.to; } cv.to = u; drawPre(); render(); });
+    $('cvTiles').addEventListener('click', function (e) { var b = e.target.closest('[data-tile]'); if (!b) return; var u = b.getAttribute('data-tile'); if (u !== cv.from) { cv.to = u; render(); } });
+    $('cvPairs').addEventListener('click', function (e) { var b = e.target.closest('[data-f]'); if (!b) return; cv.from = b.getAttribute('data-f'); cv.to = b.getAttribute('data-t'); drawPre(); render(); });
+    $('cvSwap').addEventListener('click', function () {
+      var p = parseIn(inEl.value), t = cv.from; if (isFinite(p.v)) inEl.value = trimNum(p.v * M[cv.from] / M[cv.to]);
+      cv.from = cv.to; cv.to = t; drawPre(); render();
+    });
+    $('cvPre').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-ft]'); if (!b) return; var ft = +b.getAttribute('data-ft'); cv.name = b.getAttribute('data-name');
+      inEl.value = trimNum(ft * 0.3048 / M[cv.from]); render();
+    });
+    $('cvFly').addEventListener('click', function () {
+      var p = parseIn(inEl.value); if (!isFinite(p.v)) return; var ft = p.v * M[cv.from] / 0.3048;
+      if (PLANET !== 'earth') setPlanet('earth', false);
+      var s = $('sandbox'); if (s) s.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      window.setTimeout(function () { flyTo(ft, cv.name || ''); }, reduce ? 0 : 450);
+    });
+    $('cvCopy').addEventListener('click', function () {
+      var txt = $('cvEq').textContent.split('  ·  ')[0], done = function (ok) { msgEl.style.color = ok ? '#19F0FF' : '#FF3DBE'; msgEl.textContent = ok ? 'Copied: ' + txt : 'Could not copy here, so select the number and copy it.'; };
+      try { navigator.clipboard.writeText(txt).then(function () { done(true); }, function () { done(false); }); } catch (err) { done(false); }
+    });
+    drawPre(); render();
+  })();
+
+  /* =====================================================================
+     NEON SOUND: a small synth for every interaction. It rides on the page's own audio graph
+     (AU, sndGraph, TK.snd) so the volume, EQ and limiter in Look & Sound still apply.
+     ===================================================================== */
+  (function neonSound() {
+    var _beep = beep, FLAG = 'alt327k-neon-snd-v1', bus = null, rvIn = null, nbuf = null, wind = null;
+    try { if (!localStorage.getItem(FLAG)) { localStorage.setItem(FLAG, '1'); TK.snd.on = true; TK.snd.limit = true; tkSave(); } } catch (e) {}
+
+    var armed = false; ['pointerdown', 'keydown', 'touchend', 'click'].forEach(function (n) { document.addEventListener(n, function () { armed = true; }, true); });
+    function ready() {
+      if (!armed || !TK.snd.on || TK.snd.vol <= 0 || document.hidden) return null;
+      var c = sndGraph(); if (!c) return null;
+      if (c.state === 'suspended') c.resume();
+      if (!bus) build(c);
+      return c;
+    }
+    function build(c) {
+      bus = c.createGain(); bus.gain.value = 1; bus.connect(AU.master);
+      var len = (c.sampleRate * 1.7) | 0, ir = c.createBuffer(2, len, c.sampleRate), ch, d, i;
+      for (ch = 0; ch < 2; ch++) { d = ir.getChannelData(ch); for (i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.8); }
+      var cv = c.createConvolver(); cv.buffer = ir; rvIn = c.createGain(); rvIn.gain.value = 1;
+      var rg = c.createGain(); rg.gain.value = .32; rvIn.connect(cv); cv.connect(rg); rg.connect(AU.master);
+      var nl = c.sampleRate * 2; nbuf = c.createBuffer(1, nl, c.sampleRate); d = nbuf.getChannelData(0); for (i = 0; i < nl; i++) d[i] = Math.random() * 2 - 1;
+    }
+    function out(c, node, wet, t, end) {
+      node.connect(bus);
+      if (wet) { var s = c.createGain(); s.gain.value = wet; node.connect(s); s.connect(rvIn); }
+    }
+    /* o: type f f2 t a d v wet lp det */
+    function tone(c, o) {
+      var t = c.currentTime + (o.t || 0) + .005, a = o.a || .004, d = o.d || .2, v = o.v || .2, i, n = o.det ? 2 : 1, g = c.createGain(), last = g;
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + a + d);
+      if (o.lp) { var lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(o.lp, t); lp.frequency.exponentialRampToValueAtTime(Math.max(80, o.lp * .25), t + a + d); g.connect(lp); last = lp; }
+      for (i = 0; i < n; i++) {
+        var os = c.createOscillator(); os.type = o.type || 'sine';
+        os.frequency.setValueAtTime(o.f, t); if (o.f2) os.frequency.exponentialRampToValueAtTime(o.f2, t + a + d);
+        if (i) os.detune.value = o.det; os.connect(g); os.start(t); os.stop(t + a + d + .05);
+      }
+      out(c, last, o.wet, t);
+    }
+    /* o: t a d v type f f2 q wet */
+    function noise(c, o) {
+      var t = c.currentTime + (o.t || 0) + .005, a = o.a || .003, d = o.d || .1, v = o.v || .2, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+      s.buffer = nbuf; s.loop = true; f.type = o.type || 'bandpass'; f.Q.value = o.q || 1;
+      f.frequency.setValueAtTime(o.f || 2000, t); if (o.f2) f.frequency.exponentialRampToValueAtTime(o.f2, t + a + d);
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + a + d);
+      s.connect(f); f.connect(g); out(c, g, o.wet, t); s.start(t, Math.random()); s.stop(t + a + d + .05);
+    }
+    function lift() { return Math.max(0, Math.min(1, (SB.alt + 36000) / 400000)); }
+    var PENT = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24];
+    function nf(base, st) { return base * Math.pow(2, st / 12); }
+    var lastKind = {}, now = function () { return performance.now(); };
+    function gate(k, ms) { var t = now(); if (lastKind[k] && t - lastKind[k] < ms) return false; lastKind[k] = t; return true; }
+
+    var K = {
+      tick: function (c) { var r = 1 + Math.random() * .06; tone(c, { type: 'sine', f: 1900 * r, f2: 760, d: .05, v: .26 }); noise(c, { type: 'highpass', f: 5200, d: .018, v: .18 }); tone(c, { type: 'triangle', f: 240, f2: 120, d: .07, v: .16 }); },
+      hover: function (c) { tone(c, { type: 'sine', f: 3100, d: .03, v: .045 }); },
+      key: function (c) { noise(c, { f: 3200, q: 3, d: .022, v: .26 }); tone(c, { type: 'triangle', f: 640 + Math.random() * 260, f2: 300, d: .05, v: .13 }); },
+      slide: function (c, p) { var st = PENT[Math.round((p || 0) * (PENT.length - 1))]; tone(c, { type: 'sine', f: nf(440, st), d: .09, v: .12, wet: .25 }); },
+      swap: function (c) {
+        tone(c, { type: 'sawtooth', f: 240, f2: 820, a: .01, d: .13, v: .13, lp: 2600 }); noise(c, { f: 900, f2: 5200, q: .8, d: .16, v: .16 });
+        tone(c, { type: 'sine', f: 1240, t: .1, d: .2, v: .13, wet: .5 }); tone(c, { type: 'sine', f: 1865, t: .15, d: .22, v: .08, wet: .6 });
+      },
+      copy: function (c) { tone(c, { type: 'sine', f: 1568, d: .06, v: .16 }); tone(c, { type: 'sine', f: 2349, t: .06, d: .12, v: .14, wet: .4 }); },
+      chime: function (c, seed) {
+        var root = 392 * Math.pow(2, ((seed | 0) % 5) / 12), set = [0, 4, 7, 12, 16], i;
+        for (i = 0; i < set.length; i++) { var f = nf(root, set[i]); tone(c, { type: 'triangle', f: f, t: i * .052, a: .006, d: .5, v: .13, det: 7, wet: .55, lp: 5200 }); }
+        tone(c, { type: 'sine', f: nf(root, 24), t: .26, d: .7, v: .08, wet: .9 }); noise(c, { type: 'highpass', f: 6500, f2: 9000, d: .3, v: .05, wet: .6 });
+      },
+      open: function (c) { tone(c, { type: 'triangle', f: 520, f2: 780, a: .01, d: .14, v: .15, wet: .3 }); tone(c, { type: 'sine', f: 1040, t: .07, d: .18, v: .1, wet: .5 }); },
+      whoosh: function (c, big) {
+        var d = .45 + .35 * (big || .5);
+        noise(c, { type: 'bandpass', f: 260, f2: 5600, q: 1.1, a: d * .35, d: d * .8, v: .5, wet: .35 });
+        tone(c, { type: 'sine', f: 150, f2: 38, a: .01, d: d * 1.1, v: .42 });
+        tone(c, { type: 'sawtooth', f: 180, f2: 1500, a: d * .3, d: d * .8, v: .05, lp: 3200, wet: .3 });
+      },
+      arrive: function (c) {
+        tone(c, { type: 'sine', f: 110, f2: 42, a: .004, d: .38, v: .5 }); noise(c, { type: 'lowpass', f: 1200, f2: 200, d: .22, v: .3 });
+        tone(c, { type: 'sine', f: 1319, t: .08, d: .9, v: .11, wet: .9 }); tone(c, { type: 'sine', f: 1760, t: .14, d: 1, v: .08, wet: 1 });
+      },
+      ping: function (c, i) { var f = nf(659, PENT[Math.abs(i | 0) % PENT.length] - 12); tone(c, { type: 'sine', f: f, d: .55, v: .1, wet: .8 }); tone(c, { type: 'triangle', f: f * 2, d: .2, v: .03, wet: .5 }); },
+      planet: function (c) {
+        noise(c, { type: 'bandpass', f: 120, f2: 4800, q: .9, a: .3, d: .8, v: .5, wet: .6 }); tone(c, { type: 'sine', f: 90, f2: 34, a: .02, d: 1.2, v: .5 });
+        [0, 7, 12, 19].forEach(function (s, i) { tone(c, { type: 'triangle', f: nf(262, s), t: .35 + i * .06, a: .01, d: .9, v: .1, det: 9, wet: .9, lp: 4000 }); });
+      },
+      toggle: function (c, on) { tone(c, { type: 'sine', f: on ? 700 : 900, f2: on ? 1400 : 420, d: .14, v: .2, wet: .3 }); }
+    };
+    function sfx(k, a) { var c = ready(); if (!c) return; try { K[k](c, a); } catch (e) {} }
+    window.__sfx = sfx;
+
+    /* the page's own beep calls get the new sounds; Look & Sound's test button still previews the chosen profile */
+    beep = function (kind, force) {
+      if (force === true) return _beep(kind, force);
+      if (kind === 'open') return sfx('open');
+      if (kind === 'planet') return sfx('planet');
+      if (kind === 'ok') return sfx('chime', 3);
+    };
+
+    /* ---- UI: click, hover, keys, sliders ---- */
+    var PICK = 'button,a,[role="button"],summary,label,.cvx-tile,select,input[type="checkbox"],input[type="radio"]';
+    var lastType = 'mouse', hoverEl = null;
+    document.addEventListener('pointerdown', function (e) {
+      lastType = e.pointerType || 'mouse'; if (lastType === 'touch') return;
+      var el = e.target.closest ? e.target.closest(PICK) : null; if (!el || el.id === 'glSnd' || el.hasAttribute('data-nosnd')) return;
+      uiSnd(el);
+    }, true);
+    document.addEventListener('click', function (e) {
+      if (lastType !== 'touch') { ready(); return; }
+      var el = e.target.closest ? e.target.closest(PICK) : null; if (!el || el.id === 'glSnd' || el.hasAttribute('data-nosnd')) return;
+      uiSnd(el);
+    }, true);
+    function uiSnd(el) {
+      if (el.id === 'cvSwap') return sfx('swap');
+      if (el.id === 'cvCopy') return sfx('copy');
+      if (el.id === 'cvFly') return sfx('tick');
+      sfx('tick');
+    }
+    document.addEventListener('pointerover', function (e) {
+      if (e.pointerType === 'touch') return; var el = e.target.closest ? e.target.closest('button,a,.cvx-tile') : null;
+      if (!el || el === hoverEl) return; hoverEl = el; if (gate('hover', 55)) sfx('hover');
+    }, true);
+    document.addEventListener('keydown', function (e) {
+      var t = e.target; if (!t || !t.tagName) return;
+      if ((t.tagName === 'INPUT' && t.type !== 'range') || t.tagName === 'TEXTAREA') { if (e.key.length === 1 || e.key === 'Backspace') { if (gate('key', 28)) sfx('key'); } else if (e.key === 'Enter') sfx('chime', 5); }
+    }, true);
+    document.addEventListener('input', function (e) {
+      var t = e.target; if (t && t.type === 'range' && gate('slide', 45)) { var mn = +t.min || 0, mx = +t.max || 1; sfx('slide', ((+t.value) - mn) / Math.max(1e-9, mx - mn)); }
+    }, true);
+
+    /* converter: a chime when the result settles */
+    var cvR = $('cvRes'), cvT = 0, cvLast = '';
+    if (cvR && window.MutationObserver) new MutationObserver(function () {
+      clearTimeout(cvT); cvT = setTimeout(function () { var s = cvR.textContent || ''; if (s !== cvLast) { cvLast = s; var n = 0, i; for (i = 0; i < s.length; i++) n += s.charCodeAt(i); sfx('chime', n); } }, 230);
+    }).observe(cvR, { childList: true, characterData: true, subtree: true });
+
+    /* flights: whoosh on launch, thump on landing */
+    var flying = 0, flyT = 0;
+    var _fly = flyTo; flyTo = function (ft, name) {
+      var span = Math.abs(Math.max(MAX_DOWN, Math.min(MAX_UP, ft)) - SB.alt);
+      var r = _fly.apply(this, arguments);
+      if (span > 150) { flying = 1; flyT = now(); sfx('whoosh', Math.min(1, Math.sqrt(span / 120000))); }
+      return r;
+    };
+
+    /* ---- altitude-reactive wind / water bed, and zone pings ---- */
+    var lastAlt = SB.alt, lastT = now(), lastIdx = Math.floor(SB.alt / 5000), pingT = 0;
+    function windOn(c) {
+      if (wind) return;
+      var s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); s.buffer = nbuf; s.loop = true; f.type = 'bandpass'; f.Q.value = .7; f.frequency.value = 400; g.gain.value = 0;
+      s.connect(f); f.connect(g); g.connect(bus); s.start(); wind = { s: s, f: f, g: g };
+    }
+    setInterval(function () {
+      var t = now(), dt = Math.max(.016, (t - lastT) / 1000), alt = SB.alt, v = Math.abs(alt - lastAlt) / dt; lastAlt = alt; lastT = t;
+      var c = ready();
+      if (!c) { if (wind) wind.g.gain.setTargetAtTime(0, AU.ctx ? AU.ctx.currentTime : 0, .08); return; }
+      windOn(c);
+      var nv = Math.min(1, Math.log10(1 + v) / 5.2), below = alt < 0, thin = 1 - lift() * .75;
+      var gain = (below ? .05 : .018 * thin) + (below ? .09 : .2 * thin) * nv, fq = below ? 160 + 600 * nv : 260 + 4200 * nv * thin + 400 * thin;
+      wind.g.gain.setTargetAtTime(gain * (flying || nv > .15 ? 1 : .6), c.currentTime, .06); wind.f.frequency.setTargetAtTime(fq, c.currentTime, .05);
+      if (nv > .25) { var idx = Math.floor(alt / 5000); if (idx !== lastIdx) { lastIdx = idx; if (t - pingT > 95) { pingT = t; sfx('ping', idx); } } } else lastIdx = Math.floor(alt / 5000);
+      if (flying && nv < .04 && t - flyT > 250) { flying = 0; sfx('arrive'); }
+    }, 60);
+
+    /* ---- visible sound toggle ---- */
+    var bs = $('glSnd');
+    function paint() { if (bs) { bs.setAttribute('aria-pressed', String(!!TK.snd.on)); bs.textContent = TK.snd.on ? 'Sound on' : 'Sound off'; } }
+    if (bs) bs.addEventListener('click', function () {
+      TK.snd.on = !TK.snd.on; if (TK.snd.on && TK.snd.vol <= 0) TK.snd.vol = 60; tkSave(); sndLevels(); paint();
+      if (TK.snd.on) { sfx('toggle', 1); setTimeout(function () { sfx('chime', 2); }, 120); }
+    });
+    paint();
+    document.addEventListener('visibilitychange', function () { if (document.hidden && wind) wind.g.gain.value = 0; });
+  })();
+
+  /* =====================================================================
+     WHOLE-NUMBER SWEEP: a last-line guard so that no number on the page ever shows a decimal,
+     including text the toolkit builds later (sheets, tiles, lab results).
+     ===================================================================== */
+  (function wholeSweep() {
+    var RX = /(\d[\d,]*)\.(\d+)/g, SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, NOSCRIPT: 1 };
+    function fix(s) {
+      s = s.replace(/\b0\.(\d{2})\s?g\b/g, function (m, d) { return (+d) + '% of Earth'; });
+      var keep = []; s = s.replace(/(ALT 327K|Parallax|High Noon) 2\.0/g, function (m) { keep.push(m); return '\u0001' + (keep.length - 1) + '\u0002'; });
+      s = s.replace(RX, function (m, i, d) { return Math.round(parseFloat(i.replace(/,/g, '') + '.' + d)).toLocaleString('en-US'); });
+      return s.replace(/\u0001(\d+)\u0002/g, function (m, k) { return keep[+k]; });
+    }
+    function sweep(root) {
+      var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: function (n) { var p = n.parentNode; return p && !SKIP[p.nodeName] && !(p.closest && p.closest('[data-keep]')) && /\d\.\d/.test(n.nodeValue) ? 1 : 2; } }), n, list = [];
+      while ((n = w.nextNode())) list.push(n);
+      list.forEach(function (t) { var v = fix(t.nodeValue); if (v !== t.nodeValue) t.nodeValue = v; });
+    }
+    var seen = new WeakSet();
+    if (window.MutationObserver) new MutationObserver(function (ms) {
+      var roots = [], i, a;
+      ms.forEach(function (m) { if (m.type === 'characterData') roots.push(m.target.parentNode || document.body); else for (i = 0; i < m.addedNodes.length; i++) { a = m.addedNodes[i]; roots.push(a.nodeType === 1 ? a : a.parentNode); } });
+      roots.forEach(function (r) { if (r && r.isConnected) sweep(r); });
+    }).observe(document.body, { childList: true, subtree: true, characterData: true });
+    sweep(document.body);
+  })();
+
+  document.querySelectorAll('[data-go]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); var t = $(a.getAttribute('data-go')); if (t) t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }); });
 })();
 </script>
 <script>
