@@ -1003,6 +1003,20 @@ footer { color: var(--muted); }
 .tk-in { background: rgba(150, 170, 255, .06); }
 
 body.no-gl .glui, body.no-gl .spine { display: none; }
+
+/* Sister page: Parallax 2.0, the time side of the same project */
+.nx-sib { flex: none; display: inline-flex; align-items: center; gap: .45rem; text-decoration: none; white-space: nowrap; font-family: var(--display); font-weight: 700; font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: #fff;
+  padding: .48rem .85rem; border-radius: 999px; border: 1px solid transparent; background: linear-gradient(rgba(10, 12, 34, .8), rgba(10, 12, 34, .8)) padding-box, var(--grad) border-box; box-shadow: 0 0 18px rgba(138, 92, 255, .35); transition: box-shadow .2s, transform .14s; }
+.nx-sib:hover { box-shadow: 0 0 26px rgba(25, 240, 255, .55); }
+.nx-sib svg { width: .95rem; height: .95rem; display: block; }
+.pxl { margin: .6rem 0 0; }
+.pxl[hidden] { display: none; }
+.xlink { display: inline-flex; align-items: center; gap: .55rem; max-width: 100%; text-decoration: none; color: var(--ink); font-weight: 600; font-size: .92rem; line-height: 1.25; padding: .55rem .95rem; border-radius: 14px; border: 1px solid var(--edge); background: rgba(150, 170, 255, .07); transition: border-color .2s, box-shadow .2s; }
+.xlink:hover { border-color: #19F0FF; box-shadow: 0 0 18px rgba(25, 240, 255, .3); }
+.xlink svg { flex: none; width: 1.1rem; height: 1.1rem; color: #19F0FF; filter: drop-shadow(0 0 6px rgba(25, 240, 255, .7)); }
+.xlink span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.is-gaia .xlink svg { color: #46FFB4; filter: drop-shadow(0 0 6px rgba(70, 255, 180, .7)); }
+@media (max-width: 560px) { .nx-links a:nth-child(n+3) { display: none; } .nx { gap: .6rem; } }
 @media (prefers-reduced-motion: reduce) { .nx-brand i, .zone::before { animation: none; } }
 @media (max-width: 640px) { .zone-controls, .zone-metrics { padding: 1rem; border-radius: 24px; } .tk-tools { margin: 0 -1rem .8rem; padding: .3rem 1rem .6rem; } }
 
@@ -1024,6 +1038,7 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
   <a class="nx-brand" href="#sandbox" data-go="sandbox"><i></i><span>ALT <em>327K</em> <span data-keep>2.0</span></span></a>
   <span class="nx-alt" id="nxAlt" aria-hidden="true">0 ft</span>
   <div class="nx-links"><a href="#sandbox" data-go="sandbox">Sandbox</a><a href="#convert" data-go="convert">Convert</a><a href="#h-lead" data-go="h-lead">Who lives up here</a><a href="#ladder" data-go="ladder">Ladder</a><a href="#h-roster" data-go="h-roster">Tayanoa</a></div>
+  <a class="nx-sib" id="nxSib" href="../parallax-2-0/" target="_blank" rel="noopener" data-keep><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Parallax</span></a>
 </nav>
 <header class="sand" id="sandbox">
   <div class="scene">
@@ -1066,6 +1081,7 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
         <h2 id="pName">Sea level</h2>
         <p class="pwhere" id="pWhere"></p>
         <p class="pnote" id="pNote"></p>
+        <p class="pxl" hidden><a class="xlink" id="pTime" href="../parallax-2-0/" target="_blank" rel="noopener" data-keep><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span id="pTimeT">Local time in Parallax</span></a></p>
       </div>
       <div class="psteps">
         <button type="button" class="pstep" id="pDown"><i aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16"/><path d="M5 13l7 7 7-7"/></svg></i><em>Lower</em><b></b><small></small></button>
@@ -2544,6 +2560,7 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
       $('pWhere').hidden = !!s && !s.where;
       $('pNote').textContent = s ? s.note : '';
       $('pNote').hidden = !(s && s.note);
+      paintXlink(s);
       renderPic(s, L, q.at);
       stepBtn('pDown', dn, dn ? base - dn.ft : 0, 'down', 'Nothing lower', 'This is the lowest place on the list.');
       stepBtn('pUp', up, up ? up.ft - base : 0, 'up', 'Nothing higher', 'This is the highest place on the list.');
@@ -3480,8 +3497,11 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
   } catch (err) {}
   var tkSaveMsg = '';
   function tkSave() {
-    try { localStorage.setItem(TK_KEY, JSON.stringify(TK)); tkSaveMsg = ''; return true; }
-    catch (err) { tkSaveMsg = 'This device is out of room to save that. Try a smaller picture, or delete a place.'; return false; }
+    var local = true, acct = false;
+    try { localStorage.setItem(TK_KEY, JSON.stringify(TK)); } catch (err) { local = false; }
+    acct = tkPush();
+    tkSaveMsg = local || acct ? '' : 'This device is out of room to save that. Try a smaller picture, or delete a place.';
+    return local || acct;
   }
   var mqReduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
   var LAYOUTS = [
@@ -3728,7 +3748,7 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
   var ED = null;
   function openPlaces() {
     openSheet('places', 'My places', function (body) {
-      body.innerHTML = '<p class="tk-lede">Add real or made-up places. They join the place list, the arrows, the search and the Atlas on the planet you choose. They live only on this device.</p>' +
+      body.innerHTML = '<p class="tk-lede">Add real or made-up places. They join the place list, the arrows, the search and the Atlas on the planet you choose. <span id="plSync">' + tkSyncText() + '</span></p>' +
         '<div class="tk-bar"><button type="button" class="tk-btn go" id="plNew">Add a place</button><button type="button" class="tk-btn" id="plExp">Export</button><button type="button" class="tk-btn" id="plImp">Import</button></div>' +
         '<div id="plForm"></div><div id="plIO"></div><div class="tk-list" id="plList"></div>';
       $('plNew').addEventListener('click', function () { plForm(null); });
@@ -3821,9 +3841,27 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
     var data = JSON.stringify({ app: 'ALT 327K 2.0', version: 1, places: TK.custom }, null, 2), io = $('plIO');
     io.innerHTML = '<div class="tk-h3">Export</div><textarea class="tk-in tk-code" readonly></textarea><div class="tk-bar"><button type="button" class="tk-btn" id="ioD">Download file</button><button type="button" class="tk-btn" id="ioC">Copy</button></div><p class="tk-msg" id="ioM"></p>';
     qs(io, 'textarea').value = data;
+    // Inside Claude, the viewer saves files through the downloads capability (it asks first). Elsewhere, a plain download link.
     $('ioD').addEventListener('click', function () {
-      try { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' })); a.download = 'alt327k-places.json'; document.body.appendChild(a); a.click(); a.remove(); }
-      catch (err) { $('ioM').textContent = 'Downloads are blocked here. Use Copy instead.'; }
+      var m = $('ioM'), name = 'alt327k-places.json';
+      function plain() {
+        try { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+        catch (err) { m.className = 'tk-msg bad'; m.textContent = 'Downloads are blocked here. Use Copy instead.'; }
+      }
+      if (!window.claude || typeof window.claude.use !== 'function') { plain(); return; }
+      m.className = 'tk-msg'; m.textContent = 'Getting the file ready\u2026';
+      window.claude.use('downloads').then(function (dl) {
+        if (!dl) { m.className = 'tk-msg bad'; m.textContent = 'Saving files is not available here. Use Copy instead.'; return; }
+        return dl.save({ filename: name, data: new Blob([data], { type: 'application/json' }) }).then(function () {
+          m.className = 'tk-msg ok'; m.textContent = 'Saved ' + name + '.';
+        }, function (err) {
+          var code = err && err.code;
+          m.className = code === 'declined' ? 'tk-msg' : 'tk-msg bad';
+          m.textContent = code === 'declined' ? 'Not saved. You can try again, or use Copy.' :
+            (code === 'rate_limited' ? 'Too many saves in a row. Wait a moment and try again.' :
+            (code === 'too_large' ? 'That file is too big to save (pictures take the most room). Use Copy instead.' : 'The file could not be saved. Use Copy instead.'));
+        });
+      }, function () { m.className = 'tk-msg bad'; m.textContent = 'Saving files is not available here. Use Copy instead.'; });
     });
     $('ioC').addEventListener('click', function () {
       var t = qs(io, 'textarea'); t.select();
@@ -4308,6 +4346,113 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
   var startPlanet = 'earth';
   try { if (localStorage.getItem('thinair-planet') === 'gaia') startPlanet = 'gaia'; } catch (err) {}
   if (startPlanet === 'gaia') setPlanet('gaia', false);
+
+  /* ----- Parallax 2.0, the time side. A link carries the place over in the address: #go=<name>&planet=<earth|gaia> ----- */
+  function sibHref(name) {
+    var url = '../parallax-2-0/';
+    return name ? url + '#go=' + encodeURIComponent(name) + '&planet=' + PLANET : url;
+  }
+  function lastPart(where) { var w = String(where || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean); return w.length ? w[w.length - 1] : ''; }
+  function paintXlink(s) {
+    var nav = $('nxSib'), a = $('pTime');
+    var real = !!s && s.kind !== 'l' && s.kind !== 'd' && !(s.custom && s.tag === 'Fictional');
+    var q = real ? (s.where && lastPart(s.where) !== s.n ? s.n + ', ' + lastPart(s.where) : s.n) : '';
+    if (nav) nav.href = sibHref(q);
+    if (!a) return;
+    a.parentNode.hidden = !real;
+    if (real) { a.href = sibHref(q); $('pTimeT').textContent = 'Local time at ' + s.n + ' in Parallax'; }
+  }
+  function readHash() {
+    var out = {};
+    String(location.hash || '').replace(/^#/, '').split('&').forEach(function (kv) {
+      var i = kv.indexOf('=');
+      if (i > 0) { try { out[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1)); } catch (err) {} }
+    });
+    return out;
+  }
+  function openFromHash() {
+    var h = readHash();
+    if (!h.go) return;
+    if ((h.planet === 'earth' || h.planet === 'gaia') && h.planet !== PLANET) setPlanet(h.planet, false);
+    var name = String(h.go).slice(0, 120), tries = [name], c = name.indexOf(',');
+    if (c > 0) tries.push(name.slice(0, c).trim());
+    for (var i = 0; i < tries.length; i++) {
+      $('pFind').value = tries[i];
+      findPlace();
+      if (!$('pMsg').textContent) return;
+    }
+    $('pFind').value = '';
+    $('pMsg').textContent = 'Parallax sent \u201C' + name + '\u201D, but that place is not on this list yet.';
+  }
+  openFromHash();
+  window.addEventListener('hashchange', openFromHash);
+
+  /* ----- My places and favorites follow you: saved to your account for this page when you are signed in ----- */
+  var TKS = { ref: null, writing: false, dirty: false, state: 'local', big: false }, TK_SYNCED = 'alt327k2-synced';
+  function tkSyncText() {
+    if (TKS && TKS.big) return 'They are too big to sync to your account (pictures take the most room), so they are saved on this device only.';
+    return TKS && TKS.state === 'account' ? 'They are saved to your account, so they follow you to your other devices.' : 'They are saved on this device.';
+  }
+  function tkSyncPaint() { var el = $('plSync'); if (el) el.textContent = tkSyncText(); }
+  // One write at a time; a change made mid-write goes out right after.
+  function tkPush() {
+    if (!TKS || !TKS.ref) return false;
+    if (TKS.writing) { TKS.dirty = true; return true; }
+    var pack = { favs: TK.favs.slice(), custom: TK.custom.slice() }, big = false;
+    try { big = JSON.stringify(pack).length > 900000; } catch (err) { big = false; }
+    if (big !== TKS.big) { TKS.big = big; tkSyncPaint(); }
+    if (big) return false;
+    TKS.writing = true; TKS.dirty = false;
+    TKS.ref.set(pack).then(function () {
+      TKS.writing = false;
+      if (TKS.dirty) tkPush();
+    }, function () { TKS.writing = false; TKS.ref = null; TKS.state = 'local'; tkSyncPaint(); });
+    return true;
+  }
+  // Only keeps entries shaped the way this page writes them.
+  function tkClean(raw) {
+    var out = { favs: [], custom: [] };
+    if (!raw || typeof raw !== 'object') return out;
+    (Array.isArray(raw.favs) ? raw.favs : []).slice(0, 5000).forEach(function (k) { if (typeof k === 'string' && k.length <= 200 && out.favs.indexOf(k) < 0) out.favs.push(k); });
+    (Array.isArray(raw.custom) ? raw.custom : []).slice(0, 2000).forEach(function (c) {
+      if (!c || typeof c !== 'object' || typeof c.id !== 'string' || typeof c.name !== 'string' || !isFinite(Number(c.ft)) || (c.planet !== 'earth' && c.planet !== 'gaia')) return;
+      out.custom.push(Object.assign({}, c, { ft: Number(c.ft) }));
+    });
+    return out;
+  }
+  function tkConnect() {
+    if (!window.claude || typeof window.claude.use !== 'function') return;
+    Promise.all([window.claude.use('db'), window.claude.use('user')]).then(function (caps) {
+      var db = caps[0], user = caps[1];
+      if (!db || !user) return null;
+      return user.id().then(function (uid) {
+        if (!uid) return null;
+        var ref = db.doc('data/users/' + uid + '/alt327k');
+        return ref.get().then(function (snap) {
+          TKS.ref = ref; TKS.state = 'account';
+          var first = true;
+          try { first = localStorage.getItem(TK_SYNCED) !== '1'; localStorage.setItem(TK_SYNCED, '1'); } catch (err) {}
+          var acc = snap.exists ? tkClean(snap.data()) : null, push = !acc;
+          if (acc) {
+            // The first time this device connects, keep what it already had as well.
+            if (first) {
+              var ids = {};
+              acc.custom.forEach(function (c) { ids[c.id] = 1; });
+              TK.custom.forEach(function (c) { if (!ids[c.id]) { acc.custom.push(c); push = true; } });
+              TK.favs.forEach(function (k) { if (acc.favs.indexOf(k) < 0) { acc.favs.push(k); push = true; } });
+            }
+            TK.custom = acc.custom; TK.favs = acc.favs;
+            try { localStorage.setItem(TK_KEY, JSON.stringify(TK)); } catch (err) {}
+            mergeCustom();
+            if ($('plList')) plList();
+          }
+          if (push && (TK.custom.length || TK.favs.length)) tkPush();
+          tkSyncPaint();
+        });
+      });
+    }).catch(function () { TKS.ref = null; TKS.state = 'local'; tkSyncPaint(); });
+  }
+  tkConnect();
 
   /* =====================================================================
      NEON 3D: a Three.js flight up and down the line. It reads the same altitude (SB.alt),
