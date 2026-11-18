@@ -4,7 +4,7 @@
   "description": "A live world clock for Earth and Gaia, with a sandbox for any offset, saved clocks and custom zones.",
   "id": "/apps/parallax-2-0/",
   "start_url": "./",
-  "scope": "./",
+  "scope": "../",
   "display": "standalone",
   "background_color": "#05060F",
   "theme_color": "#05060F",
@@ -38,5 +38,12 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "launch_handler": {
+    "client_mode": [
+      "navigate-existing",
+      "auto"
+    ]
+  },
+  "handle_links": "preferred"
 }

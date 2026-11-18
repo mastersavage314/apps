@@ -4,7 +4,7 @@
   "description": "An altitude sandbox for Earth and Gaia: what the air does to you at any height, and who lives up there.",
   "id": "/apps/alt-327k-2-0/",
   "start_url": "./",
-  "scope": "./",
+  "scope": "../",
   "display": "standalone",
   "background_color": "#05060F",
   "theme_color": "#05060F",
@@ -38,5 +38,12 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "launch_handler": {
+    "client_mode": [
+      "navigate-existing",
+      "auto"
+    ]
+  },
+  "handle_links": "preferred"
 }

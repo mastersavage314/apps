@@ -1017,6 +1017,29 @@ body.no-gl .glui, body.no-gl .spine { display: none; }
 .xlink span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body.is-gaia .xlink svg { color: #46FFB4; filter: drop-shadow(0 0 6px rgba(70, 255, 180, .7)); }
 @media (max-width: 560px) { .nx-links a:nth-child(n+3) { display: none; } .nx { gap: .6rem; } }
+/* Nothing hides off the edge: rows of buttons wrap onto more lines instead of scrolling sideways, and on phones the nav keeps only what fits. */
+.tk-tools, .presets, .cvx-pairs, .tk-chips { flex-wrap: wrap; overflow-x: visible; margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !important; padding-right: 0 !important; }
+.tk-tools button, .presets button, .cvx-pairs button, .tk-chips button { flex: 0 1 auto; max-width: 100%; white-space: normal; text-align: center; }
+@media (max-width: 480px) { .nx-links a:nth-child(n+2) { display: none; } .nx { padding-left: .75rem; padding-right: .75rem; gap: .5rem; } .nx-brand { font-size: .8rem; } }
+@media (max-width: 380px) { .nx-links { display: none; } .nx-sib { margin-left: auto; } }
+/* Small phones: the scene's top bar, the panels, the readouts and the altitude bar all fit inside the screen. */
+.scene-bar { min-width: 0; }
+.scene-bar .planets { flex: none; }
+.scene-bar .zone { flex: 0 1 auto; min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.zone-controls, .zone-metrics, .zone-controls > *, .zone-metrics > *, .place > *, .psteps > * { min-width: 0; }
+.psteps { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.pstep b, .pstep small { overflow-wrap: anywhere; }
+.hud-name, .hud-delta { white-space: normal; overflow: visible; text-overflow: clip; }
+.xlink span { white-space: normal; overflow: visible; text-overflow: clip; }
+.g b { overflow-wrap: anywhere; }
+@media (max-width: 340px) { .g b { font-size: 1.25rem; } }
+@media (max-width: 380px) {
+  .planets button { padding-left: .8rem; padding-right: .8rem; letter-spacing: .08em; }
+  .zone { font-size: .6rem; letter-spacing: .1em; padding-left: 1.45rem; padding-right: .7rem; }
+  .seg button { padding-left: .35rem; padding-right: .35rem; font-size: .84rem; }
+  .g b { font-size: clamp(1.3rem, 7vw, 2rem); }
+  .tk-step span { padding-left: .5rem; padding-right: .5rem; }
+}
 @media (prefers-reduced-motion: reduce) { .nx-brand i, .zone::before { animation: none; } }
 @media (max-width: 640px) { .zone-controls, .zone-metrics { padding: 1rem; border-radius: 24px; } .tk-tools { margin: 0 -1rem .8rem; padding: .3rem 1rem .6rem; } }
 
@@ -5123,6 +5146,17 @@ var NZ = 'float h2(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.545
   window.addEventListener('resize', soon);
   window.setInterval(function () { if (!document.hidden) { tint(); } }, 1000);
 })();
+</script>
+<script>
+/* Switching apps: Parallax 2.0 and ALT 327K 2.0 open each other in the same window, so an installed app never hands off to the browser. */
+document.addEventListener('click', function (ev) {
+  var a = ev.target.closest && ev.target.closest('a[href]');
+  if (!a || ev.defaultPrevented || ev.button || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) { return; }
+  var h = a.getAttribute('href') || '';
+  if (h.indexOf('../alt-327k-2-0/') !== 0 && h.indexOf('../parallax-2-0/') !== 0) { return; }
+  ev.preventDefault();
+  window.location.href = a.href;
+}, true);
 </script>
 </body>
 </html>
