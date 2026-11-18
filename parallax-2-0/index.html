@@ -4471,7 +4471,7 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
   var VS = 'varying vec3 vP; varying vec3 vW;\n' +
     'void main() { vP = normalize(position); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }';
   var FS = 'uniform vec3 uSun; uniform float uZoneW; uniform float uSel; uniform float uYou;\n' +
-    'uniform sampler2D uLand; uniform float uLandOn; uniform float uShift; uniform vec3 uLandD; uniform vec3 uLandN; uniform vec3 uCoast;\n' +
+    'uniform sampler2D uLand; uniform float uLandOn; uniform float uShift; uniform vec3 uLandD; uniform vec3 uLandN; uniform vec3 uCoast; uniform vec3 uRegD; uniform vec3 uRegN;\n' +
     'uniform vec3 uDay; uniform vec3 uNight; uniform vec3 uTwi; uniform vec3 uSelA; uniform vec3 uSelB; uniform vec3 uYouC; uniform vec3 uGrid; uniform vec3 uRim;\n' +
     'varying vec3 vP; varying vec3 vW;\n' +
     'const float PI = 3.14159265;\n' +
@@ -4494,6 +4494,7 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
     '  vec4 L = texture2D(uLand, vec2(fract((lon - uShift) / (2.0 * PI) + 0.5), lat / PI + 0.5)) * uLandOn;\n' +
     '  vec3 ocean = mix(uNight, uDay, day);\n' +
     '  vec3 ground = mix(uLandN, uLandD, day);\n' +
+    '  ground = mix(ground, mix(uRegN, uRegD, day), L.b);\n' +
     '  vec3 base = mix(ocean, ground, L.r) * (0.82 + 0.18 * stripe);\n' +
     '  base += uCoast * L.g * (0.3 + 0.7 * (1.0 - day));\n' +
     '  base += uTwi * twi * 0.85;\n' +
@@ -4513,9 +4514,9 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
     'void main() { float i = pow(max(-vN.z, 0.0), 2.5); float s = 0.3 + 0.7 * smoothstep(-0.35, 0.35, dot(vP, normalize(uSun))); gl_FragColor = vec4(uCol * s, min(1.0, i * 6.0) * s); }';
 
   var PAL = {
-    earth: { day: '#1D5FC2', night: '#070A24', twi: '#F0577F', selA: '#19F0FF', selB: '#FF2BD6', you: '#FFC400', grid: '#8A9CFF', rim: '#19F0FF', atmo: '#3FA9FF', landD: '#3AA88C', landN: '#161E4A', coast: '#19F0FF', shift: 0,
+    earth: { day: '#1D5FC2', night: '#070A24', twi: '#F0577F', selA: '#19F0FF', selB: '#FF2BD6', you: '#FFC400', grid: '#8A9CFF', rim: '#19F0FF', atmo: '#3FA9FF', landD: '#3AA88C', landN: '#161E4A', coast: '#19F0FF', shift: 0, regD: '#9B7BFF', regN: '#2B1D63', regLabel: '#E4D6FF',
       ring: '#8A9CFF', dayNum: '#FFF3C4', nightNum: '#9FDFFF', noon: '#FFC400', midnight: '#FF3DBE', hand: '#FF2BD6', sun: ['#FFFFFF', '#FFE27A', 'rgba(255,170,40,0)'] },
-    gaia: { day: '#0B3C8C', night: '#020B14', twi: '#FF5CCB', selA: '#FF5CCB', selB: '#9B6BFF', you: '#46FFB4', grid: '#7FE9FF', rim: '#46FFB4', atmo: '#46FFB4', landD: '#1F7464', landN: '#072634', coast: '#46FFB4', shift: 135,
+    gaia: { day: '#0B3C8C', night: '#020B14', twi: '#FF5CCB', selA: '#FF5CCB', selB: '#9B6BFF', you: '#46FFB4', grid: '#7FE9FF', rim: '#46FFB4', atmo: '#46FFB4', landD: '#1F7464', landN: '#072634', coast: '#46FFB4', shift: 135, regD: '#3FD3A6', regN: '#0B3A3A', regLabel: '#C9FFEA',
       ring: '#7FE9FF', dayNum: '#F6FBFF', nightNum: '#7FE9FF', noon: '#46FFB4', midnight: '#FF5CCB', hand: '#FF5CCB', sun: ['#FFFFFF', '#CFF6FF', 'rgba(127,233,255,0)'] }
   };
 
@@ -4559,14 +4560,17 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
     var uni = { uSun: { value: new T.Vector3(0, 0, 1) }, uZoneW: { value: PI / 12 }, uSel: { value: 0 }, uYou: { value: 0 },
       uDay: { value: C('#000') }, uNight: { value: C('#000') }, uTwi: { value: C('#000') }, uSelA: { value: C('#000') }, uSelB: { value: C('#000') },
       uYouC: { value: C('#000') }, uGrid: { value: C('#000') }, uRim: { value: C('#000') },
-      uLand: { value: null }, uLandOn: { value: 0 }, uShift: { value: 0 }, uLandD: { value: C('#000') }, uLandN: { value: C('#000') }, uCoast: { value: C('#000') } };
+      uLand: { value: null }, uLandOn: { value: 0 }, uShift: { value: 0 }, uLandD: { value: C('#000') }, uLandN: { value: C('#000') }, uCoast: { value: C('#000') }, uRegD: { value: C('#000') }, uRegN: { value: C('#000') } };
     // A 1-pixel blank map until the real one loads, so the shader always has a texture.
     uni.uLand.value = new T.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1, T.RGBAFormat); uni.uLand.value.needsUpdate = true;
     // The land: Natural Earth outlines (public domain), drawn once into a flat map. Red is land, green is the coastline.
     // Gaia is Earth's mirror planet with the same land, but its longitudes count from Summitbrook's zero line, so its map turns 135 degrees.
     function loadLand() {
       if (!window.fetch) { return; }
-      window.fetch('land.json').then(function (r) { if (!r.ok) { throw new Error('no map'); } return r.json(); }).then(function (d) {
+      var getJ = function (u) { return window.fetch(u).then(function (r) { if (!r.ok) { throw new Error('no ' + u); } return r.json(); }); };
+      Promise.all([getJ('land.json'), getJ('cord.json').catch(function () { return null; })]).then(function (both) {
+        var d = both[0], cd = both[1];
+        if (cd) { setCord(cd); }
         var W = 4096, H = 2048, c = document.createElement('canvas'), g;
         c.width = W; c.height = H; g = c.getContext('2d');
         g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
@@ -4576,6 +4580,14 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
         d.polys.forEach(function (poly) { g.beginPath(); poly.forEach(trace); g.fill('evenodd'); });
         g.globalCompositeOperation = 'lighter'; g.strokeStyle = '#0F0'; g.lineWidth = 2.2; g.lineJoin = 'round';
         d.polys.forEach(function (poly) { g.beginPath(); poly.forEach(trace); g.stroke(); });
+        // The Cordilleran Region (from the Cordilleran Region map): land in red, the region in blue, state lines in green.
+        if (cd) {
+          g.globalCompositeOperation = 'lighter';
+          g.fillStyle = '#F0F';
+          cd.states.forEach(function (st) { g.beginPath(); st.rings.forEach(trace); g.fill('evenodd'); });
+          g.strokeStyle = '#0B0'; g.lineWidth = 1.6;
+          cd.states.forEach(function (st) { g.beginPath(); st.rings.forEach(trace); g.stroke(); });
+        }
         var tex = new T.CanvasTexture(c);
         tex.wrapS = T.RepeatWrapping; tex.minFilter = T.LinearFilter; tex.generateMipmaps = false; tex.anisotropy = R.capabilities.getMaxAnisotropy();
         uni.uLand.value = tex; uni.uLandOn.value = 1;
@@ -4655,6 +4667,103 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
     }
     var hSel = hand(RB - 1 - 0.07, 0.016), hYou = hand(RB - 1 - 0.2, 0.011);
 
+    // Pins: where the picked clock and you really are. Tayanoa and the rest of the Cordilleran Region come from the
+    // Cordilleran Region map; the board's own places are listed below; zones sit at their main city (IANA zone.tab);
+    // any other town comes from GeoNames, loaded the first time it is needed.
+    function labelTex(text, col) {
+      return canvasTex(640, 96, function (g, w, h) {
+        g.font = '700 46px "Space Grotesk", "Segoe UI", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.lineWidth = 9; g.strokeStyle = 'rgba(2, 3, 14, .85)'; g.strokeText(text, w / 2, h / 2);
+        g.shadowColor = col; g.shadowBlur = 14; g.fillStyle = col; g.fillText(text, w / 2, h / 2);
+      });
+    }
+    function pin(size) {
+      var g = new T.Group(), mat = new T.MeshBasicMaterial({ transparent: true });
+      var stem = new T.Mesh(new T.CylinderGeometry(size * 0.16, size * 0.16, size * 2.4, 8), mat); stem.position.y = size * 1.2; g.add(stem);
+      var head = new T.Mesh(new T.SphereGeometry(size * 0.55, 18, 14), mat); head.position.y = size * 2.4; g.add(head);
+      var aura = new T.Sprite(new T.SpriteMaterial({ map: glow, transparent: true, depthWrite: false, blending: T.AdditiveBlending })); aura.position.y = size * 2.4; aura.scale.set(size * 5, size * 5, 1); g.add(aura);
+      var foot = new T.Mesh(new T.RingGeometry(size * 0.75, size * 1.05, 32), new T.MeshBasicMaterial({ transparent: true, opacity: 0.85, side: T.DoubleSide, depthWrite: false })); foot.rotation.x = -PI / 2; foot.position.y = 0.003; g.add(foot);
+      var lab = new T.Sprite(new T.SpriteMaterial({ transparent: true, depthWrite: false })); lab.position.y = size * 2.4 + 0.11; lab.scale.set(1.05, 0.1575, 1); g.add(lab);
+      g.visible = false; scene.add(g);
+      var text = '', colr = '', up = new T.Vector3(0, 1, 0);
+      return {
+        set: function (lat, lon, t, c) {
+          var la = lat * PI / 180, lo = lon * PI / 180, n = new T.Vector3(Math.cos(la) * Math.sin(lo), Math.sin(la), Math.cos(la) * Math.cos(lo));
+          g.position.copy(n); g.quaternion.setFromUnitVectors(up, n); g.visible = true;
+          if (c !== colr) { colr = c; mat.color.set(c); aura.material.color.set(c); foot.material.color.set(c); text = ''; }
+          if (t !== text) { text = t; if (lab.material.map) { lab.material.map.dispose(); } lab.material.map = labelTex(t, c); lab.material.needsUpdate = true; }
+        },
+        hide: function () { g.visible = false; }
+      };
+    }
+    var pSel = pin(0.045), pYou = pin(0.036);
+    var region = new T.Sprite(new T.SpriteMaterial({ transparent: true, depthWrite: false })); region.scale.set(1.1, 0.165, 1); region.visible = false; scene.add(region);
+
+    var TZLL = {"Europe/Andorra":[42.5,1.52],"Asia/Dubai":[25.3,55.3],"Asia/Kabul":[34.52,69.2],"America/Antigua":[17.05,-61.8],"America/Anguilla":[18.2,-63.07],"Europe/Tirane":[41.33,19.83],"Asia/Yerevan":[40.18,44.5],"Africa/Luanda":[-8.8,13.23],"Antarctica/McMurdo":[-77.83,166.6],"Antarctica/Casey":[-66.28,110.52],"Antarctica/Davis":[-68.58,77.97],"Antarctica/DumontDUrville":[-66.67,140.02],"Antarctica/Mawson":[-67.6,62.88],"Antarctica/Palmer":[-64.8,-64.1],"Antarctica/Rothera":[-67.57,-68.13],"Antarctica/Syowa":[-69.01,39.59],"Antarctica/Troll":[-72.01,2.53],"Antarctica/Vostok":[-78.4,106.9],"America/Argentina/Buenos_Aires":[-34.6,-58.45],"America/Argentina/Cordoba":[-31.4,-64.18],"America/Argentina/Salta":[-24.78,-65.42],"America/Argentina/Jujuy":[-24.18,-65.3],"America/Argentina/Tucuman":[-26.82,-65.22],"America/Argentina/Catamarca":[-28.47,-65.78],"America/Argentina/La_Rioja":[-29.43,-66.85],"America/Argentina/San_Juan":[-31.53,-68.52],"America/Argentina/Mendoza":[-32.88,-68.82],"America/Argentina/San_Luis":[-33.32,-66.35],"America/Argentina/Rio_Gallegos":[-51.63,-69.22],"America/Argentina/Ushuaia":[-54.8,-68.3],"Pacific/Pago_Pago":[-14.27,-170.7],"Europe/Vienna":[48.22,16.33],"Australia/Lord_Howe":[-31.55,159.08],"Antarctica/Macquarie":[-54.5,158.95],"Australia/Hobart":[-42.88,147.32],"Australia/Melbourne":[-37.82,144.97],"Australia/Sydney":[-33.87,151.22],"Australia/Broken_Hill":[-31.95,141.45],"Australia/Brisbane":[-27.47,153.03],"Australia/Lindeman":[-20.27,149.0],"Australia/Adelaide":[-34.92,138.58],"Australia/Darwin":[-12.47,130.83],"Australia/Perth":[-31.95,115.85],"Australia/Eucla":[-31.72,128.87],"America/Aruba":[12.5,-69.97],"Europe/Mariehamn":[60.1,19.95],"Asia/Baku":[40.38,49.85],"Europe/Sarajevo":[43.87,18.42],"America/Barbados":[13.1,-59.62],"Asia/Dhaka":[23.72,90.42],"Europe/Brussels":[50.83,4.33],"Africa/Ouagadougou":[12.37,-1.52],"Europe/Sofia":[42.68,23.32],"Asia/Bahrain":[26.38,50.58],"Africa/Bujumbura":[-3.38,29.37],"Africa/Porto-Novo":[6.48,2.62],"America/St_Barthelemy":[17.88,-62.85],"Atlantic/Bermuda":[32.28,-64.77],"Asia/Brunei":[4.93,114.92],"America/La_Paz":[-16.5,-68.15],"America/Kralendijk":[12.15,-68.28],"America/Noronha":[-3.85,-32.42],"America/Belem":[-1.45,-48.48],"America/Fortaleza":[-3.72,-38.5],"America/Recife":[-8.05,-34.9],"America/Araguaina":[-7.2,-48.2],"America/Maceio":[-9.67,-35.72],"America/Bahia":[-12.98,-38.52],"America/Sao_Paulo":[-23.53,-46.62],"America/Campo_Grande":[-20.45,-54.62],"America/Cuiaba":[-15.58,-56.08],"America/Santarem":[-2.43,-54.87],"America/Porto_Velho":[-8.77,-63.9],"America/Boa_Vista":[2.82,-60.67],"America/Manaus":[-3.13,-60.02],"America/Eirunepe":[-6.67,-69.87],"America/Rio_Branco":[-9.97,-67.8],"America/Nassau":[25.08,-77.35],"Asia/Thimphu":[27.47,89.65],"Africa/Gaborone":[-24.65,25.92],"Europe/Minsk":[53.9,27.57],"America/Belize":[17.5,-88.2],"America/St_Johns":[47.57,-52.72],"America/Halifax":[44.65,-63.6],"America/Glace_Bay":[46.2,-59.95],"America/Moncton":[46.1,-64.78],"America/Goose_Bay":[53.33,-60.42],"America/Blanc-Sablon":[51.42,-57.12],"America/Toronto":[43.65,-79.38],"America/Iqaluit":[63.73,-68.47],"America/Atikokan":[48.76,-91.62],"America/Winnipeg":[49.88,-97.15],"America/Resolute":[74.7,-94.83],"America/Rankin_Inlet":[62.82,-92.08],"America/Regina":[50.4,-104.65],"America/Swift_Current":[50.28,-107.83],"America/Edmonton":[53.55,-113.47],"America/Cambridge_Bay":[69.11,-105.05],"America/Inuvik":[68.35,-133.72],"America/Vancouver":[49.27,-123.12],"America/Creston":[49.1,-116.52],"America/Dawson_Creek":[55.77,-120.23],"America/Fort_Nelson":[58.8,-122.7],"America/Whitehorse":[60.72,-135.05],"America/Dawson":[64.07,-139.42],"Indian/Cocos":[-12.17,96.92],"Africa/Kinshasa":[-4.3,15.3],"Africa/Lubumbashi":[-11.67,27.47],"Africa/Bangui":[4.37,18.58],"Africa/Brazzaville":[-4.27,15.28],"Europe/Zurich":[47.38,8.53],"Africa/Abidjan":[5.32,-4.03],"Pacific/Rarotonga":[-21.23,-159.77],"America/Santiago":[-33.45,-70.67],"America/Coyhaique":[-45.57,-72.07],"America/Punta_Arenas":[-53.15,-70.92],"Pacific/Easter":[-27.15,-109.43],"Africa/Douala":[4.05,9.7],"Asia/Shanghai":[31.23,121.47],"Asia/Urumqi":[43.8,87.58],"America/Bogota":[4.6,-74.08],"America/Costa_Rica":[9.93,-84.08],"America/Havana":[23.13,-82.37],"Atlantic/Cape_Verde":[14.92,-23.52],"America/Curacao":[12.18,-69.0],"Indian/Christmas":[-10.42,105.72],"Asia/Nicosia":[35.17,33.37],"Asia/Famagusta":[35.12,33.95],"Europe/Prague":[50.08,14.43],"Europe/Berlin":[52.5,13.37],"Europe/Busingen":[47.7,8.68],"Africa/Djibouti":[11.6,43.15],"Europe/Copenhagen":[55.67,12.58],"America/Dominica":[15.3,-61.4],"America/Santo_Domingo":[18.47,-69.9],"Africa/Algiers":[36.78,3.05],"America/Guayaquil":[-2.17,-79.83],"Pacific/Galapagos":[-0.9,-89.6],"Europe/Tallinn":[59.42,24.75],"Africa/Cairo":[30.05,31.25],"Africa/El_Aaiun":[27.15,-13.2],"Africa/Asmara":[15.33,38.88],"Europe/Madrid":[40.4,-3.68],"Africa/Ceuta":[35.88,-5.32],"Atlantic/Canary":[28.1,-15.4],"Africa/Addis_Ababa":[9.03,38.7],"Europe/Helsinki":[60.17,24.97],"Pacific/Fiji":[-18.13,178.42],"Atlantic/Stanley":[-51.7,-57.85],"Pacific/Chuuk":[7.42,151.78],"Pacific/Pohnpei":[6.97,158.22],"Pacific/Kosrae":[5.32,162.98],"Atlantic/Faroe":[62.02,-6.77],"Europe/Paris":[48.87,2.33],"Africa/Libreville":[0.38,9.45],"Europe/London":[51.51,-0.13],"America/Grenada":[12.05,-61.75],"Asia/Tbilisi":[41.72,44.82],"America/Cayenne":[4.93,-52.33],"Europe/Guernsey":[49.45,-2.54],"Africa/Accra":[5.55,-0.22],"Europe/Gibraltar":[36.13,-5.35],"America/Nuuk":[64.18,-51.73],"America/Danmarkshavn":[76.77,-18.67],"America/Scoresbysund":[70.48,-21.97],"America/Thule":[76.57,-68.78],"Africa/Banjul":[13.47,-16.65],"Africa/Conakry":[9.52,-13.72],"America/Guadeloupe":[16.23,-61.53],"Africa/Malabo":[3.75,8.78],"Europe/Athens":[37.97,23.72],"Atlantic/South_Georgia":[-54.27,-36.53],"America/Guatemala":[14.63,-90.52],"Pacific/Guam":[13.47,144.75],"Africa/Bissau":[11.85,-15.58],"America/Guyana":[6.8,-58.17],"Asia/Hong_Kong":[22.28,114.15],"America/Tegucigalpa":[14.1,-87.22],"Europe/Zagreb":[45.8,15.97],"America/Port-au-Prince":[18.53,-72.33],"Europe/Budapest":[47.5,19.08],"Asia/Jakarta":[-6.17,106.8],"Asia/Pontianak":[-0.03,109.33],"Asia/Makassar":[-5.12,119.4],"Asia/Jayapura":[-2.53,140.7],"Europe/Dublin":[53.33,-6.25],"Asia/Jerusalem":[31.78,35.22],"Europe/Isle_of_Man":[54.15,-4.47],"Asia/Kolkata":[22.53,88.37],"Indian/Chagos":[-7.33,72.42],"Asia/Baghdad":[33.35,44.42],"Asia/Tehran":[35.67,51.43],"Atlantic/Reykjavik":[64.15,-21.85],"Europe/Rome":[41.9,12.48],"Europe/Jersey":[49.18,-2.11],"America/Jamaica":[17.97,-76.79],"Asia/Amman":[31.95,35.93],"Asia/Tokyo":[35.65,139.74],"Africa/Nairobi":[-1.28,36.82],"Asia/Bishkek":[42.9,74.6],"Asia/Phnom_Penh":[11.55,104.92],"Pacific/Tarawa":[1.42,173.0],"Pacific/Kanton":[-2.78,-171.72],"Pacific/Kiritimati":[1.87,-157.33],"Indian/Comoro":[-11.68,43.27],"America/St_Kitts":[17.3,-62.72],"Asia/Pyongyang":[39.02,125.75],"Asia/Seoul":[37.55,126.97],"Asia/Kuwait":[29.33,47.98],"America/Cayman":[19.3,-81.38],"Asia/Almaty":[43.25,76.95],"Asia/Qyzylorda":[44.8,65.47],"Asia/Qostanay":[53.2,63.62],"Asia/Aqtobe":[50.28,57.17],"Asia/Aqtau":[44.52,50.27],"Asia/Atyrau":[47.12,51.93],"Asia/Oral":[51.22,51.35],"Asia/Vientiane":[17.97,102.6],"Asia/Beirut":[33.88,35.5],"America/St_Lucia":[14.02,-61.0],"Europe/Vaduz":[47.15,9.52],"Asia/Colombo":[6.93,79.85],"Africa/Monrovia":[6.3,-10.78],"Africa/Maseru":[-29.47,27.5],"Europe/Vilnius":[54.68,25.32],"Europe/Luxembourg":[49.6,6.15],"Europe/Riga":[56.95,24.1],"Africa/Tripoli":[32.9,13.18],"Africa/Casablanca":[33.65,-7.58],"Europe/Monaco":[43.7,7.38],"Europe/Chisinau":[47.0,28.83],"Europe/Podgorica":[42.43,19.27],"America/Marigot":[18.07,-63.08],"Indian/Antananarivo":[-18.92,47.52],"Pacific/Majuro":[7.15,171.2],"Pacific/Kwajalein":[9.08,167.33],"Europe/Skopje":[41.98,21.43],"Africa/Bamako":[12.65,-8.0],"Asia/Yangon":[16.78,96.17],"Asia/Ulaanbaatar":[47.92,106.88],"Asia/Hovd":[48.02,91.65],"Asia/Macau":[22.2,113.54],"Pacific/Saipan":[15.2,145.75],"America/Martinique":[14.6,-61.08],"Africa/Nouakchott":[18.1,-15.95],"America/Montserrat":[16.72,-62.22],"Europe/Malta":[35.9,14.52],"Indian/Mauritius":[-20.17,57.5],"Indian/Maldives":[4.17,73.5],"Africa/Blantyre":[-15.78,35.0],"America/Mexico_City":[19.4,-99.15],"America/Cancun":[21.08,-86.77],"America/Merida":[20.97,-89.62],"America/Monterrey":[25.67,-100.32],"America/Matamoros":[25.83,-97.5],"America/Chihuahua":[28.63,-106.08],"America/Ciudad_Juarez":[31.73,-106.48],"America/Ojinaga":[29.57,-104.42],"America/Mazatlan":[23.22,-106.42],"America/Bahia_Banderas":[20.8,-105.25],"America/Hermosillo":[29.07,-110.97],"America/Tijuana":[32.53,-117.02],"Asia/Kuala_Lumpur":[3.17,101.7],"Asia/Kuching":[1.55,110.33],"Africa/Maputo":[-25.97,32.58],"Africa/Windhoek":[-22.57,17.1],"Pacific/Noumea":[-22.27,166.45],"Africa/Niamey":[13.52,2.12],"Pacific/Norfolk":[-29.05,167.97],"Africa/Lagos":[6.45,3.4],"America/Managua":[12.15,-86.28],"Europe/Amsterdam":[52.37,4.9],"Europe/Oslo":[59.92,10.75],"Asia/Kathmandu":[27.72,85.32],"Pacific/Nauru":[-0.52,166.92],"Pacific/Niue":[-19.02,-169.92],"Pacific/Auckland":[-36.87,174.77],"Pacific/Chatham":[-43.95,-176.55],"Asia/Muscat":[23.6,58.58],"America/Panama":[8.97,-79.53],"America/Lima":[-12.05,-77.05],"Pacific/Tahiti":[-17.53,-149.57],"Pacific/Marquesas":[-9.0,-139.5],"Pacific/Gambier":[-23.13,-134.95],"Pacific/Port_Moresby":[-9.5,147.17],"Pacific/Bougainville":[-6.22,155.57],"Asia/Manila":[14.59,120.97],"Asia/Karachi":[24.87,67.05],"Europe/Warsaw":[52.25,21.0],"America/Miquelon":[47.05,-56.33],"Pacific/Pitcairn":[-25.07,-130.08],"America/Puerto_Rico":[18.47,-66.11],"Asia/Gaza":[31.5,34.47],"Asia/Hebron":[31.53,35.09],"Europe/Lisbon":[38.72,-9.13],"Atlantic/Madeira":[32.63,-16.9],"Atlantic/Azores":[37.73,-25.67],"Pacific/Palau":[7.33,134.48],"America/Asuncion":[-25.27,-57.67],"Asia/Qatar":[25.28,51.53],"Indian/Reunion":[-20.87,55.47],"Europe/Bucharest":[44.43,26.1],"Europe/Belgrade":[44.83,20.5],"Europe/Kaliningrad":[54.72,20.5],"Europe/Moscow":[55.76,37.62],"Europe/Simferopol":[44.95,34.1],"Europe/Kirov":[58.6,49.65],"Europe/Volgograd":[48.73,44.42],"Europe/Astrakhan":[46.35,48.05],"Europe/Saratov":[51.57,46.03],"Europe/Ulyanovsk":[54.33,48.4],"Europe/Samara":[53.2,50.15],"Asia/Yekaterinburg":[56.85,60.6],"Asia/Omsk":[55.0,73.4],"Asia/Novosibirsk":[55.03,82.92],"Asia/Barnaul":[53.37,83.75],"Asia/Tomsk":[56.5,84.97],"Asia/Novokuznetsk":[53.75,87.12],"Asia/Krasnoyarsk":[56.02,92.83],"Asia/Irkutsk":[52.27,104.33],"Asia/Chita":[52.05,113.47],"Asia/Yakutsk":[62.0,129.67],"Asia/Khandyga":[62.66,135.55],"Asia/Vladivostok":[43.17,131.93],"Asia/Ust-Nera":[64.56,143.23],"Asia/Magadan":[59.57,150.8],"Asia/Sakhalin":[46.97,142.7],"Asia/Srednekolymsk":[67.47,153.72],"Asia/Kamchatka":[53.02,158.65],"Asia/Anadyr":[64.75,177.48],"Africa/Kigali":[-1.95,30.07],"Asia/Riyadh":[24.63,46.72],"Pacific/Guadalcanal":[-9.53,160.2],"Indian/Mahe":[-4.67,55.47],"Africa/Khartoum":[15.6,32.53],"Europe/Stockholm":[59.33,18.05],"Asia/Singapore":[1.28,103.85],"Atlantic/St_Helena":[-15.92,-5.7],"Europe/Ljubljana":[46.05,14.52],"Arctic/Longyearbyen":[78.0,16.0],"Europe/Bratislava":[48.15,17.12],"Africa/Freetown":[8.5,-13.25],"Europe/San_Marino":[43.92,12.47],"Africa/Dakar":[14.67,-17.43],"Africa/Mogadishu":[2.07,45.37],"America/Paramaribo":[5.83,-55.17],"Africa/Juba":[4.85,31.62],"Africa/Sao_Tome":[0.33,6.73],"America/El_Salvador":[13.7,-89.2],"America/Lower_Princes":[18.05,-63.05],"Asia/Damascus":[33.5,36.3],"Africa/Mbabane":[-26.3,31.1],"America/Grand_Turk":[21.47,-71.13],"Africa/Ndjamena":[12.12,15.05],"Indian/Kerguelen":[-49.35,70.22],"Africa/Lome":[6.13,1.22],"Asia/Bangkok":[13.75,100.52],"Asia/Dushanbe":[38.58,68.8],"Pacific/Fakaofo":[-9.37,-171.23],"Asia/Dili":[-8.55,125.58],"Asia/Ashgabat":[37.95,58.38],"Africa/Tunis":[36.8,10.18],"Pacific/Tongatapu":[-21.13,-175.2],"Europe/Istanbul":[41.02,28.97],"America/Port_of_Spain":[10.65,-61.52],"Pacific/Funafuti":[-8.52,179.22],"Asia/Taipei":[25.05,121.5],"Africa/Dar_es_Salaam":[-6.8,39.28],"Europe/Kyiv":[50.43,30.52],"Africa/Kampala":[0.32,32.42],"Pacific/Midway":[28.22,-177.37],"Pacific/Wake":[19.28,166.62],"America/New_York":[40.71,-74.01],"America/Detroit":[42.33,-83.05],"America/Kentucky/Louisville":[38.25,-85.76],"America/Kentucky/Monticello":[36.83,-84.85],"America/Indiana/Indianapolis":[39.77,-86.16],"America/Indiana/Vincennes":[38.68,-87.53],"America/Indiana/Winamac":[41.05,-86.6],"America/Indiana/Marengo":[38.38,-86.34],"America/Indiana/Petersburg":[38.49,-87.28],"America/Indiana/Vevay":[38.75,-85.07],"America/Chicago":[41.85,-87.65],"America/Indiana/Tell_City":[37.95,-86.76],"America/Indiana/Knox":[41.3,-86.62],"America/Menominee":[45.11,-87.61],"America/North_Dakota/Center":[47.12,-101.3],"America/North_Dakota/New_Salem":[46.84,-101.41],"America/North_Dakota/Beulah":[47.26,-101.78],"America/Denver":[39.74,-104.98],"America/Boise":[43.61,-116.2],"America/Phoenix":[33.45,-112.07],"America/Los_Angeles":[34.05,-118.24],"America/Anchorage":[61.22,-149.9],"America/Juneau":[58.3,-134.42],"America/Sitka":[57.18,-135.3],"America/Metlakatla":[55.13,-131.58],"America/Yakutat":[59.55,-139.73],"America/Nome":[64.5,-165.41],"America/Adak":[51.88,-176.66],"Pacific/Honolulu":[21.31,-157.86],"America/Montevideo":[-34.91,-56.21],"Asia/Samarkand":[39.67,66.8],"Asia/Tashkent":[41.33,69.3],"Europe/Vatican":[41.9,12.45],"America/St_Vincent":[13.15,-61.23],"America/Caracas":[10.5,-66.93],"America/Tortola":[18.45,-64.62],"America/St_Thomas":[18.35,-64.93],"Asia/Ho_Chi_Minh":[10.75,106.67],"Pacific/Efate":[-17.67,168.42],"Pacific/Wallis":[-13.3,-176.17],"Pacific/Apia":[-13.83,-171.73],"Asia/Aden":[12.75,45.2],"Indian/Mayotte":[-12.78,45.23],"Africa/Johannesburg":[-26.25,28.0],"Africa/Lusaka":[-15.42,28.28],"Africa/Harare":[-17.83,31.05]};
+    // The board's own places (GeoNames where it has them; the smallest high villages are placed by hand, to within about a degree).
+    var KNOWN = { 'burnt hills, ny': [42.91, -73.9], 'la rinconada, peru': [-14.63, -69.45], 'tuiwa, tibet, china': [28.9, 92.3], 'chasangcun, tibet, china': [30.5, 87.0],
+      'rongbuk monastery, tibet, china': [28.2, 86.83], 'shuanghu, tibet, china': [33.19, 88.83], 'lobuche, koshi, nepal': [27.95, 86.81], 'wenquan, golmud, qinghai, china': [33.4, 91.9],
+      'santa barbara, potosi, sud chichas, bolivia': [-20.92, -66.05], 'lungring, tibet, china': [31.0, 84.9], 'yanshiping, qinghai/tibet, china': [33.58, 92.07], 'amdo, tibet, china': [32.27, 91.68],
+      'phinaya, cusco, peru': [-13.93, -70.95], 'domar, tibet, china': [33.7, 80.3], 'condoroma, cusco, peru': [-15.3, -71.14], 'ananea, puno, peru': [-14.68, -69.54], 'karzok, ladakh, india': [32.97, 78.25],
+      'komic, himachal pradesh, india': [32.12, 78.16], 'hanle, ladakh, india': [32.79, 78.98], 'nagqu, tibet, china': [31.48, 92.06], 'quzong village, china': [30.9, 86.6], 'dingboche, nepal': [27.89, 86.83],
+      'parinacota, chile': [-18.2, -69.27], 'cojata, peru': [-15.02, -69.37], 'chharka dolpa, nepal': [29.1, 83.25], 'cerro de pasco, peru': [-10.67, -76.25], 'mina pirquitas, argentina': [-22.7, -66.5],
+      'achirik, ladakh, india': [33.0, 78.6], 'macusani, peru': [-14.08, -70.43], 'hankar, ladakh, india': [33.73, 77.53], 'pagri, tibet, china': [27.75, 89.17],
+      'denver': [39.74, -104.98], 'new york city': [40.71, -74.01], 'london': [51.51, -0.13], 'mumbai': [19.07, 72.88], 'kathmandu': [27.7, 85.32], 'tokyo': [35.69, 139.69],
+      'kiritimati': [1.87, -157.4], 'baker island': [0.19, -176.48], 'etc/gmt+12': [0.19, -176.48] };
+    // Towns of the Summitcrest district that are not drawn on the region map: they sit with Summitcrest.
+    var DISTRICT = { 'axspororidge': 1, 'luxora': 1, 'teyakenroken': 1, 'bressler': 1 };
+    var CORDD = null, COORDS = null, coordsAsked = false, llMemo = {};
+    function nrm(t) {
+      t = String(t).toLowerCase();
+      if (t.normalize) { t = t.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+      return t.replace(/[\u02bb'\u2019`]/g, '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+    function setCord(cd) {
+      CORDD = { places: {}, states: {} };
+      cd.places.forEach(function (pl) { CORDD.places[nrm(pl.n)] = pl.ll; });
+      cd.states.forEach(function (st) { CORDD.states[nrm(st.n)] = st.c; });
+      llMemo = {};
+      if (G3) { G3.wake(); }
+    }
+    function loadCoords() {
+      if (coordsAsked || !window.fetch) { return; }
+      coordsAsked = true;
+      window.fetch('coords.json').then(function (r) { if (!r.ok) { throw new Error('no coords'); } return r.json(); }).then(function (d) {
+        var map = {}, rows = d.p.split('\n'), i, f;
+        for (i = 0; i < rows.length; i++) { f = rows[i].split('\t'); map[f[0]] = [+f[1], +f[2]]; }
+        COORDS = { cc: d.cc, map: map }; llMemo = {};
+        if (G3) { G3.wake(); }
+      }).catch(function () { /* towns without a pin keep their hand on the ring */ });
+    }
+    // [lat, lon] on Earth for a clock's label, or null when the clock is a whole zone or an offset.
+    function placeLL(label) {
+      if (!label) { return null; }
+      if (llMemo[label] !== undefined) { return llMemo[label]; }
+      var raw = String(label), k = nrm(raw), parts = raw.split(',').map(function (x) { return x.trim(); }), base = nrm(parts[0]), last = nrm(parts[parts.length - 1]), out = null;
+      if (KNOWN[k]) { out = KNOWN[k]; }
+      else if (raw.indexOf('/') > 0 && parts.length === 1) { out = TZLL[raw] || null; }
+      else if (/^(utc|ztc)[+\u2212-]/i.test(raw) || / time$/i.test(raw)) { out = null; }
+      else if (parts.length === 1 || last === 'ty') {
+        if (CORDD) {
+          if (CORDD.places[base]) { out = CORDD.places[base]; }
+          else if (DISTRICT[base]) { out = CORDD.places.summitcrest || null; }
+          else if (CORDD.states[base]) { out = CORDD.states[base]; }
+          else if (/^(eastern|western) tahsika$/.test(base) && CORDD.states.tahsika) { out = [CORDD.states.tahsika[0], CORDD.states.tahsika[1] + (base.charAt(0) === 'e' ? 2 : -2)]; }
+        } else { return null; }   // ask again once the region map is in
+      }
+      if (!out && parts.length >= 2 && last !== 'ty') {
+        if (COORDS) { var cc = COORDS.cc[last]; out = cc ? (COORDS.map[base + '|' + cc] || null) : null; }
+        else { loadCoords(); return null; }
+      }
+      llMemo[label] = out;
+      return out;
+    }
+    var viewerTz = '';
+    try { viewerTz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (err) { viewerTz = ''; }
+    var YOU = viewerTz === 'America/New_York' ? { ll: KNOWN['burnt hills, ny'], name: 'Burnt Hills, NY' } : (TZLL[viewerTz] ? { ll: TZLL[viewerTz], name: viewerTz.slice(viewerTz.lastIndexOf('/') + 1).replace(/_/g, ' ') } : null);
+    function llText(ll) { return Math.abs(ll[0]).toFixed(1) + '\u00B0' + (ll[0] >= 0 ? 'N' : 'S') + ', ' + Math.abs(ll[1]).toFixed(1) + '\u00B0' + (ll[1] >= 0 ? 'E' : 'W'); }
+    function shortName(label) { var t = String(label).split(',')[0].trim(); return t.length > 26 ? t.slice(0, 25) + '\u2026' : t; }
+
     // Camera: follows the picked clock, or spins, or goes where you drag it
     var cs = { az: 0, el: 0.3, fresh: true, follow: true, spin: false, drag: null, vel: 0, dist: 6.4, w: 0, h: 0 };
     var host = null, vis = {}, raf = 0, last = 0, planet = '', hudKey = '';
@@ -4682,7 +4791,7 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
       raf = 0;
       mount();
       if (!running()) { return; }
-      var dt = last ? Math.min(0.1, (t - last) / 1000) : 0.016; last = t;
+      var dt = last ? Math.max(1 / 60, Math.min(0.1, (t - last) / 1000)) : 0.016; last = t;
       var key = gaia() ? 'gaia' : 'earth', api = key === 'gaia' ? window.pxGaia : window.pxEarth, c = api && api.clock3d ? api.clock3d() : null;
       if (!c) { raf = window.requestAnimationFrame(frame); return; }
       var pal = PAL[key];
@@ -4691,7 +4800,7 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
         if (cs.follow) { cs.fresh = true; }
         uni.uDay.value.set(pal.day); uni.uNight.value.set(pal.night); uni.uTwi.value.set(pal.twi); uni.uSelA.value.set(pal.selA); uni.uSelB.value.set(pal.selB);
         uni.uYouC.value.set(pal.you); uni.uGrid.value.set(pal.grid); uni.uRim.value.set(pal.rim); aUni.uCol.value.set(pal.atmo);
-        uni.uLandD.value.set(pal.landD); uni.uLandN.value.set(pal.landN); uni.uCoast.value.set(pal.coast); uni.uShift.value = pal.shift * PI / 180;
+        uni.uLandD.value.set(pal.landD); uni.uLandN.value.set(pal.landN); uni.uCoast.value.set(pal.coast); uni.uShift.value = pal.shift * PI / 180; uni.uRegD.value.set(pal.regD); uni.uRegN.value.set(pal.regN);
         railMat.color.set(pal.ring); tickMat.color.set(pal.ring);
         if (!sunTex[key]) { sunTex[key] = glowTex(pal.sun); }
         sun.material.map = sunTex[key]; halo.material.map = sunTex[key]; sun.material.needsUpdate = true; halo.material.needsUpdate = true;
@@ -4703,23 +4812,36 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
       uni.uZoneW.value = dph; uni.uSel.value = zone; uni.uYou.value = you;
       bezel.rotation.y = sub; hSel.g.rotation.y = zone; hYou.g.rotation.y = you;
       hYou.g.visible = Math.abs(ang(you - zone)) > 0.001;
+      var sl = placeLL(c.label), tAz = zone, tEl = 0.3;
+      if (sl) {
+        pSel.set(sl[0], sl[1] + pal.shift, shortName(c.label), pal.hand);
+        tAz = (sl[1] + pal.shift) * PI / 180; tEl = Math.max(-0.95, Math.min(0.95, sl[0] * PI / 180 * 0.85));
+      } else { pSel.hide(); }
+      if (YOU) { pYou.set(YOU.ll[0], YOU.ll[1] + pal.shift, 'You \u00B7 ' + YOU.name, pal.you); } else { pYou.hide(); }
+      if (CORDD && CORDD.states.tayanoa) {
+        var rl = [49.5 * PI / 180, (-147 + pal.shift) * PI / 180];
+        region.position.set(1.035 * Math.cos(rl[0]) * Math.sin(rl[1]), 1.035 * Math.sin(rl[0]), 1.035 * Math.cos(rl[0]) * Math.cos(rl[1]));
+        if (region.userData.key !== key) { region.userData.key = key; if (region.material.map) { region.material.map.dispose(); } region.material.map = labelTex('CORDILLERAN REGION', pal.regLabel); region.material.needsUpdate = true; }
+        region.visible = true;
+      }
       sun.position.copy(uni.uSun.value).multiplyScalar(7.5); halo.position.copy(sun.position);
 
-      if (cs.fresh) { cs.fresh = false; cs.az = zone; }
+      if (cs.fresh) { cs.fresh = false; cs.az = tAz; cs.el = tEl; }
       if (cs.drag) { /* the pointer moves it */ }
-      else if (cs.follow) { cs.az += ang(zone - cs.az) * (reduce ? 1 : Math.min(1, dt * 2.5)); cs.el += (0.3 - cs.el) * (reduce ? 1 : Math.min(1, dt * 2)); }
+      else if (cs.follow) { cs.az += ang(tAz - cs.az) * (reduce ? 1 : Math.min(1, dt * 2.5)); cs.el += (tEl - cs.el) * (reduce ? 1 : Math.min(1, dt * 2)); }
       else if (cs.spin) { cs.az += dt * 0.22; }
       else if (Math.abs(cs.vel) > 0.0001) { cs.az += cs.vel; cs.vel *= 0.92; }
       cam.position.set(cs.dist * Math.cos(cs.el) * Math.sin(cs.az), cs.dist * Math.sin(cs.el), cs.dist * Math.cos(cs.el) * Math.cos(cs.az));
       cam.lookAt(0, 0, 0);
       R.render(scene, cam);
 
-      var hk = key + '|' + lonText(sub) + '|' + latText(c.decl) + '|' + c.label;
+      var hk = key + '|' + lonText(sub) + '|' + latText(c.decl) + '|' + c.label + '|' + (sl ? sl.join() : '');
       if (hk !== hudKey) {
         hudKey = hk;
         q('g3k').textContent = key === 'gaia' ? 'Helios is overhead at' : 'The Sun is overhead at';
         q('g3v').textContent = lonText(sub) + ', ' + latText(c.decl);
-        q('g3s').innerHTML = '<i class="k-sel">' + (key === 'gaia' ? 'Pink' : 'Magenta') + ' hand:</i> ' + esc(c.label) + '. <i class="k-you">' + (key === 'gaia' ? 'Green' : 'Gold') + ' hand:</i> you. Each meridian points at its own clock time on the ring.';
+        q('g3s').innerHTML = '<i class="k-sel">' + (key === 'gaia' ? 'Pink' : 'Magenta') + ' pin:</i> ' + esc(c.label) + (sl ? ' (' + llText(sl) + ')' : ' (a whole zone, so no single place)') +
+          '. <i class="k-you">' + (key === 'gaia' ? 'Green' : 'Gold') + ' pin:</i> ' + (YOU ? 'you, ' + esc(YOU.name) : 'you') + '. The hands read each clock\u2019s time off the ring.';
         wrap.setAttribute('aria-label', '3D time globe. ' + (key === 'gaia' ? 'Helios' : 'The Sun') + ' is overhead at ' + lonText(sub) + ', ' + latText(c.decl) + '. The ring of ' + c.H + ' hours shows the time in every zone.');
       }
       raf = window.requestAnimationFrame(frame);
@@ -4813,6 +4935,10 @@ document.addEventListener('click', function (ev) {
   var h = a.getAttribute('href') || '';
   if (h.indexOf('../alt-327k-2-0/') !== 0 && h.indexOf('../parallax-2-0/') !== 0) { return; }
   ev.preventDefault();
+  // Inside the combined app (Parallax + ALT 327K), the app just shows the other page, already loaded, at the same place.
+  var duo = null;
+  try { duo = window.parent !== window && window.parent.DUO ? window.parent.DUO : null; } catch (err) { duo = null; }
+  if (duo) { duo.open(h.indexOf('../alt-327k-2-0/') === 0 ? 'alt' : 'parallax', h.indexOf('#') >= 0 ? h.slice(h.indexOf('#')) : ''); return; }
   window.location.href = a.href;
 }, true);
 </script>

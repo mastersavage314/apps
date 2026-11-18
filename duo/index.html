@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Parallax + ALT 327K</title>
+<meta name="description" content="Parallax 2.0 and ALT 327K 2.0 in one app: switch between time and altitude in a tap, with your place carried over.">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#05060F">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Parallax + ALT">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+<style>
+  /* One app, two pages: Parallax 2.0 and ALT 327K 2.0 each live in their own frame, and switching just shows the other one.
+     Both stay loaded, so switching back and forth is instant, and both share this app's saved data. */
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: #05060F; overflow: hidden; }
+  iframe { position: fixed; left: 0; right: 0; top: env(safe-area-inset-top, 0px); bottom: env(safe-area-inset-bottom, 0px); width: 100%; height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); border: 0; display: block; background: #05060F; }
+  iframe[hidden] { display: none; }
+  .boot { position: fixed; inset: 0; display: grid; place-items: center; color: #8F9BCB; font: 600 14px/1.4 system-ui, -apple-system, sans-serif; letter-spacing: .2em; text-transform: uppercase; }
+  .boot[hidden] { display: none; }
+</style>
+</head>
+<body>
+<div class="boot" id="boot">Loading</div>
+<iframe id="parallax" title="Parallax 2.0" hidden></iframe>
+<iframe id="alt" title="ALT 327K 2.0" hidden></iframe>
+<script>
+(function () {
+  'use strict';
+  var APPS = { parallax: '../parallax-2-0/', alt: '../alt-327k-2-0/' }, KEY = 'duo-app', cur = '';
+  var $ = function (id) { return document.getElementById(id); };
+  function frameOf(app) { return $(app === 'alt' ? 'alt' : 'parallax'); }
+  // Show one app. A hash like #go=Summitbrook&planet=earth is handed to it, and it moves to that place.
+  function open(app, hash) {
+    app = app === 'alt' ? 'alt' : 'parallax';
+    var f = frameOf(app), h = hash ? String(hash).replace(/^#/, '') : '';
+    if (!f.getAttribute('src')) {
+      f.setAttribute('src', APPS[app] + (h ? '#' + h : ''));
+      f.addEventListener('load', function () { $('boot').hidden = true; preload(); }, { once: true });
+    } else if (h) {
+      // A fresh value at the end makes the page see a change even when the place is the same as last time.
+      try { f.contentWindow.location.hash = h + '&t=' + Date.now(); } catch (err) { f.setAttribute('src', APPS[app] + '#' + h); }
+    }
+    ['parallax', 'alt'].forEach(function (a) { frameOf(a).hidden = a !== app; });
+    cur = app;
+    document.title = app === 'alt' ? 'ALT 327K 2.0' : 'Parallax 2.0';
+    try { window.localStorage.setItem(KEY, app); } catch (err) { /* not remembered */ }
+    try { window.history.replaceState(null, '', '#' + app); } catch (err) { /* fine */ }
+  }
+  // Load the other app quietly once the first one is up, so the first switch is instant too.
+  function preload() {
+    window.setTimeout(function () {
+      var other = cur === 'alt' ? 'parallax' : 'alt', f = frameOf(other);
+      if (!f.getAttribute('src')) { f.setAttribute('src', APPS[other]); }
+    }, 2500);
+  }
+  window.DUO = { open: open, current: function () { return cur; } };
+  var start = String(window.location.hash || '').replace(/^#/, '');
+  if (start !== 'alt' && start !== 'parallax') { try { start = window.localStorage.getItem(KEY) || 'parallax'; } catch (err) { start = 'parallax'; } }
+  open(start);
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () { /* still works online */ }); });
+  }
+})();
+</script>
+</body>
+</html>
