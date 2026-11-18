@@ -4805,5 +4805,16 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
   window.setInterval(function () { if (!document.hidden) { tint(); } }, 1000);
 })();
 </script>
+<script>
+/* Switching apps: Parallax 2.0 and ALT 327K 2.0 open each other in the same window, so an installed app never hands off to the browser. */
+document.addEventListener('click', function (ev) {
+  var a = ev.target.closest && ev.target.closest('a[href]');
+  if (!a || ev.defaultPrevented || ev.button || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) { return; }
+  var h = a.getAttribute('href') || '';
+  if (h.indexOf('../alt-327k-2-0/') !== 0 && h.indexOf('../parallax-2-0/') !== 0) { return; }
+  ev.preventDefault();
+  window.location.href = a.href;
+}, true);
+</script>
 </body>
 </html>
