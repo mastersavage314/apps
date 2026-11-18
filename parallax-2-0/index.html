@@ -899,7 +899,7 @@ button:not(:disabled):active { transform: scale(.94); transition-duration: .06s;
 /* ---------- The 3D time globe (the dial is one tap away) ---------- */
 .views { display: flex; width: max-content; max-width: 100%; margin: 1.6rem auto 0; position: relative; z-index: 2; }
 .views button { font-family: var(--display); font-weight: 700; font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; padding: .5rem 1rem; }
-.stage { display: none; position: relative; z-index: 1; width: calc(100% + 2.5rem); margin: .6rem -1.25rem 0; height: clamp(22rem, 96vw, 36rem); }
+
 body.view-globe .stage { display: block; }
 body.view-globe .e-dialwrap, body.view-globe .g-dialwrap { display: none; }
 body.no-gl .views, body.no-gl .stage { display: none; }
@@ -920,7 +920,7 @@ body.is-gaia .stage-hud .k-sel { color: #FF8AD8; } body.is-gaia .stage-hud .k-yo
 .glui button:hover { border-color: #19F0FF; box-shadow: 0 0 18px rgba(25, 240, 255, .5); }
 .glui button[aria-pressed="true"] { background: linear-gradient(120deg, #19F0FF, #8A5CFF); color: #05060F; border-color: transparent; box-shadow: 0 0 20px rgba(25, 240, 255, .6); }
 body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120deg, #46FFB4, #7FE9FF); color: #021018; box-shadow: 0 0 20px rgba(70, 255, 180, .6); }
-@media (max-width: 640px) { .glui { left: 1.25rem; right: 1.25rem; justify-content: flex-start; } .stage-hud { max-width: 86%; } .stage { height: clamp(26rem, 118vw, 34rem); } }
+
 @media (max-width: 420px) { .nx-links a:nth-child(n+2) { display: none; } }
 /* Nothing hides off the edge: rows of buttons wrap onto more lines instead of scrolling sideways, and on phones the nav keeps only what fits. */
 .presets, .g-places { flex-wrap: wrap; overflow-x: visible; }
@@ -943,6 +943,75 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
   .tally b { font-size: clamp(1.7rem, 8vw, 2.6rem); }
   .seg button { padding-left: .35rem; padding-right: .35rem; }
 }
+
+/* ---------- The scene: the same build as ALT 327K's hero. The globe fills it, the readout sits at the bottom left,
+   the controls at the bottom right, and the day scale runs down the right edge. ---------- */
+.hero, .g-top { min-height: max(660px, min(94svh, 940px)); display: flex; flex-direction: column; padding-bottom: 4.4rem; }
+#stars, #aurora, .g-top::before, .g-top::after { z-index: 0; }
+.stage, body.view-globe .stage { position: absolute; inset: 0; z-index: 1; width: auto; height: auto; margin: 0; }
+.stage { display: none; }
+body.view-globe .stage { display: block; }
+.hero::before { z-index: 2; }
+.hero::after { z-index: 2; }
+.hero-in, .g-in { position: relative; z-index: 3; flex: 1; display: flex; flex-direction: column; width: 100%; pointer-events: none; }
+.hero-in > *, .g-in > * { pointer-events: auto; }
+.hero-in > .hud3, .g-in > .hud3 { pointer-events: none; }
+.readout { margin-top: auto; padding-top: 1rem; text-shadow: 0 2px 16px rgba(0, 0, 0, .8), 0 0 2px rgba(0, 0, 0, .55); }
+.readout h1, .readout .g-time, .readout .big, .readout .g-time .n { text-shadow: none; }
+.e-dialwrap, .g-dialwrap { margin: 1.2rem auto .6rem; }
+.hud3 { margin: 0 0 .4rem; max-width: 30rem; text-shadow: 0 2px 14px rgba(0, 0, 0, .75); }
+body:not(.view-globe) .hud3 { display: none; }
+body.view-globe .hud3 { margin-bottom: clamp(16rem, 64vw, 25rem); }
+.g-in > .g-hana { align-self: flex-start; }
+.hud3 span { display: block; font-family: var(--display); font-weight: 600; font-size: .56rem; letter-spacing: .22em; text-transform: uppercase; color: #FFC400; text-shadow: 0 0 12px rgba(255, 196, 0, .7); }
+.hud3 b { display: block; margin-top: .15rem; font-family: var(--num); font-weight: 700; font-size: 1.05rem; letter-spacing: -.01em; color: #fff; }
+.hud3 small { display: block; margin-top: .2rem; max-width: 22rem; color: #C8D2FF; font-size: .78rem; line-height: 1.35; }
+.hud3 i { font-style: normal; font-weight: 700; }
+.hud3 .k-sel { color: #FF5FCF; } .hud3 .k-you { color: #FFC400; }
+body.is-gaia .hud3 span { color: #46FFB4; text-shadow: 0 0 12px rgba(70, 255, 180, .7); }
+body.is-gaia .hud3 .k-sel { color: #FF8AD8; } body.is-gaia .hud3 .k-you { color: #46FFB4; }
+.glui { position: absolute; z-index: 4; right: 1.25rem; left: auto; bottom: .9rem; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .4rem; }
+@media (max-width: 640px) { .glui { left: 1.25rem; right: 1.25rem; justify-content: flex-start; } }
+@media (max-width: 640px) { .hero, .g-top { padding-bottom: 7.4rem; } }
+
+/* The day scale: the same spine as ALT 327K's altitude scale, but for the hours of the day */
+.spine { position: absolute; z-index: 3; right: .9rem; top: 9.5rem; bottom: 13rem; width: 5.6rem; pointer-events: none; }
+body:not(.view-globe) .spine { display: none; }
+.spine::before { content: ""; position: absolute; right: .55rem; top: 0; bottom: 0; width: 3px; border-radius: 3px; background: var(--spinegrad, linear-gradient(180deg, #140B40, #34167A 20%, #F0577F 26%, #7DD9FF 33%, #7DD9FF 67%, #F0577F 74%, #34167A 80%, #140B40)); box-shadow: 0 0 14px rgba(138, 92, 255, .7); }
+.spine .tk { position: absolute; right: 0; display: flex; align-items: center; gap: .35rem; transform: translateY(-50%); font-size: .6rem; font-weight: 600; letter-spacing: .02em; color: rgba(210, 220, 255, .75); white-space: nowrap; }
+.spine .tk b { width: 10px; height: 2px; background: currentColor; display: block; margin-right: .38rem; opacity: .8; }
+.spine .tk.noon { color: #FFC400; text-shadow: 0 0 10px rgba(255, 196, 0, .7); }
+.spine .tk.noon b { height: 3px; box-shadow: 0 0 10px #FFC400; }
+.spine .you { position: absolute; right: .25rem; width: 12px; height: 4px; margin-top: -2px; border-radius: 2px; background: #FFC400; box-shadow: 0 0 10px #FFC400; }
+.spine .now { position: absolute; right: .55rem; width: 16px; height: 16px; margin: -8px -7px 0 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(255, 43, 214, .55), 0 0 24px #FF2BD6, 0 0 50px #8A5CFF; transform: translateX(50%); transition: top .6s cubic-bezier(.2, .8, .2, 1); }
+body.is-gaia .spine::before { background: var(--spinegrad, linear-gradient(180deg, #04101F, #0B1D4A 20%, #FF5CCB 26%, #BFF6FF 33%, #F6FBFF 50%, #BFF6FF 67%, #FF5CCB 74%, #0B1D4A 80%, #04101F)); }
+body.is-gaia .spine .tk.noon { color: #46FFB4; text-shadow: 0 0 10px rgba(70, 255, 180, .7); }
+body.is-gaia .spine .tk.noon b { box-shadow: 0 0 10px #46FFB4; }
+body.is-gaia .spine .you { background: #46FFB4; box-shadow: 0 0 10px #46FFB4; }
+body.is-gaia .spine .now { box-shadow: 0 0 0 3px rgba(255, 92, 203, .55), 0 0 24px #FF5CCB, 0 0 50px #9B6BFF; }
+@media (max-width: 640px) { .spine { width: 3rem; top: 10.5rem; bottom: 15rem; } .spine .tk span { display: none; } }
+
+/* The picture of what you just did: one short flash over the scene, the same set as ALT 327K */
+.tk-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 2; }
+.tk-fx > * { position: absolute; }
+.fx-sonar > i { left: 50%; top: 45%; width: 10px; height: 10px; margin: -5px; border-radius: 50%; border: 2px solid rgba(110, 230, 255, .9); animation: fxRing 1.1s ease-out forwards; }
+.fx-sonar > i:nth-child(2) { animation-delay: .18s; }
+.fx-sonar > i:nth-child(3) { animation-delay: .36s; }
+@keyframes fxRing { from { transform: scale(1); opacity: 1; } to { transform: scale(60); opacity: 0; } }
+.fx-glacial > i { inset: -20% -60%; background: linear-gradient(105deg, transparent 38%, rgba(190, 240, 255, .55) 48%, rgba(255, 255, 255, .85) 50%, rgba(190, 240, 255, .55) 52%, transparent 62%); animation: fxSweep .9s ease-out forwards; }
+@keyframes fxSweep { from { transform: translateX(-60%); opacity: 1; } to { transform: translateX(60%); opacity: 0; } }
+.fx-grid > i { inset: 0; background-image: linear-gradient(rgba(255, 210, 70, .55) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 210, 70, .55) 1px, transparent 1px); background-size: 34px 34px; animation: fxGrid .8s ease-out forwards; }
+@keyframes fxGrid { from { transform: scale(.6); opacity: .95; } to { transform: scale(1.5); opacity: 0; } }
+.fx-aurora > i { inset: -10% 0 0; background: linear-gradient(180deg, transparent 0%, rgba(70, 255, 180, .55) 40%, rgba(155, 107, 255, .5) 70%, transparent 100%); filter: blur(14px); animation: fxAur 1.1s ease-out forwards; }
+@keyframes fxAur { from { transform: translateY(30%) scaleY(.4); opacity: 0; } 30% { opacity: 1; } to { transform: translateY(-20%) scaleY(1.2); opacity: 0; } }
+.fx-rings > i { left: 50%; top: 42%; width: 120px; height: 46px; margin: -23px -60px; border-radius: 50%; border: 2px solid rgba(255, 220, 120, .85); animation: fxOrb 1.1s ease-out forwards; }
+.fx-rings > i:nth-child(2) { transform: rotate(60deg); animation-delay: .12s; }
+.fx-rings > i:nth-child(3) { transform: rotate(-60deg); animation-delay: .24s; }
+@keyframes fxOrb { from { scale: .4; opacity: 1; } to { scale: 4; opacity: 0; } }
+.fx-prism > i { inset: 0; background: conic-gradient(from 0deg at 50% 50%, #FF5FAE, #FFD447, #46FFB4, #38D6FF, #A77BFF, #FF5FAE); mix-blend-mode: screen; animation: fxPrism .7s ease-out forwards; }
+@keyframes fxPrism { from { opacity: .85; transform: rotate(0) scale(.7); } to { opacity: 0; transform: rotate(40deg) scale(1.6); } }
+.big.roll, .g-time .n.roll { filter: drop-shadow(0 0 30px rgba(25, 240, 255, .9)) drop-shadow(0 0 80px rgba(255, 43, 214, .6)); }
+@media (prefers-reduced-motion: reduce) { .tk-fx { display: none; } .spine .now { transition: none; } }
 @media (prefers-reduced-motion: reduce) { .nx-brand i, .phase::before, .g-phase::before { animation: none; } .row:hover, .g-row:hover, .g:hover, .g-g:hover, .tally li:hover, .g-sun li:hover { transform: none; } }
 </style>
 </head>
@@ -957,6 +1026,8 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
 
 <header class="hero" id="sandbox">
   <canvas id="stars" aria-hidden="true"></canvas>
+  <div class="stage" id="eStage"></div>
+  <div class="spine" data-spine aria-hidden="true"></div>
   <div class="hero-in">
     <div class="scene-top">
       <div class="planets" role="group" aria-label="Which planet">
@@ -966,17 +1037,7 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
       <div class="phase" id="phase">Morning</div>
     </div>
     <p class="wordmark">Parallax 2.0</p>
-    <div class="pick">
-      <label for="zin">Showing the time in. Tap the name to type a place, a zone or an offset.</label>
-      <input id="zin" type="text" list="zlist" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="Summitbrook, TY">
-      <datalist id="zlist"></datalist>
-    </div>
-    <h1><span class="sr">Parallax 2.0, a world clock. The time there is </span><span class="big" id="heroNum">0:00</span><span class="big-side"><span class="big-sec" id="heroSec">00</span><span class="big-unit" id="heroUnit">AM</span></span></h1>
-    <div class="beam" aria-hidden="true"><i id="heroOrb" class="sun"></i><span id="heroAlt"></span></div>
-    <div class="others" id="others"></div>
-    <p class="said" id="said" role="status"></p>
-    <div class="views seg" role="group" aria-label="How to show the time"><button type="button" data-view="globe" aria-pressed="true">3D time globe</button><button type="button" data-view="dial" aria-pressed="false">Dial</button></div>
-    <div class="stage" id="eStage"></div>
+    <div class="hud3" aria-live="off"><span data-hud="k">The Sun is overhead at</span><b data-hud="v"></b><small data-hud="s"></small></div>
     <div class="e-dialwrap">
       <div class="e-halo" aria-hidden="true"></div>
       <div class="e-ring" aria-hidden="true"></div>
@@ -993,7 +1054,19 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
         </g>
       </svg>
     </div>
+    <div class="readout">
+    <div class="pick">
+      <label for="zin">Showing the time in. Tap the name to type a place, a zone or an offset.</label>
+      <input id="zin" type="text" list="zlist" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="Summitbrook, TY">
+      <datalist id="zlist"></datalist>
+    </div>
+    <h1><span class="sr">Parallax 2.0, a world clock. The time there is </span><span class="big" id="heroNum">0:00</span><span class="big-side"><span class="big-sec" id="heroSec">00</span><span class="big-unit" id="heroUnit">AM</span></span></h1>
+    <div class="beam" aria-hidden="true"><i id="heroOrb" class="sun"></i><span id="heroAlt"></span></div>
+    <div class="others" id="others"></div>
+    <p class="said" id="said" role="status"></p>
+    </div>
   </div>
+  <div class="glui" aria-label="Globe controls"><button type="button" data-g3="follow" aria-pressed="true">Follow clock</button><button type="button" data-g3="spin" aria-pressed="false">Spin</button><button type="button" data-g3="reset">Reset view</button><button type="button" data-g3="view" aria-pressed="false">Dial</button><button type="button" data-g3="sound" aria-pressed="true">Sound on</button></div>
 </header>
 
 <section class="deck" aria-label="Sandbox controls">
@@ -1120,6 +1193,8 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
 <section id="gaia" aria-labelledby="g-h" hidden>
   <div class="g-top" id="gSandbox">
     <canvas id="aurora" aria-hidden="true"></canvas>
+    <div class="stage" id="gStage"></div>
+    <div class="spine" data-spine aria-hidden="true"></div>
     <div class="g-in">
       <div class="g-bar">
         <div class="planets" role="group" aria-label="Which planet">
@@ -1130,17 +1205,7 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
       </div>
       <h2 class="g-word" id="g-h">Parallax 2.0 on Gaia</h2>
       <span class="g-hana" id="gHanaBadge" title="Release 2026a of the HANA Time Zone Database, the Olson database">HANA 2026a</span>
-      <div class="g-pick">
-        <label for="gPick">Showing the time in. Tap the name to type a place, a zone or an offset.</label>
-        <input id="gPick" type="text" list="gList" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="Summitbrook, TY">
-        <datalist id="gList"></datalist>
-      </div>
-      <p class="g-time"><span class="sr">The time there is </span><span class="n" id="gNum">0:00</span><span class="side"><b id="gSec">00</b><i id="gUnit">AM</i></span></p>
-      <div class="g-beam" aria-hidden="true"><i id="gOrb" class="sun"></i><span id="gAlt"></span></div>
-      <div class="g-others" id="gOthers"></div>
-      <p class="said" id="gSaid" role="status"></p>
-      <div class="views seg" role="group" aria-label="How to show the time"><button type="button" data-view="globe" aria-pressed="true">3D time globe</button><button type="button" data-view="dial" aria-pressed="false">Dial</button></div>
-      <div class="stage" id="gStage"></div>
+      <div class="hud3" aria-live="off"><span data-hud="k">The Sun is overhead at</span><b data-hud="v"></b><small data-hud="s"></small></div>
       <div class="g-dialwrap">
         <div class="g-halo" aria-hidden="true"></div>
         <div class="g-ring" aria-hidden="true"></div>
@@ -1157,7 +1222,19 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
           </g>
         </svg>
       </div>
+      <div class="readout">
+      <div class="g-pick">
+        <label for="gPick">Showing the time in. Tap the name to type a place, a zone or an offset.</label>
+        <input id="gPick" type="text" list="gList" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="Summitbrook, TY">
+        <datalist id="gList"></datalist>
+      </div>
+      <p class="g-time"><span class="sr">The time there is </span><span class="n" id="gNum">0:00</span><span class="side"><b id="gSec">00</b><i id="gUnit">AM</i></span></p>
+      <div class="g-beam" aria-hidden="true"><i id="gOrb" class="sun"></i><span id="gAlt"></span></div>
+      <div class="g-others" id="gOthers"></div>
+      <p class="said" id="gSaid" role="status"></p>
+      </div>
     </div>
+    <div class="glui" aria-label="Globe controls"><button type="button" data-g3="follow" aria-pressed="true">Follow clock</button><button type="button" data-g3="spin" aria-pressed="false">Spin</button><button type="button" data-g3="reset">Reset view</button><button type="button" data-g3="view" aria-pressed="false">Dial</button><button type="button" data-g3="sound" aria-pressed="true">Sound on</button></div>
   </div>
 
   <div class="g-deck">
@@ -1992,7 +2069,7 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
 
   function paintScene() {
     var p = clockParts(S.h, S.m, S.s);
-    if ($('heroNum').textContent !== p.hm) { $('heroNum').textContent = p.hm; }
+    if (!window.__pxRoll && $('heroNum').textContent !== p.hm) { $('heroNum').textContent = p.hm; }
     $('heroSec').textContent = p.sec;
     if ($('heroUnit').textContent !== p.ampm) { $('heroUnit').textContent = p.ampm; }
     var ol = offsetLabel(S.off);
@@ -2809,7 +2886,7 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
     // For the 3D globe: the picked clock's offset and hour, your offset, and how far north the Sun is today.
     clock3d: function () {
       var n = new Date(), doy = (n.getTime() - Date.UTC(n.getUTCFullYear(), 0, 1)) / 86400000;
-      return { H: 24, off: S.off, hours: S.h + S.m / 60 + S.s / 3600, you: viewer.off, decl: -23.44 * Math.cos(2 * Math.PI * (doy + 10) / 365.25), h12: !state.h24, label: sel.label };
+      return { H: 24, off: S.off, hours: S.h + S.m / 60 + S.s / 3600, you: viewer.off, decl: -23.44 * Math.cos(2 * Math.PI * (doy + 10) / 365.25), h12: !state.h24, label: sel.label, ref: sel.ref };
     },
     say: say,
     refFor: function (zoneId) { return ianaOk(zoneId) ? 'iana:' + zoneId : null; },
@@ -3549,7 +3626,7 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
     rot($('gMh'), (p.m + p.s / 60) / 60 * 360);
     rot($('gSh'), p.s / 60 * 360);
     var t = ((p.h % 18) || 18) + ':' + pad(p.m), u = p.h < 18 ? 'AM' : 'PM';   // the big time is always the 18-hour clock
-    if ($('gNum').textContent !== t) { $('gNum').textContent = t; }
+    if (!window.__pxRoll && $('gNum').textContent !== t) { $('gNum').textContent = t; }
     $('gSec').textContent = pad(p.s);
     if ($('gUnit').textContent !== u) { $('gUnit').textContent = u; }
     var me = split(now + refOffset(viewerRef, now) * 60000), mu = ap(me.h);
@@ -4298,7 +4375,7 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
     // For the 3D globe: the same numbers on Gaia's 36-hour day and 243-day year.
     clock3d: function () {
       var now = Date.now(), off = refOffset(sel.ref, now), p = split(now + off * 60000);
-      return { H: 36, off: off, hours: p.h + p.m / 60 + p.s / 3600, you: refOffset(viewerRef, now), decl: -23.44 * Math.cos(2 * Math.PI * ((p.doy + p.frac) / yearDays(p.y) + 10 / 365.25)), h12: !h36, label: sel.label };
+      return { H: 36, off: off, hours: p.h + p.m / 60 + p.s / 3600, you: refOffset(viewerRef, now), decl: -23.44 * Math.cos(2 * Math.PI * ((p.doy + p.frac) / yearDays(p.y) + 10 / 365.25)), h12: !h36, label: sel.label, ref: sel.ref };
     },
     say: say,
     refFor: function (zoneId) { var r = twinRef(zoneId); return r ? r + ':' + zoneId : null; },
@@ -4462,11 +4539,12 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
   function setView(v, keep) {
     view = v === 'dial' || !G3 ? 'dial' : 'globe';
     document.body.classList.toggle('view-globe', view === 'globe');
-    document.querySelectorAll('[data-view]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-view') === view)); });
+    document.querySelectorAll('[data-g3="view"]').forEach(function (b) { b.setAttribute('aria-pressed', String(view === 'dial')); });
+    document.querySelectorAll('[data-g3="follow"], [data-g3="spin"], [data-g3="reset"]').forEach(function (b) { b.hidden = view === 'dial'; });
     if (keep) { try { window.localStorage.setItem(VIEW_KEY, view); } catch (err) { /* not remembered */ } }
     if (G3) { G3.wake(); }
   }
-  document.querySelectorAll('[data-view]').forEach(function (b) { b.addEventListener('click', function () { setView(b.getAttribute('data-view'), true); }); });
+  document.querySelectorAll('[data-g3="view"]').forEach(function (b) { b.addEventListener('click', function () { setView(view === 'dial' ? 'globe' : 'dial', true); }); });
 
   var VS = 'varying vec3 vP; varying vec3 vW;\n' +
     'void main() { vP = normalize(position); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }';
@@ -4547,13 +4625,11 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
     if (!R || !R.getContext()) { return null; }
     R.setClearColor(0x000000, 0);
     var wrap = document.createElement('div'); wrap.className = 'stage-in'; wrap.setAttribute('role', 'group'); wrap.setAttribute('aria-label', '3D time globe');
-    wrap.innerHTML = '<div class="stage-hud" aria-live="off"><span id="g3k">Sun overhead</span><b id="g3v"></b><small id="g3s"></small></div>' +
-      '<div class="glui"><button type="button" id="g3Follow" aria-pressed="true">Follow clock</button><button type="button" id="g3Spin" aria-pressed="false">Spin</button><button type="button" id="g3Reset">Reset view</button></div>';
-    wrap.insertBefore(cvs, wrap.firstChild);
-    var q = function (id) { return wrap.querySelector('#' + id); };
+    wrap.appendChild(cvs);
+    var hud = function (k) { return document.querySelectorAll('[data-hud="' + k + '"]'); };
 
     var scene = new T.Scene(), cam = new T.PerspectiveCamera(34, 1, 0.1, 200);
-    var RB = 1.5;   // the ring of hours
+    var RB = 1.32;   // the ring of hours
 
     // The globe
     var C = function (h) { return new T.Color(h); };
@@ -4729,13 +4805,42 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
       if (coordsAsked || !window.fetch) { return; }
       coordsAsked = true;
       window.fetch('coords.json').then(function (r) { if (!r.ok) { throw new Error('no coords'); } return r.json(); }).then(function (d) {
-        var map = {}, rows = d.p.split('\n'), i, f;
-        for (i = 0; i < rows.length; i++) { f = rows[i].split('\t'); map[f[0]] = [+f[1], +f[2]]; }
+        // Rows are name, country code, state or province, lat, lon, biggest towns first: a town with no state given gets the biggest one.
+        var map = {}, rows = d.p.split('\n'), i, f, k2;
+        for (i = 0; i < rows.length; i++) {
+          f = rows[i].split('\t'); var ll = [+f[3], +f[4]];
+          map[f[0] + '|' + f[1] + '|' + f[2]] = ll; k2 = f[0] + '|' + f[1];
+          if (!map[k2]) { map[k2] = ll; }
+        }
         COORDS = { cc: d.cc, map: map }; llMemo = {};
         if (G3) { G3.wake(); }
       }).catch(function () { /* towns without a pin keep their hand on the ring */ });
     }
     // [lat, lon] on Earth for a clock's label, or null when the clock is a whole zone or an offset.
+    // Where each zone's clock is kept, for picks that are a whole zone rather than one town.
+    var ZONE_HOME = { 'custom:cordilleran': 'summitbrook', 'custom:coastal': 'sanlucar' };
+    var HANA_HOME = { 'America/Summitbrook': 'summitbrook', 'America/Johnston': 'sanlucar', 'America/Ashenix': 'zubieta', 'America/Portkane': 'new albion', 'America/Saskwatoon': 'grandval', 'America/Northgate': 'eastern tahsika', 'America/Glacierpoint': 'western tahsika' };
+    function cordLL(name) {
+      if (!CORDD) { return null; }
+      if (CORDD.places[name]) { return CORDD.places[name]; }
+      if (CORDD.states[name]) { return CORDD.states[name]; }
+      if (/^(eastern|western) tahsika$/.test(name) && CORDD.states.tahsika) { return [CORDD.states.tahsika[0], CORDD.states.tahsika[1] + (name.charAt(0) === 'e' ? 2 : -2)]; }
+      return null;
+    }
+    // [lat, lon] on Earth for the picked clock. A town is pinned where it is; a zone at the town that keeps it;
+    // a plain offset (or a zone no map covers) on the equator, on that zone's own meridian.
+    function pickLL(c, shift) {
+      var ll = placeLL(c.label), ref = String(c.ref || ''), a = ref.split(':'), z = null;
+      if (ll) { return ll; }
+      if (ZONE_HOME[ref]) { ll = cordLL(ZONE_HOME[ref]); if (ll) { return ll; } }
+      if (HANA_HOME[c.label]) { ll = cordLL(HANA_HOME[c.label]); if (ll) { return ll; } }
+      if (a[0] === 'iana') { z = a.slice(1).join(':'); } else if (a[0] === 'real' && a[3]) { z = a.slice(3).join(':'); }
+      if (z && TZLL[z]) { return TZLL[z]; }
+      if (!CORDD && (a[0] === 'custom' || / time$/i.test(c.label || '') || /, ty$/i.test(c.label || ''))) { return null; }
+      var m = [0, ang(c.off / 60 * TAU / c.H - shift * PI / 180) * 180 / PI];
+      m.meridian = true;
+      return m;
+    }
     function placeLL(label) {
       if (!label) { return null; }
       if (llMemo[label] !== undefined) { return llMemo[label]; }
@@ -4752,7 +4857,10 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
         } else { return null; }   // ask again once the region map is in
       }
       if (!out && parts.length >= 2 && last !== 'ty') {
-        if (COORDS) { var cc = COORDS.cc[last]; out = cc ? (COORDS.map[base + '|' + cc] || null) : null; }
+        if (COORDS) {
+          var cc = COORDS.cc[last], adm = parts.length >= 3 ? nrm(parts[parts.length - 2]) : '';
+          out = cc ? (COORDS.map[base + '|' + cc + '|' + adm] || COORDS.map[base + '|' + cc] || null) : null;
+        }
         else { loadCoords(); return null; }
       }
       llMemo[label] = out;
@@ -4767,25 +4875,36 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
     // Camera: follows the picked clock, or spins, or goes where you drag it
     var cs = { az: 0, el: 0.3, fresh: true, follow: true, spin: false, drag: null, vel: 0, dist: 6.4, w: 0, h: 0 };
     var host = null, vis = {}, raf = 0, last = 0, planet = '', hudKey = '';
+    // The globe sits in the open sky between the top bar and the readout, the way ALT 327K's peak does.
     function resize() {
       var r = wrap.getBoundingClientRect(), w = Math.max(2, r.width | 0), h = Math.max(2, r.height | 0);
-      if (w === cs.w && h === cs.h) { return; }
-      cs.w = w; cs.h = h;
+      var scene = host ? host.parentNode : null, top = 0, bottom = h;
+      if (scene) {
+        var hr = scene.getBoundingClientRect(), hd = scene.querySelector('.hud3'), ro = scene.querySelector('.readout');
+        if (hd && hd.offsetParent) { top = hd.getBoundingClientRect().bottom - hr.top; }
+        if (ro) { bottom = ro.getBoundingClientRect().top - hr.top + 0.35 * Math.min(ro.offsetHeight, 160); }
+      }
+      top = Math.max(0, Math.min(top, h * 0.5)); bottom = Math.max(top + h * 0.3, Math.min(bottom, h));
+      var key = w + 'x' + h + ':' + Math.round(top) + ':' + Math.round(bottom);
+      if (key === cs.key) { return; }
+      cs.key = key; cs.w = w; cs.h = h;
       R.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); R.setSize(w, h, false);
-      cam.aspect = w / h; cam.updateProjectionMatrix();
-      var fit = 2.02, t = Math.tan(17 * PI / 180);
-      cs.dist = Math.max(fit / t, fit / (t * cam.aspect)) + 0.4;
+      cam.aspect = w / h;
+      var band = bottom - top, mid = (top + bottom) / 2, t = Math.tan(17 * PI / 180);
+      cs.dist = Math.max(1.5 * h / (band * t), 1.7 / (t * cam.aspect)) + 0.2;
+      cam.setViewOffset(w, h, 0, h / 2 - mid, w, h);
+      cam.updateProjectionMatrix();
     }
     function mount() {
       var want = gaia() ? $('gStage') : $('eStage');
-      if (want && wrap.parentNode !== want) { want.appendChild(wrap); cs.w = 0; }
+      if (want && wrap.parentNode !== want) { want.appendChild(wrap); cs.key = ''; }
       host = want;
       resize();
     }
     function running() { return view === 'globe' && !document.hidden && host && vis[host.id] !== false; }
     function syncBtns() {
-      q('g3Follow').setAttribute('aria-pressed', String(cs.follow));
-      q('g3Spin').setAttribute('aria-pressed', String(cs.spin));
+      document.querySelectorAll('[data-g3="follow"]').forEach(function (b) { b.setAttribute('aria-pressed', String(cs.follow)); });
+      document.querySelectorAll('[data-g3="spin"]').forEach(function (b) { b.setAttribute('aria-pressed', String(cs.spin)); });
     }
     function frame(t) {
       raf = 0;
@@ -4812,10 +4931,10 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
       uni.uZoneW.value = dph; uni.uSel.value = zone; uni.uYou.value = you;
       bezel.rotation.y = sub; hSel.g.rotation.y = zone; hYou.g.rotation.y = you;
       hYou.g.visible = Math.abs(ang(you - zone)) > 0.001;
-      var sl = placeLL(c.label), tAz = zone, tEl = 0.3;
+      var sl = pickLL(c, pal.shift), tAz = zone, tEl = 0.3;
       if (sl) {
         pSel.set(sl[0], sl[1] + pal.shift, shortName(c.label), pal.hand);
-        tAz = (sl[1] + pal.shift) * PI / 180; tEl = Math.max(-0.95, Math.min(0.95, sl[0] * PI / 180 * 0.85));
+        tAz = (sl[1] + pal.shift) * PI / 180; tEl = Math.max(-0.95, Math.min(0.95, sl[0] * PI / 180 * 0.85)); if (Math.abs(tEl) < 0.28) { tEl = sl[0] < -2 ? -0.28 : 0.28; }
       } else { pSel.hide(); }
       if (YOU) { pYou.set(YOU.ll[0], YOU.ll[1] + pal.shift, 'You \u00B7 ' + YOU.name, pal.you); } else { pYou.hide(); }
       if (CORDD && CORDD.states.tayanoa) {
@@ -4835,13 +4954,14 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
       cam.lookAt(0, 0, 0);
       R.render(scene, cam);
 
-      var hk = key + '|' + lonText(sub) + '|' + latText(c.decl) + '|' + c.label + '|' + (sl ? sl.join() : '');
+      var hk = key + '|' + lonText(sub) + '|' + latText(c.decl) + '|' + c.label + '|' + (sl ? sl.join() + (sl.meridian ? 'm' : '') : '');
       if (hk !== hudKey) {
         hudKey = hk;
-        q('g3k').textContent = key === 'gaia' ? 'Helios is overhead at' : 'The Sun is overhead at';
-        q('g3v').textContent = lonText(sub) + ', ' + latText(c.decl);
-        q('g3s').innerHTML = '<i class="k-sel">' + (key === 'gaia' ? 'Pink' : 'Magenta') + ' pin:</i> ' + esc(c.label) + (sl ? ' (' + llText(sl) + ')' : ' (a whole zone, so no single place)') +
-          '. <i class="k-you">' + (key === 'gaia' ? 'Green' : 'Gold') + ' pin:</i> ' + (YOU ? 'you, ' + esc(YOU.name) : 'you') + '. The hands read each clock\u2019s time off the ring.';
+        hud('k').forEach(function (e) { e.textContent = key === 'gaia' ? 'Helios is overhead at' : 'The Sun is overhead at'; });
+        hud('v').forEach(function (e) { e.textContent = lonText(sub) + ', ' + latText(c.decl); });
+        var cap = '<i class="k-sel">' + (key === 'gaia' ? 'Pink' : 'Magenta') + ' pin:</i> ' + esc(c.label) + (sl ? ' (' + (sl.meridian ? 'on its zone\u2019s meridian' : llText(sl)) + ')' : '') +
+          '. <i class="k-you">' + (key === 'gaia' ? 'Green' : 'Gold') + ' pin:</i> ' + (YOU ? 'you, ' + esc(YOU.name) : 'you') + '.';
+        hud('s').forEach(function (e) { e.innerHTML = cap; });
         wrap.setAttribute('aria-label', '3D time globe. ' + (key === 'gaia' ? 'Helios' : 'The Sun') + ' is overhead at ' + lonText(sub) + ', ' + latText(c.decl) + '. The ring of ' + c.H + ' hours shows the time in every zone.');
       }
       raf = window.requestAnimationFrame(frame);
@@ -4864,15 +4984,16 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
     function up() { cs.drag = null; }
     cvs.addEventListener('pointerup', up); cvs.addEventListener('pointercancel', up);
     cvs.addEventListener('webglcontextlost', function (e) { e.preventDefault(); document.body.classList.add('no-gl'); G3 = null; setView('dial', false); });
-    q('g3Follow').addEventListener('click', function () { cs.follow = !cs.follow; if (cs.follow) { cs.spin = false; } syncBtns(); wake(); });
-    q('g3Spin').addEventListener('click', function () { cs.spin = !cs.spin; if (cs.spin) { cs.follow = false; } syncBtns(); wake(); });
-    q('g3Reset').addEventListener('click', function () { cs.follow = true; cs.spin = false; cs.vel = 0; syncBtns(); wake(); });
+    document.querySelectorAll('[data-g3="follow"]').forEach(function (b) { b.addEventListener('click', function () { cs.follow = !cs.follow; if (cs.follow) { cs.spin = false; } syncBtns(); wake(); }); });
+    document.querySelectorAll('[data-g3="spin"]').forEach(function (b) { b.addEventListener('click', function () { cs.spin = !cs.spin; if (cs.spin) { cs.follow = false; } syncBtns(); wake(); }); });
+    document.querySelectorAll('[data-g3="reset"]').forEach(function (b) { b.addEventListener('click', function () { cs.follow = true; cs.spin = false; cs.vel = 0; syncBtns(); wake(); }); });
 
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (es) { es.forEach(function (e) { vis[e.target.id] = e.isIntersecting; }); wake(); });
       ['eStage', 'gStage'].forEach(function (id) { if ($(id)) { io.observe($(id)); } });
     }
-    window.addEventListener('resize', function () { cs.w = 0; wake(); });
+    window.addEventListener('resize', function () { cs.key = ''; wake(); });
+    window.setInterval(function () { if (running()) { resize(); } }, 1000);
     document.addEventListener('visibilitychange', wake);
     document.querySelectorAll('[data-planet]').forEach(function (b) { b.addEventListener('click', function () { window.setTimeout(function () { mount(); wake(); }, 0); }); });
     if (document.fonts && document.fonts.ready) { document.fonts.ready.then(function () { labelKey = ''; wake(); }); }
@@ -4883,6 +5004,144 @@ body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120
   try { G3 = build(); } catch (err) { G3 = null; }
   if (!G3) { document.body.classList.add('no-gl'); }
   setView(view, false);
+})();
+</script>
+<script>
+/* ---------- The feel of ALT 327K 2.0: a short picture effect over the scene and a synthesized sound when the clock moves,
+   the big time rolling to its new value, and a day scale down the right edge. Sound can be turned off with the Sound button. ---------- */
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var SND_KEY = 'parallax-sound', sound = true;
+  try { sound = window.localStorage.getItem(SND_KEY) !== 'off'; } catch (err) { sound = true; }
+  function gaia() { return document.body.classList.contains('is-gaia'); }
+  function api() { return gaia() ? window.pxGaia : window.pxEarth; }
+  function scene() { return document.querySelector(gaia() ? '.g-top' : '.hero'); }
+  function clock() { var a = api(); return a && a.clock3d ? a.clock3d() : null; }
+  // Where in the day the picked clock is: night, the edges of the day, or full daylight. Gaia's day is 36 hours long.
+  function partOfDay(c) { var f = c.hours / c.H; return f < 0.21 || f >= 0.875 ? 'night' : (f < 0.33 || f >= 0.71 ? 'edge' : 'day'); }
+
+  /* ----- Picture effects ----- */
+  function fxName(c) {
+    var p = c ? partOfDay(c) : 'day';
+    if (gaia()) { return p === 'night' ? 'aurora' : 'rings'; }
+    return p === 'night' ? 'aurora' : (p === 'edge' ? 'prism' : 'glacial');
+  }
+  function fx(name) {
+    if (reduce) { return; }
+    var sc = scene(); if (!sc) { return; }
+    var old = sc.querySelector('.tk-fx'); if (old) { old.remove(); }
+    var box = document.createElement('div'); box.className = 'tk-fx fx-' + (name || fxName(clock())); box.setAttribute('aria-hidden', 'true');
+    box.innerHTML = '<i></i><i></i><i></i>';
+    sc.appendChild(box); window.setTimeout(function () { if (box.parentNode) { box.remove(); } }, 1500);
+  }
+
+  /* ----- Synthesized sound, the same voices as ALT 327K ----- */
+  var AU = { ctx: null, master: null };
+  function graph() {
+    if (AU.ctx) { return AU.ctx; }
+    var C = window.AudioContext || window.webkitAudioContext; if (!C) { return null; }
+    try {
+      var c = new C(), lim = c.createDynamicsCompressor();
+      AU.ctx = c; AU.master = c.createGain(); AU.master.gain.value = 0.17;
+      lim.threshold.value = -14; lim.knee.value = 12; lim.ratio.value = 12;
+      AU.master.connect(lim); lim.connect(c.destination);
+    } catch (err) { AU.ctx = null; }
+    return AU.ctx;
+  }
+  function beep(kind) {
+    if (!sound || document.hidden) { return; }
+    var c = graph(); if (!c) { return; }
+    if (c.state === 'suspended') { c.resume(); }
+    var k = clock(), part = k ? partOfDay(k) : 'day', pr = gaia() ? 'glass' : (part === 'night' ? 'sonar' : 'chime');
+    var lift = k ? Math.sin(Math.PI * k.hours / k.H) : 0.5, now = c.currentTime + 0.01;
+    var base = ({ open: 440, step: 520, ok: 660, planet: 392 }[kind] || 500) * (0.8 + lift * 0.6);
+    var seq = kind === 'ok' ? [1, 1.25, 1.5] : kind === 'open' ? [1, 1.5] : kind === 'planet' ? [1, 0.75, 1.5] : [1];
+    seq.forEach(function (m, i) {
+      var t = now + i * 0.085, o = c.createOscillator(), g = c.createGain(), f = base * m, dur = 0.32;
+      o.type = pr === 'glass' ? 'triangle' : 'sine';
+      if (pr === 'sonar') { f *= 0.4; dur = 0.7; o.frequency.setValueAtTime(f * 1.5, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.12); }
+      else if (pr === 'glass') { o.frequency.setValueAtTime(f * 2, t); }
+      else { o.frequency.setValueAtTime(f, t); }
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.5, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(AU.master); o.start(t); o.stop(t + dur + 0.05);
+    });
+  }
+  function syncSound() { document.querySelectorAll('[data-g3="sound"]').forEach(function (b) { b.setAttribute('aria-pressed', String(sound)); b.textContent = sound ? 'Sound on' : 'Sound off'; }); }
+  document.querySelectorAll('[data-g3="sound"]').forEach(function (b) {
+    b.addEventListener('click', function () { sound = !sound; try { window.localStorage.setItem(SND_KEY, sound ? 'on' : 'off'); } catch (err) { /* fine */ } syncSound(); if (sound) { beep('ok'); } });
+  });
+  syncSound();
+  document.querySelectorAll('[data-g3="follow"], [data-g3="spin"], [data-g3="reset"], [data-g3="view"]').forEach(function (b) {
+    b.addEventListener('click', function () { beep('open'); fx(); });
+  });
+  document.querySelectorAll('[data-planet]').forEach(function (b) {
+    b.addEventListener('click', function () { window.setTimeout(function () { beep('planet'); fx(gaia() ? 'aurora' : 'glacial'); }, 30); });
+  });
+
+  /* ----- The big time rolls from the old clock to the new one ----- */
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function fmt(min, c) {
+    min = ((Math.round(min) % (c.H * 60)) + c.H * 60) % (c.H * 60);
+    var h = Math.floor(min / 60), m = min % 60;
+    if (c.H === 36) { return ((h % 18) || 18) + ':' + pad(m); }
+    return c.h12 ? ((h % 12) || 12) + ':' + pad(m) : pad(h) + ':' + pad(m);
+  }
+  var rollTimer = 0;
+  function roll(fromMin, c) {
+    var el = $(c.H === 36 ? 'gNum' : 'heroNum'); if (!el || reduce) { return; }
+    var day = c.H * 60, to = c.hours * 60, d = ((to - fromMin) % day + day) % day;
+    if (d > day / 2) { d -= day; }
+    if (Math.abs(d) < 1) { return; }
+    var t0 = 0, dur = 800;
+    window.__pxRoll = true; el.classList.add('roll');
+    window.cancelAnimationFrame(rollTimer);
+    function step(t) {
+      if (!t0) { t0 = t; }
+      var k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmt(fromMin + d * e, c);
+      if (k < 1) { rollTimer = window.requestAnimationFrame(step); }
+      else { window.__pxRoll = false; el.classList.remove('roll'); }
+    }
+    rollTimer = window.requestAnimationFrame(step);
+  }
+
+  /* ----- The day scale down the right edge ----- */
+  var spineKey = '';
+  function paintSpine(c) {
+    document.querySelectorAll('[data-spine]').forEach(function (sp) {
+      var key = c.H + '|' + c.h12;
+      if (sp.getAttribute('data-k') !== key) {
+        sp.setAttribute('data-k', key);
+        var html = '', step = c.H === 36 ? 6 : 3, h;
+        for (h = 0; h <= c.H; h += step) {
+          var noon = h === c.H / 2, lab = c.H === 36 ? (h === 0 || h === 36 ? 'Midnight' : (noon ? 'Noon' : pad(h) + ':00')) : (h === 0 || h === 24 ? 'Midnight' : (noon ? 'Noon' : (c.h12 ? ((h % 12) || 12) + (h < 12 ? ' AM' : ' PM') : pad(h) + ':00')));
+          html += '<div class="tk' + (noon ? ' noon' : '') + '" style="top:' + (100 - h / c.H * 100).toFixed(2) + '%"><span>' + lab + '</span><b></b></div>';
+        }
+        sp.innerHTML = html + '<i class="you"></i><i class="now"></i>';
+      }
+      var you = (((c.hours + (c.you - c.off) / 60) % c.H) + c.H) % c.H;
+      sp.querySelector('.now').style.top = (100 - c.hours / c.H * 100).toFixed(2) + '%';
+      sp.querySelector('.you').style.top = (100 - you / c.H * 100).toFixed(2) + '%';
+    });
+  }
+
+  /* ----- Watch the clock: a new place gets the effect, the sound and the roll ----- */
+  var last = { label: null, planet: null, hours: 0, H: 24 };
+  function watch() {
+    var c = clock();
+    if (c) {
+      var pl = gaia() ? 'gaia' : 'earth';
+      if (last.label !== null && pl === last.planet && c.label !== last.label) {
+        beep('step'); fx(); roll(last.hours * 60, c);
+      }
+      last = { label: c.label, planet: pl, hours: c.hours, H: c.H };
+      paintSpine(c);
+    }
+  }
+  window.setInterval(watch, 250);
+  watch();
 })();
 </script>
 <script>
