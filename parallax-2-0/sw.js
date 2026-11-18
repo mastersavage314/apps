@@ -1,5 +1,5 @@
 /* Parallax 2.0: offline support. The page and everything it needs are saved on first visit. */
-const CACHE = 'high-noon-neon3d-20261118c';
+const CACHE = 'high-noon-neon3d-20261118d';
 const CORE = [
   "./",
   "./index.html",
@@ -13,6 +13,7 @@ const CORE = [
   "./fonts/fonts.css",
   "./vendor/three.min.js",
   "./land.json",
+  "./cord.json",
   "./fonts/space-grotesk-latin-400-normal.woff2",
   "./fonts/space-grotesk-latin-500-normal.woff2",
   "./fonts/space-grotesk-latin-600-normal.woff2",

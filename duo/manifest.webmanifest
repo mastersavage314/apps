@@ -1,0 +1,20 @@
+{
+  "name": "Parallax + ALT 327K",
+  "short_name": "Parallax + ALT",
+  "description": "Parallax 2.0 and ALT 327K 2.0 in one app: switch between time and altitude in a tap, with your place carried over.",
+  "id": "/apps/duo/",
+  "start_url": "./",
+  "scope": "../",
+  "display": "standalone",
+  "background_color": "#05060F",
+  "theme_color": "#05060F",
+  "lang": "en",
+  "categories": ["utilities", "education"],
+  "launch_handler": { "client_mode": ["navigate-existing", "auto"] },
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
