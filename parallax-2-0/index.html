@@ -922,6 +922,27 @@ body.is-gaia .stage-hud .k-sel { color: #FF8AD8; } body.is-gaia .stage-hud .k-yo
 body.is-gaia .glui button[aria-pressed="true"] { background: linear-gradient(120deg, #46FFB4, #7FE9FF); color: #021018; box-shadow: 0 0 20px rgba(70, 255, 180, .6); }
 @media (max-width: 640px) { .glui { left: 1.25rem; right: 1.25rem; justify-content: flex-start; } .stage-hud { max-width: 86%; } .stage { height: clamp(26rem, 118vw, 34rem); } }
 @media (max-width: 420px) { .nx-links a:nth-child(n+2) { display: none; } }
+/* Nothing hides off the edge: rows of buttons wrap onto more lines instead of scrolling sideways, and on phones the nav keeps only what fits. */
+.presets, .g-places { flex-wrap: wrap; overflow-x: visible; }
+.presets, .g-places, .panel .presets, .panel .g-places { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; }
+.presets button, .g-places button { flex: 0 1 auto; max-width: 100%; white-space: normal; text-align: center; }
+@media (max-width: 480px) { .nx { padding-left: .75rem; padding-right: .75rem; gap: .5rem; } .nx-brand { font-size: .8rem; } }
+@media (max-width: 380px) { .nx-links { display: none; } .nx-sib { margin-left: auto; } }
+/* Small phones: the hero's top bar, the panels and the readouts all fit inside the screen. */
+.scene-top > *, .g-bar > * { min-width: 0; }
+.planets { flex: none; }
+.phase, .g-phase { white-space: normal; overflow-wrap: anywhere; }
+.panel, .panel > *, .g-gauges > *, .g-sun > *, .tally > * { min-width: 0; }
+.g-g b, .g b { overflow-wrap: anywhere; }
+@media (max-width: 340px) { body .g-g b, body #gaia .g-g b { font-size: 1.1rem; } }
+@media (max-width: 380px) {
+  .planets button { padding-left: .8rem; padding-right: .8rem; letter-spacing: .08em; }
+  .phase, .g-phase { font-size: .6rem; letter-spacing: .1em; padding-left: 1.45rem; padding-right: .7rem; }
+  .g b, .g-g b { font-size: clamp(1.2rem, 6.6vw, 2rem); }
+  .g-sun b { font-size: clamp(1.25rem, 6.4vw, 2rem); }
+  .tally b { font-size: clamp(1.7rem, 8vw, 2.6rem); }
+  .seg button { padding-left: .35rem; padding-right: .35rem; }
+}
 @media (prefers-reduced-motion: reduce) { .nx-brand i, .phase::before, .g-phase::before { animation: none; } .row:hover, .g-row:hover, .g:hover, .g-g:hover, .tally li:hover, .g-sun li:hover { transform: none; } }
 </style>
 </head>
