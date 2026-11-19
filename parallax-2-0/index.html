@@ -4941,7 +4941,7 @@ body.is-gaia .spine .now { box-shadow: 0 0 0 3px rgba(255, 92, 203, .55), 0 0 24
         var rl = [49.5 * PI / 180, (-147 + pal.shift) * PI / 180];
         region.position.set(1.035 * Math.cos(rl[0]) * Math.sin(rl[1]), 1.035 * Math.sin(rl[0]), 1.035 * Math.cos(rl[0]) * Math.cos(rl[1]));
         if (region.userData.key !== key) { region.userData.key = key; if (region.material.map) { region.material.map.dispose(); } region.material.map = labelTex('CORDILLERAN REGION', pal.regLabel); region.material.needsUpdate = true; }
-        region.visible = true;
+        region.visible = false;   // the region is drawn on the planet; it needs no label
       }
       sun.position.copy(uni.uSun.value).multiplyScalar(7.5); halo.position.copy(sun.position);
 
