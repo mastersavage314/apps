@@ -1260,10 +1260,10 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
     <div class="gauges spec" id="spec"></div>
   </section>
 
-  <footer class="only-gaia" hidden>
-    <p>Gaia's air follows its locked numbers: 123 kPa at the sea, 55 kPa at 8,400 m, 21% oxygen, 130°F at the coast, and 5°C cooler with every kilometer you climb. Above Mount Tayanroken no temperature is locked yet, so the sandbox keeps cooling the air until it hits &minus;70°F, the temperature of Earth's stratosphere, and holds it there.</p>
-    <p>SpO2 is a simulation, not a medical reading. Gaian lungs are fitted to the Gaians' own lines: a Gaian breathes like someone from Earth does 7,560 m lower, all the way up to the living ceiling at 13,060 m, and the Gaian death zone starts at 16,000 m. The Earth visitor is an acclimatized adult from Earth breathing Gaia's outside air with no gear. Performance time reads the FAA's table at the matching Earth altitude.</p>
-    <p>The visitor's gear follows the locked survival kit. Between average ground and Summitbrook, the switch from a tube to a full mask sits where the air is as thin as Earth's at 18,000 ft, the height where the FAA stops allowing nasal tubes.</p>
+  <footer class="only-gaia" hidden data-keep>
+    <p>Gaia's air follows its locked numbers: 101.325 kPa at the sea, the same as Earth's, and 34.3% oxygen. It thins with height more slowly than Earth's, halving about every 7.2 km, so the Gaians' lines sit at the living ceiling (13,500 m), the death zone (16,000 m), the mask line (about 17,500 m), the pressure suit line (about 22,600 m) and the Armstrong limit (about 29,000 m). It is 130°F at the coast and 5°C cooler with every kilometer you climb. Above Mount Tayanroken no temperature is locked yet, so the sandbox keeps cooling the air until it hits &minus;70°F, the temperature of Earth's stratosphere, and holds it there.</p>
+    <p>SpO2 is a simulation, not a medical reading. Gaian lungs are fitted to the Gaians' own lines: a Gaian breathes like someone from Earth does 7,560 m lower, all the way up to the living ceiling at 13,500 m, and the Gaian death zone starts at 16,000 m. The Earth visitor is an acclimatized adult from Earth breathing Gaia's outside air with no gear, and gets the full benefit of its 34.3% oxygen. Performance time reads the FAA's table at the matching Earth altitude.</p>
+    <p>The visitor's gear follows the locked survival kit. Between average ground and Summitbrook, the switch from a tube to a full mask sits where each breath holds as little oxygen as Earth's air at 18,000 ft, the height where the FAA stops allowing nasal tubes.</p>
     <p>Every elevation here is its Earth elevation plus 7,560 m. Dry land and lake surfaces below sea level are 10 times deeper, and the oceans are 25% deeper. That goes for every real place the arrows step through. Coalinga, Ospero, and Cyrillo are shown at the surface of the lake they sit on.</p>
   </footer>
 
@@ -1375,25 +1375,34 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
     return { atm: atm, boil: boil, spo2: spo2, ept: ept, alt: alt };
   })();
 
-  /* Gaia's air, from its locked numbers: 123 kPa at the sea, 55 kPa at 8,400 m, 21% oxygen,
+  /* Gaia's air, from its locked numbers: 101.325 kPa at the sea, the same as Earth's, and 34.3% oxygen.
+     It thins with height at the rate Gaia's air always has (half every 7.2 km), so the lines land at the locked heights:
+     living ceiling 13,500 m, death zone 16,000 m, mask line ~17,500 m, pressure suit line ~22,600 m, Armstrong limit ~29,000 m.
      130°F at the coast and 5°C cooler per km. Past the locked heights the cooling stops at Earth's stratosphere temperature. */
   var GAIA = (function () {
-    var P0 = 123262, SCALE = 8400 / Math.log(123262 / 55000), T0 = 327.594, LAPSE = 0.0052, TMIN = 216.65;
+    var P0 = 101325, O2 = 0.343, SCALE = 8400 / Math.log(123262 / 55000), T0 = 327.594, LAPSE = 0.0052, TMIN = 216.65;
+    var RGAS = 8314.46 / 29.75;   // more oxygen makes the air a little heavier than Earth's (29.75 g/mol)
+    var CEIL = 13500, DEATH = 16000, MASKZ = 17500, SUITZ = 22600, ARMZ = 29000;
     function atm(z) { // metres above Gaia's sea
       var T = Math.max(TMIN, T0 - LAPSE * z), P = P0 * Math.exp(-z / SCALE);
-      return { T: T, P: P, rho: P / (287.053 * T) };
+      return { T: T, P: P, rho: P / (RGAS * T) };
     }
-    var MASK = PHYS.alt(atm(19600).P);
-    // The Earth altitude a Gaian's body feels. The formula's 7,560 m up to the living ceiling (13,060 m),
-    // the death zone at 16,000 m, and no edge at all past the mask line (19,600 m). `same` is the Earth altitude with equal pressure.
+    // The Earth air pressure that puts the same oxygen into each breath (water vapor in the lungs taken out first).
+    function eqP(P) { return Math.max(0, (O2 / 0.2095) * (P - 6266) + 6266); }
+    // The Earth altitude where each breath holds as much oxygen as it does here, for anyone breathing Gaia's air.
+    function o2Alt(z) { return PHYS.alt(eqP(atm(z).P)); }
+    var MASK = o2Alt(MASKZ);
+    // The Earth altitude a Gaian's body feels. The formula's 7,560 m up to the living ceiling (13,500 m),
+    // Earth's death zone at Gaia's (16,000 m), and no edge at all past the mask line (17,500 m). `same` is the oxygen-matched Earth altitude.
     function lungs(z, same) {
-      if (z <= 13060) return z - 7560;
-      if (z <= 16000) return 5500 + (z - 13060) / 2940 * 2500;
-      if (z <= 19600) return 8000 + (z - 16000) / 3600 * (MASK - 8000);
+      if (z <= CEIL) return z - 7560;
+      if (z <= DEATH) return (CEIL - 7560) + (z - CEIL) / (DEATH - CEIL) * (8000 - (CEIL - 7560));
+      if (z <= MASKZ) return 8000 + (z - DEATH) / (MASKZ - DEATH) * (MASK - 8000);
       return same;
     }
-    function sat(who, z, P) { return (who === 'gaian' && z <= 19600) ? PHYS.spo2(PHYS.atm(lungs(z, 0)).P) : PHYS.spo2(P); }
-    return { atm: atm, lungs: lungs, sat: sat, P0: P0, RHO0: atm(0).rho };
+    function sat(who, z, P) { return (who === 'gaian' && z <= MASKZ) ? PHYS.spo2(PHYS.atm(lungs(z, 0)).P) : PHYS.spo2(eqP(P)); }
+    return { atm: atm, lungs: lungs, sat: sat, eqP: eqP, o2Alt: o2Alt, P0: P0, O2: O2, RHO0: atm(0).rho,
+      CEIL: CEIL, DEATH: DEATH, MASKZ: MASKZ, SUITZ: SUITZ, ARMZ: ARMZ };
   })();
   var PLANET = 'earth', WHO = 'gaian';
 
@@ -1692,7 +1701,7 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
     ['Kangchenjunga', 'Nepal and India', 'p', 8586, 'm', ''],
     ['K2', 'Pakistan and China', 'p', 28251, 'ft', 'The Savage Mountain.'],
     ['Mount Everest', 'Nepal and Tibet', 'p', 29032, 'ft', 'The highest mountain on Earth outside the Rokens.'],
-    ['Mount Tayanroken', 'The Rokens, Tayanoa', 'p', 31332, 'ft', 'The highest mountain on Earth, and the top of the Roken 14.', { cl: 1 }],
+    ['Mount Tayanroken', 'The Rokens, Tayanoa', 'p', 32641, 'ft', 'The highest mountain on Earth, and the top of the Roken 14.', { cl: 1 }],
 
     // Lakes and seas, at the surface
     ['Lake Assal', 'Djibouti', 'w', -155, 'm', 'The lowest point in Africa, and saltier than the Dead Sea.'],
@@ -2161,13 +2170,13 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
     [16400, 'Tayanoa\u2019s treeline', 'l'], [16732, 'La Rinconada, Peru'], [17598, 'Summitcrest and Everest South Base Camp'],
     [18045, 'The long-term limit for human life', 'l'], [19341, 'Kilimanjaro\u2019s summit'], [19629, 'Ohwentsarako'], [20310, 'Denali\u2019s summit'],
     [20340, 'Rinconada Alta\u2019s highest mine shafts'], [22838, 'Aconcagua\u2019s summit'], [26247, 'The death zone, 8,000 meters', 'l'],
-    [28251, 'K2\u2019s summit'], [29032, 'Everest\u2019s summit'], [31332, 'Mount Tayanroken\u2019s summit'], [36000, 'A typical airliner cruise', 'l'], [37000, 'The highest a bird has ever been seen flying', 'l'],
+    [28251, 'K2\u2019s summit'], [29032, 'Everest\u2019s summit'], [32641, 'Mount Tayanroken\u2019s summit'], [36000, 'A typical airliner cruise', 'l'], [37000, 'The highest a bird has ever been seen flying', 'l'],
     [60000, 'Concorde\u2019s cruise', 'l'], [63000, 'The Armstrong limit', 'l'], [70000, 'A U-2 spy plane', 'l'], [85000, 'An SR-71 Blackbird', 'l'], [102800, 'Joseph Kittinger\u2019s jump in 1960', 'l'], [123523, 'The highest a jet plane has ever flown', 'l'],
     [127852, 'Felix Baumgartner\u2019s jump', 'l'], [135890, 'Alan Eustace\u2019s jump, the highest ever', 'l'], [164042, 'The top of the stratosphere', 'l'],
     [264000, '50 miles, where the US hands out astronaut wings', 'l'], [278871, 'The top of the mesosphere', 'l'], [327360, '62 miles up', 'l']
   ];
   var PRESETS = [
-    ['The line', 15840], ['Sea level', 0], ['Summitcrest', 17598], ['Everest', 29032], ['Mount Tayanroken', 31332], ['Airliner cruise', 36000],
+    ['The line', 15840], ['Sea level', 0], ['Summitcrest', 17598], ['Everest', 29032], ['Mount Tayanroken', 32641], ['Airliner cruise', 36000],
     ['Armstrong limit', 63000], ['Baumgartner\u2019s jump', 127852], ['62 miles up', 327360], ['Dead Sea shore', -1412], ['Titanic', -12500], ['Challenger Deep', -35876]
   ];
   var SNAPS = MARKS.map(function (m) { return m[0]; });
@@ -2425,7 +2434,7 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
     var n = Math.max(1, L.length - 1);
     var pos = function (ft) { var i = 0; while (i < L.length && L[i].ft < ft) i++; return Math.round(Math.min(1, i / n) * 1000) / 10; };
     var g = PLANET === 'gaia' ?
-      [[-1e9, '#010509'], [-16404, '#0A4460'], [0, '#7FE9FF'], [24803, '#1B8FB0'], [27559, '#46FFB4'], [40643, '#FF5CCB'], [52493, '#9B6BFF'], [101706, '#0B1D4A'], [1e9, '#020B14']] :
+      [[-1e9, '#010509'], [-16404, '#0A4460'], [0, '#7FE9FF'], [24803, '#1B8FB0'], [27559, '#46FFB4'], [40643, '#FF5CCB'], [52493, '#9B6BFF'], [95144, '#0B1D4A'], [1e9, '#020B14']] :
       [[-1e9, '#01030C'], [-13123, '#0A2F6E'], [0, '#3CC8E4'], [1, '#17C9B8'], [8000, '#FFD447'], [15840, '#FF5FAE'], [29032, '#7A3CFF'], [63000, '#1B1464'], [1e9, '#03021A']];
     return 'linear-gradient(90deg, ' + g.map(function (c) { return c[1] + ' ' + pos(c[0]) + '%'; }).join(', ') + ')';
   }
@@ -2671,7 +2680,7 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
   var rgb = function (c, al) { return 'rgba(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ',' + (al == null ? 1 : Math.max(0, Math.min(1, al)).toFixed(3)) + ')'; };
   var win = function (v, a, b, fade) { return clamp01((v - a) / fade) * clamp01((b - v) / fade); };
   var i0, STARS = [], CLOUDS = [], SNOW = [], BIO = [], FISH = [], RIDGES = [
-    { elev: 31332, k: 0.0072, col: [112, 124, 176], snow: 0.75, pts: [] },
+    { elev: 32641, k: 0.0072, col: [112, 124, 176], snow: 0.75, pts: [] },
     { elev: 21000, k: 0.0086, col: [76, 88, 138], snow: 0.45, pts: [] },
     { elev: 12500, k: 0.011, col: [42, 54, 88], snow: 0, pts: [] }
   ];
@@ -2838,7 +2847,7 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
 
   /* Gaia's sky: Helios, Selene, the aurora, and the Great Stair standing over the coast */
   var GSTARS = [], GRIDGES = [
-    { elev: 56135, k: 0.0062, col: [150, 172, 220], snow: 0.8, pts: [] },
+    { elev: 57444, k: 0.0062, col: [150, 172, 220], snow: 0.8, pts: [] },
     { elev: 44500, k: 0.0074, col: [84, 112, 168], snow: 0.5, pts: [] }
   ], STAIR = { elev: 24803, k: 0.0105, col: [26, 74, 98], bands: [] };
   var GAUR = [
@@ -3027,7 +3036,7 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
       ctx.beginPath(); ctx.moveTo(jx + 12, jy); ctx.lineTo(jx - 2, jy - 2.2); ctx.lineTo(jx - 9, jy - 11); ctx.lineTo(jx - 12, jy - 11); ctx.lineTo(jx - 8, jy); ctx.lineTo(jx - 5, jy + 12); ctx.lineTo(jx - 1, jy + 12); ctx.lineTo(jx + 2, jy + 1.6); ctx.closePath(); ctx.fill();
     }
     // what it does to whoever is breathing: tunnel vision as the oxygen runs out, then a suit visor past the pressure suit line
-    var visor = clamp01((ft - 75000) / 5709), vig = clamp01((92 - GAIA.sat(WHO, z, A.P)) / 70) * (1 - visor);
+    var visor = clamp01((ft - 68438) / 5709), vig = clamp01((92 - GAIA.sat(WHO, z, A.P)) / 70) * (1 - visor);
     if (vig > 0.01) {
       var m = Math.max(W, H), vg = ctx.createRadialGradient(W / 2, H * 0.48, m * (0.42 - 0.24 * vig), W / 2, H * 0.48, m * 0.78);
       vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,' + (0.92 * vig).toFixed(3) + ')');
@@ -3214,20 +3223,20 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
   DATA_G.forEach(function (d) { BYID_G[d.id] = d; });
   BYID_G.__line = { id: '__line', n: 'The line', ft: 40643, m: 12388, exact: 12388.032, band: 'on' };
   var MARKERS_G = [
-    { m: 13060, show: 13060, ft: 42848, text: 'The Gaians’ living ceiling. Nobody on Gaia lives higher than this for good. Anything above is a seasonal stop for climbers.', scope: 'any' },
+    { m: 13500, show: 13500, ft: 44291, text: 'The Gaians’ living ceiling. Nobody on Gaia lives higher than this for good. Anything above is a seasonal stop for climbers.', scope: 'any' },
     { m: 11060, show: 11060, ft: 36286, text: 'The world list stops here. Below this, only Tayanoa is on the board.', scope: 'all' },
     { m: 10778.7, show: 10779, ft: 35363, text: 'Tayanoa’s floor. Nothing in the state sits lower.', scope: 'cl' }
   ];
   var ZONES_UP_G = [
-    [0, 'The coast', 'A thin strip of land at sea level. The air is thicker than anything on Earth and it averages 130°F. Hypercanes spin offshore. The only people down here are the dock crews at the ports.'],
+    [0, 'The coast', 'A thin strip of land at sea level. The air presses down exactly as hard as Earth’s does at sea level, but a third of it is oxygen, so every breath carries about 64% more oxygen than on Earth. It averages 130°F. Hypercanes spin offshore. The only people down here are the dock crews at the ports.'],
     [500, 'The Great Stair', 'Cliff bands and terraces climbing 7,560 meters from the sea to where the land really starts. It is the wettest place on the planet and nobody lives on it. Rivers drop down it through canyons and waterfalls, and the Lifts carry people past it.'],
     [24803, 'Gaia’s ground floor', 'The top of the Great Stair, where Earth’s coastlines sit. Gaia’s New York, London and Tokyo are all up here, and it is about 59°F on an average day. Average ground on the whole planet is only 840 meters higher.'],
     [33415, 'High country', 'Tree lines and snow lines start showing up, depending on where you are. Summitbrook sits in this band at 12,388 meters, under a deep, dark blue sky where auroras are a regular thing.'],
-    [42848, 'Above the living ceiling', 'No Gaian lives up here for good. This is climbing country. The camps on Gaia’s Everest are all in this band, and a climber from Earth has been in their own death zone since Base Camp.'],
-    [52493, 'The Gaian death zone', 'Even Gaians can’t keep up here. Gaia’s Everest and all of the Roken 14 top out in this zone, and Mount Tayanroken pokes 1,110 meters into it.'],
-    [64304, 'Past the mask line', 'Higher than any mountain on Gaia. From here up, everybody needs a sealed oxygen mask, Gaian or not. Gaian airliners cruise in this band on huge wings.'],
-    [80709, 'Past the pressure suit line', 'A mask is not enough anymore. From here up it is a full pressure suit for everyone. The sky is close to black and Helios is a hard white disc.'],
-    [101706, 'Past the Armstrong limit', 'The pressure is so low that water boils at body temperature. Gaia’s thick air pushes this line up to about 31,000 meters. On Earth it sits near 19,000.'],
+    [44291, 'Above the living ceiling', 'No Gaian lives up here for good. This is climbing country. The camps on Gaia’s Everest are all in this band, and a climber from Earth, even with the extra oxygen, reaches their own death zone between Camp III and Camp IV.'],
+    [52493, 'The Gaian death zone', 'Even Gaians can’t keep up here. Gaia’s Everest and the rest of the Roken 14 top out in this zone. Mount Tayanroken climbs through all of it and pokes 9 meters past the mask line.'],
+    [57415, 'Past the mask line', 'Only the very top of Mount Tayanroken reaches up here, 9 meters past the line. From here up, everybody needs a sealed oxygen mask, Gaian or not. Gaian airliners cruise in this band on huge wings.'],
+    [74147, 'Past the pressure suit line', 'A mask is not enough anymore. From here up it is a full pressure suit for everyone. The sky is close to black and Helios is a hard white disc.'],
+    [95144, 'Past the Armstrong limit', 'The pressure is so low that water boils at body temperature. Gaia’s air thins out more slowly than Earth’s, so this line sits up at about 29,000 meters. On Earth it sits near 19,000.'],
     [164042, 'Upper air', 'Far above anything that flies. Gaia’s air thins out slowly, so there is still more of it up here than Earth has at this height. The sky is black, the stars are out, and they are not Earth’s constellations.']
   ];
   var ZONES_DOWN_G = [
@@ -3243,16 +3252,17 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
     [-3281, 'The end of the twilight zone', 'l'], [-2820, 'Badwater Basin in Death Valley'], [-656, 'The end of the sunlight zone', 'l'],
     [0, 'Sea level', 'l'], [24803, 'The top of the Great Stair', 'l'], [27559, 'Average ground on Gaia', 'l'], [30083, 'Denver'],
     [35363, 'Selvak, Tayanoa’s floor'], [35703, 'Tayanoa City'], [40643, 'Summitbrook and Pyratech Arena, the line'],
-    [41535, 'La Rinconada, Peru'], [42401, 'Summitcrest and Everest Base Camp'], [42848, 'The Gaians’ living ceiling', 'l'],
+    [41535, 'La Rinconada, Peru'], [42401, 'Summitcrest and Everest Base Camp'], [44291, 'The Gaians’ living ceiling', 'l'],
     [44144, 'Kilimanjaro’s summit'], [44432, 'Ohwentsarako'], [44701, 'Camp I on Everest'], [45113, 'Denali’s summit'],
     [45143, 'Rinconada Alta’s highest mine shafts'], [45801, 'Camp II on Everest'], [47641, 'Aconcagua’s summit'],
     [48425, 'Camp III on Everest'], [50787, 'Camp IV on Everest'], [52493, 'The Gaian death zone, 16,000 meters', 'l'],
-    [53054, 'K2’s summit'], [53835, 'Everest’s summit'], [56135, 'Mount Tayanroken’s summit'], [64304, 'The mask line', 'l'],
-    [70000, 'A Gaian airliner at cruise', 'l'], [80709, 'The pressure suit line', 'l'], [101706, 'The Armstrong limit', 'l'], [327360, '62 miles up', 'l']
+    [53054, 'K2’s summit'], [53835, 'Everest’s summit'], [57415, 'The mask line', 'l'], [57444, 'Mount Tayanroken’s summit'],
+    [70000, 'A Gaian airliner at cruise', 'l'], [74147, 'The pressure suit line', 'l'], [95144, 'The Armstrong limit', 'l'], [327360, '62 miles up', 'l']
   ];
+  MARKS_G.sort(function (a, b) { return a[0] - b[0]; });   // the living ceiling now sits just above Kilimanjaro's summit
   var PRESETS_G = [
-    ['The line', 40643], ['Sea level', 0], ['Top of the Great Stair', 24803], ['Average ground', 27559], ['Summitcrest', 42401], ['Living ceiling', 42848],
-    ['Death zone', 52493], ['Everest', 53835], ['Mount Tayanroken', 56135], ['Airliner cruise', 70000], ['Pressure suit line', 80709], ['Armstrong limit', 101706],
+    ['The line', 40643], ['Sea level', 0], ['Top of the Great Stair', 24803], ['Average ground', 27559], ['Summitcrest', 42401], ['Living ceiling', 44291],
+    ['Death zone', 52493], ['Everest', 53835], ['Mask line', 57415], ['Mount Tayanroken', 57444], ['Airliner cruise', 70000], ['Pressure suit line', 74147], ['Armstrong limit', 95144],
     ['62 miles up', 327360], ['Dead Sea shore', -14108], ['Titanic', -15625], ['Challenger Deep', -44846]
   ];
   var WORLDS = {
@@ -3271,7 +3281,7 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
         below: 'linear-gradient(90deg, #7FE9FF 0%, #1B8FB0 12%, #0A4460 30%, #04182B 58%, #010509 100%)'
       },
       PILE_T: { ft: [[36000, 38000, 42000, 44000], 0.3048, 0], m: [[11000, 11500, 12500, 13500], 1, 0], mi: [[7, 8], 1609.344, 0], km: [[11, 12, 13], 1000, 0] },
-      PILE_MARKS: [[13060, 'living ceiling']],
+      PILE_MARKS: [[13500, 'living ceiling']],
       sb: { alt: 40643, mode: 'above', last: { above: 40643, below: 0 } }
     }
   };
@@ -3309,39 +3319,40 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
     var suit = ['Pressure suit', 'Past the pressure suit line, a mask is not enough for anyone.', 'bad'];
     if (gaian) {
       if (z < 7560) return ['Nothing', tF >= 90 ? 'Plenty of air for a Gaian. It is the heat that keeps people away.' : 'Plenty of air for a Gaian. Nobody lives on the Great Stair, though.', 'good'];
-      if (z < 13060) return ['Nothing', 'This is home. Gaians live for good all the way up to ' + altStr(42848, unit) + ' ' + unit + '.', 'good'];
-      if (z < 16000) return ['Nothing, for a visit', 'Above the living ceiling. A Gaian can climb here, but nobody stays.', 'warn'];
-      if (z < 19600) return ['Bottled oxygen', 'The Gaian death zone. Even Gaians can’t last up here without it.', 'bad'];
-      if (z < 24600) return ['Sealed oxygen mask', 'Past the mask line, Gaian lungs are no help.', 'bad'];
+      if (z < GAIA.CEIL) return ['Nothing', 'This is home. Gaians live for good all the way up to ' + altStr(44291, unit) + ' ' + unit + '.', 'good'];
+      if (z < GAIA.DEATH) return ['Nothing, for a visit', 'Above the living ceiling. A Gaian can climb here, but nobody stays.', 'warn'];
+      if (z < GAIA.MASKZ) return ['Bottled oxygen', 'The Gaian death zone. Even Gaians can’t last up here without it.', 'bad'];
+      if (z < GAIA.SUITZ) return ['Sealed oxygen mask', 'Past the mask line, Gaian lungs are no help.', 'bad'];
       return suit;
     }
     if (z < 7560) return tF >= 90 ? ['Cooling suit', z < 150 ? 'For the heat. Gaia’s coast averages 130°F.' : 'It is about ' + tF + '°F here on an average day. The coast averages 130.', 'warn'] :
       ['No gear yet', 'Thick enough for someone from Earth. The oxygen tube goes on at the top of the Great Stair.', 'good'];
-    if (z < 9290) return ['Oxygen tube, altitude meds', 'A tube under the nose is enough across Gaia’s low ground.', 'warn'];
-    if (z < 12900) return ['Full oxygen mask, 24/7', 'Plus a pressurized room to sleep in. This is the rule in Summitbrook.', 'bad'];
-    if (z < 24600) return ['Sealed pure-oxygen mask', 'A visitor from Earth is in their own death zone from here up.', 'bad'];
+    if (GAIA.o2Alt(z) < 5486) return ['Oxygen tube, altitude meds', 'A tube under the nose is enough across Gaia’s low ground.', 'warn'];
+    if (GAIA.o2Alt(z) < 8000) return ['Full oxygen mask, 24/7', 'Plus a pressurized room to sleep in. This is the rule in Summitbrook.', 'bad'];
+    if (z < GAIA.SUITZ) return ['Sealed pure-oxygen mask', 'A visitor from Earth is in their own death zone from here up.', 'bad'];
     return suit;
   }
   function gaiaNumbers(ft, below) {
-    var unit = state.unit, z = ft * 0.3048, A = GAIA.atm(z), B = PHYS.boil(A.P), o2 = 0.2095 * A.P / 1000;
-    var same = PHYS.alt(A.P), gaian = WHO === 'gaian', feels = gaian ? GAIA.lungs(z, same) : same;
-    var s = gaian ? PHYS.spo2(PHYS.atm(feels).P) : PHYS.spo2(A.P), e = PHYS.ept(feels / 0.3048);
+    var unit = state.unit, z = ft * 0.3048, A = GAIA.atm(z), B = PHYS.boil(A.P), o2 = GAIA.O2 * A.P / 1000;
+    // samePress: where Earth's air has this pressure. same: where each breath on Earth holds this much oxygen.
+    var samePress = PHYS.alt(A.P), same = PHYS.alt(GAIA.eqP(A.P)), gaian = WHO === 'gaian', feels = gaian ? GAIA.lungs(z, same) : same;
+    var s = gaian ? PHYS.spo2(PHYS.atm(feels).P) : PHYS.spo2(GAIA.eqP(A.P)), e = PHYS.ept(feels / 0.3048);
     var tC = Math.round(A.T - 273.15), tF = Math.round((A.T - 273.15) * 1.8 + 32);
-    var water = 123262 + 1025 * 7.84532 * Math.max(0, -z), wr = water / 123262;
+    var water = GAIA.P0 + 1025 * 7.84532 * Math.max(0, -z), wr = water / GAIA.P0;
     var at = function (m) { return altStr(m / 0.3048, unit) + ' ' + unit; };
     if (below) {
       $('feelNow').textContent = 'In the water, about ' + num(wr, wr < 100 ? 1 : 0) + ' times the air at Gaia’s sea level is pressing on you. If this were a dry shaft open to the sky instead, the air would be about ' + minus(tF) + '°F (' + minus(tC) + '°C) and ' + Math.round(A.rho / GAIA.RHO0) + ' times as thick as at Gaia’s coast.';
     } else {
       var who;
-      if (gaian) who = z > 19600 ? 'Gaian lungs are no help this high. The air is as thin as Earth’s at ' + at(same) + '.' :
+      if (gaian) who = z > GAIA.MASKZ ? 'Gaian lungs are no help this high. Each breath holds as little oxygen as Earth’s air at ' + at(same) + '.' :
         (feels < 1 ? 'For a Gaian, this is thicker than sea-level air is for you.' : 'For a Gaian, breathing here is like you breathing at ' + at(feels) + ' on Earth.');
-      else who = same < 1 ? 'The air is thicker than Earth’s at sea level, so a visitor has plenty to breathe.' : 'For someone from Earth, the air is as thin as it is at ' + at(same) + ' back home.';
+      else who = same < 1 ? 'Each breath holds more oxygen than Earth’s air at sea level, so a visitor has plenty to breathe.' : 'For someone from Earth, each breath holds as much oxygen as it does at ' + at(same) + ' back home.';
       $('feelNow').textContent = 'About ' + minus(tF) + '°F (' + minus(tC) + '°C) outside on an average day. ' + who;
     }
     $('gPl').textContent = below ? 'Pressure in open air' : 'Pressure';
     $('gSl').textContent = 'Simulated SpO2, ' + (gaian ? 'Gaian' : 'Earth visitor');
     $('gFl').textContent = 'FAA performance time, ' + (gaian ? 'Gaian' : 'Earth visitor');
-    setG('gP', pres(A.P), capFirst(share(A.P / 123262).replace('sea level', 'Gaia’s sea level')) + '.');
+    setG('gP', pres(A.P), capFirst(share(A.P / GAIA.P0).replace('sea level', 'Gaia’s sea level')) + '.');
     setG('gD', dens(A.rho), capFirst(share(A.rho / 1.225).replace('sea level', 'Earth’s sea level')) + '.');
     setG('gS', Math.round(s) + '<i>%</i>', gaian ?
       (s >= 94 ? 'Easy breathing for a Gaian.' : s >= 88 ? 'Normal for Gaians who live this high.' : s >= 75 ? 'Low. Acclimatized Gaians function here, slowly.' :
@@ -3355,9 +3366,9 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
       (B.ice ? '. Liquid water can’t exist here, so ice turns straight to vapor.' : (Math.abs(bC - 37) < 1 ? '. That is body temperature.' : (bC < 36 ? '. Cooler than your body.' : (bC > 100.5 ? '. Hotter than a rolling boil at Earth’s sea level.' : '')))));
     setG('gO', pres(o2 * 1000), capFirst(share(o2 / 21.2276).replace('sea level', 'Earth’s sea level')) + '.');
     if (e) setG('gF', secs(e[0], e[1]), gaian ? 'How long a Gaian can think straight without extra oxygen.' : 'How long a visitor from Earth can think straight without a mask.', e[1] < 150 ? 'bad' : 'warn');
-    else setG('gF', 'No limit', gaian ? 'For a Gaian, the clock does not start until about the living ceiling.' : 'The clock starts where the air is as thin as Earth’s at 18,000 ft.', 'good');
+    else setG('gF', 'No limit', gaian ? 'For a Gaian, the clock does not start until about the living ceiling.' : 'The clock starts where each breath holds as little oxygen as Earth’s air at 18,000 ft.', 'good');
     $('gE').hidden = false;
-    setG('gE', altStr(same / 0.3048, unit) + '<i>' + unit + '</i>', same < -431 ? 'Thicker than open air gets anywhere on Earth.' : (same < 1 ? 'Thicker than Earth’s air at sea level.' : 'Earth’s air is this thin at that height.'));
+    setG('gE', altStr(samePress / 0.3048, unit) + '<i>' + unit + '</i>', samePress < -431 ? 'Thicker than open air gets anywhere on Earth.' : (Math.abs(samePress) < 30 ? 'The same as Earth’s air at sea level.' : (samePress < 1 ? 'Thicker than Earth’s air at sea level.' : 'Earth’s air is this thin at that height. With Gaia’s extra oxygen, each breath here matches Earth’s at ' + at(same) + '.')));
     $('gK').hidden = below;
     if (!below) {
       var k = gear(z, tF, gaian, unit);
@@ -3381,11 +3392,11 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
     ['Coastlines', 0, 'Top of the Stair', 24803],
     ['Average land', 2756, 'Average land', 27559],
     ['Summitbrook', 15840, 'Summitbrook', 40643, 1],
-    ['Living limit', 18045, 'Living ceiling', 42848],
+    ['Living limit', 18045, 'Living ceiling', 44291],
     ['Death zone', 26247, 'Death zone', 52493],
     ['Everest', 29032, 'Everest', 53835],
-    ['Mount Tayanroken', 31332, 'Mount Tayanroken', 56135],
-    ['Armstrong limit', 63000, 'Armstrong limit', 101706]
+    ['Mount Tayanroken', 32641, 'Mount Tayanroken', 57444],
+    ['Armstrong limit', 63000, 'Armstrong limit', 95144]
   ];
   var RUL = { W: 360, top: 44, plot: 446, pad: 34, xE: 134, xG: 226 };
   function rulerY(ft) { return RUL.top + RUL.plot - ft / RULER_TOP * RUL.plot; }
@@ -3437,17 +3448,17 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
     ['The formula', 'alt', 24803, 'Every place on Earth sits this much higher on Gaia.', '+'],
     ['Average land', 'alt', 27559, 'Ten times Earth’s average.'],
     ['Gravity', 'raw', '0.80', 'Jumps go 25% higher and hang 25% longer.', '', 'g'],
-    ['Air at sea level', 'raw', '123.262', 'About 22% more than Earth’s, with the same 21% oxygen.', '', 'kPa'],
-    ['Living ceiling', 'alt', 42848, 'The highest a Gaian can live for good.'],
+    ['Air at sea level', 'raw', '101.325', 'The same as Earth’s, but 34.3% oxygen: about 64% more oxygen in every breath.', '', 'kPa'],
+    ['Living ceiling', 'alt', 44291, 'The highest a Gaian can live for good.'],
     ['Death zone starts', 'alt', 52493, 'Twice as high as Earth’s.'],
-    ['Armstrong limit', 'alt', 101706, 'Where water boils at body temperature.'],
+    ['Armstrong limit', 'alt', 95144, 'Where water boils at body temperature.'],
     ['Deepest ocean', 'alt', 44846, 'The Challenger Deep, a quarter deeper than Earth’s.']
   ];
   function drawSpec() {
     var unit = state.unit;
     $('spec').innerHTML = SPEC.map(function (t) {
       var v = t[1] === 'alt' ? (t[4] || '') + altStr(t[2], unit) : t[2], u = t[1] === 'alt' ? unit : t[5];
-      return '<div class="g"><span>' + esc(t[0]) + '</span><b' + ((v + u).length > 9 ? ' class="long"' : '') + '>' + v + '<i>' + u + '</i></b><small>' + esc(t[3]) + '</small></div>';
+      return '<div class="g" data-keep><span>' + esc(t[0]) + '</span><b' + ((v + u).length > 9 ? ' class="long"' : '') + '>' + v + '<i>' + u + '</i></b><small>' + esc(t[3]) + '</small></div>';
     }).join('');
   }
 
@@ -4027,7 +4038,7 @@ button:not(:disabled):active, .cvx-tile:active, .cvx-pre button:active, .cvx-pai
   /* ----- Shared physiology helpers (same functions the gauges use) ----- */
   function airAt(ft, planet, who) {
     var z = ft * 0.3048, a = planet === 'gaia' ? GAIA.atm(z) : PHYS.atm(z), P = a.P;
-    var lungP = (planet === 'gaia' && who === 'gaian' && z <= 19600) ? PHYS.atm(GAIA.lungs(z, 0)).P : P;
+    var lungP = planet !== 'gaia' ? P : ((who === 'gaian' && z <= GAIA.MASKZ) ? PHYS.atm(GAIA.lungs(z, 0)).P : GAIA.eqP(P));
     var eqM = PHYS.alt(lungP), sp = planet === 'gaia' ? GAIA.sat(who, z, P) : PHYS.spo2(P);
     return { z: z, P: P, rho: a.rho, T: a.T, lungP: lungP, eqM: eqM, spo2: sp, boil: PHYS.boil(P) };
   }
@@ -4671,7 +4682,7 @@ var NZ = 'float h2(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.545
     };
     var lastPlanet = '';
     function setPlanetLook() {
-      var p = PAL[PLANET] || PAL.earth, top = yOf(PLANET === 'gaia' ? 56135 : 31332), bot = yOf(MAX_DOWN);
+      var p = PAL[PLANET] || PAL.earth, top = yOf(PLANET === 'gaia' ? 57444 : 32641), bot = yOf(MAX_DOWN);
       landU.cLow.value.setHex(p.low); landU.cMid.value.setHex(p.mid); landU.cHigh.value.setHex(p.high); landU.cLine.value.setHex(p.line);
       floorU.cLow.value.setHex(p.deep); floorU.cMid.value.setHex(p.d2); floorU.cHigh.value.setHex(p.d3);
       waterU.cA.value.setHex(PLANET === 'gaia' ? 0x46ffb4 : 0x19f0ff);
