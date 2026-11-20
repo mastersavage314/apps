@@ -1380,7 +1380,7 @@ body.is-gaia .spine .now { box-shadow: 0 0 0 3px rgba(255, 92, 203, .55), 0 0 24
         <div class="g-g"><span>One day</span><b>36<i>hours</i></b><small>Selene's tides slowed the planet's spin.</small></div>
         <div class="g-g"><span>On the dial</span><b>18<i>numbers</i></b><small>The hour hand goes around twice a day.</small></div>
         <div class="g-g"><span>One week</span><b>5<i>days</i></b><small>Monday, Thursday, Friday, Saturday, Sunday.</small></div>
-        <div class="g-g"><span>One year</span><b>243<i>days</i></b><small>And 244 in even-numbered years.</small></div>
+        <div class="g-g"><span>One year</span><b>243<i>days</i></b><small>244 in even-numbered years, except every 200th year.</small></div>
         <div class="g-g"><span>Time zones</span><b>36<i>zones</i></b><small>Each one hour wide, counted from Summitbrook.</small></div>
         <div class="g-g"><span>Last clock to first</span><b>44<i>hours</i></b><small>From Baker Island to Hitirā.</small></div>
         <div class="g-g"><span>Daylight saving jump</span><b>1<i>hour</i></b><small>The same as on Earth.</small></div>
@@ -2998,8 +2998,11 @@ body.is-gaia .spine .now { box-shadow: 0 0 0 3px rgba(255, 92, 203, .55), 0 0 24
   var EPOCH = Date.UTC(2026, 0, 1, 9, 0, 0), HOUR = 3600000, DAY = 36 * HOUR;
   var WEEK = ['Sunday', 'Monday', 'Thursday', 'Friday', 'Saturday'];
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  function yearDays(y) { return y % 2 === 0 ? 244 : 243; }
-  function monthLens(y) { return [21, y % 2 === 0 ? 20 : 19, 20, 20, 21, 20, 21, 20, 20, 20, 20, 21]; }
+  // Leap years: every even-numbered year, except every 200th year. February takes the leap day.
+  function isLeap(y) { return y % 2 === 0 && y % 200 !== 0; }
+  function yearDays(y) { return isLeap(y) ? 244 : 243; }
+  // Earth's 31-day months have 21 days here and its 30-day months have 20. February has 16, or 17 in a leap year.
+  function monthLens(y) { return [21, isLeap(y) ? 17 : 16, 21, 20, 21, 20, 21, 21, 20, 21, 20, 21]; }
   // Days from the epoch to the first day of year y.
   function yearStart(y) {
     var d = 0, k;
@@ -3036,7 +3039,7 @@ body.is-gaia .spine .now { box-shadow: 0 0 0 3px rgba(255, 92, 203, .55), 0 0 24
      kind n = the nth weekday of a month, l = the last weekday, a = the first weekday on or after a date, d = a fixed date.
      st = minutes after midnight, in standard time, when the clocks go forward. et = minutes after midnight, on the clock then showing, when they go back. */
   var MAX_OWN_RULES = 100, CR = {};
-  var RULE_DAYMIN = 2160, RULE_WEEKDAYS = 5, RULE_MAXDAY = 19;
+  var RULE_DAYMIN = 2160, RULE_WEEKDAYS = 5, RULE_MAXDAY = 16;   // February, Gaia's shortest month, has 16 days
   function ruleInt(v, lo, hi) { v = Math.round(Number(v)); return isNaN(v) || v < lo || v > hi ? null : v; }
   function sanitizeRule(r) {
     if (!r || typeof r.id !== 'string' || !/^u[a-z0-9]{4,24}$/.test(r.id) || typeof r.name !== 'string' || !r.name.trim()) { return null; }
@@ -3044,7 +3047,8 @@ body.is-gaia .spine .now { box-shadow: 0 0 0 3px rgba(255, 92, 203, .55), 0 0 24
     ['s', 'e'].forEach(function (k) {
       var kind = typeof r[k + 'k'] === 'string' && r[k + 'k'].length === 1 && 'nlad'.indexOf(r[k + 'k']) !== -1 ? r[k + 'k'] : null;
       var m = ruleInt(r[k + 'm'], 0, 11), t = ruleInt(r[k + 't'], 0, RULE_DAYMIN - 1);
-      var n = kind === 'n' ? ruleInt(r[k + 'n'], 1, 4) : (kind === 'l' ? 1 : ruleInt(r[k + 'n'], 1, RULE_MAXDAY));
+      // A saved date past day 16 (from when the shortest month was longer) is moved to day 16, so the rule is kept.
+      var n = kind === 'n' ? ruleInt(r[k + 'n'], 1, 4) : (kind === 'l' ? 1 : ruleInt(Math.min(Number(r[k + 'n']), RULE_MAXDAY), 1, RULE_MAXDAY));
       var d = kind === 'd' ? 0 : ruleInt(r[k + 'd'], 0, RULE_WEEKDAYS - 1);
       if (kind === null || m === null || t === null || n === null || d === null) { ok = false; return; }
       o[k + 'k'] = kind; o[k + 'm'] = m; o[k + 't'] = t; o[k + 'n'] = n; o[k + 'd'] = d;
