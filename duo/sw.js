@@ -1,5 +1,5 @@
-/* Parallax + ALT 327K: offline support for the app's own page. Each of the two apps saves itself the first time it loads. */
-const CACHE = 'duo-20261118b';
+/* Altitime (Parallax 2.0 + ALT 327K 2.0): offline support for the app's own page. Each of the two apps saves itself the first time it loads. */
+const CACHE = 'duo-20261119b';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/favicon-32.png', './icons/icon.svg'];
 
 self.addEventListener('install', function (event) {

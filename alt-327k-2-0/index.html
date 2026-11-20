@@ -5166,7 +5166,7 @@ document.addEventListener('click', function (ev) {
   var h = a.getAttribute('href') || '';
   if (h.indexOf('../alt-327k-2-0/') !== 0 && h.indexOf('../parallax-2-0/') !== 0) { return; }
   ev.preventDefault();
-  // Inside the combined app (Parallax + ALT 327K), the app just shows the other page, already loaded, at the same place.
+  // Inside the combined app (Altitime), the app just shows the other page, already loaded, at the same place.
   var duo = null;
   try { duo = window.parent !== window && window.parent.DUO ? window.parent.DUO : null; } catch (err) { duo = null; }
   if (duo) { duo.open(h.indexOf('../alt-327k-2-0/') === 0 ? 'alt' : 'parallax', h.indexOf('#') >= 0 ? h.slice(h.indexOf('#')) : ''); return; }
