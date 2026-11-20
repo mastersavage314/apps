@@ -7,7 +7,7 @@ Two installable web apps for Earth and Gaia.
 
 The two apps link to each other: every clock in Parallax 2.0 has an Altitude link into ALT 327K 2.0, and every real place in ALT 327K 2.0 has a Local time link into Parallax 2.0. Both now share the Neon Core look, and Parallax 2.0 has a 3D time globe: the planet turning under its sun, with a world-time ring of hours locked to the sun.
 
-**High Noon** (`/duo/`) is both apps in one install: high for altitude, noon for time. Each app runs in its own frame and switching just shows the other one, already loaded and at the same place, so it works the same on every phone, iPhone included, where two separate Home Screen apps cannot open each other.
+**Altitime** (`/duo/`) is both apps in one install: altitude and time in one. Each app runs in its own frame and switching just shows the other one, already loaded and at the same place, so it works the same on every phone, iPhone included, where two separate Home Screen apps cannot open each other.
 
 Parallax 2.0's time globe draws the Cordilleran Region from the Cordilleran Region map (`cord.json`), with pins where the picked clock and you really are. Places come from that map, the board's own list, the IANA tz `zone.tab`, and GeoNames (`coords.json`, CC BY 4.0, loaded only when a typed town needs it).
 

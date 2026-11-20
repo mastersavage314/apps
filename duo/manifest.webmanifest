@@ -1,6 +1,6 @@
 {
-  "name": "High Noon: Parallax 2.0 + ALT 327K 2.0",
-  "short_name": "High Noon",
+  "name": "Altitime: Parallax 2.0 + ALT 327K 2.0",
+  "short_name": "Altitime",
   "description": "Parallax 2.0 and ALT 327K 2.0 in one app: switch between time and altitude in a tap, with your place carried over.",
   "id": "/apps/duo/",
   "start_url": "./",
